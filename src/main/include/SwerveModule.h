@@ -11,9 +11,7 @@
 #include <frc/kinematics/SwerveDriveKinematics.h>
 #include <frc/MathUtil.h>
 
-//#include <frc/MotorSafety.h>
-//#include <frc/smartdashboard/SmartDashboard.h>
-//#include <units/units.h>
+#define M_PI 3.14159265358979323846 //for simulation
 
 class SwerveModule
 {

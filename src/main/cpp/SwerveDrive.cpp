@@ -9,6 +9,7 @@ SwerveDrive::SwerveDrive(AHRS * nx, Limelight limelight): navx_{nx}, limelight_{
 {
     angPID_.EnableContinuousInput(-180, 180);
     angPID_.SetIntegratorRange(-0.5, 0.5);
+    initializeOdometry(frc::Rotation2d{0_deg}, frc::Pose2d{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{0_deg}});
 }
 
 /**
@@ -31,7 +32,7 @@ SwerveDrive::State SwerveDrive::getState() {
  * @param initPose the robots initial position on the field
 **/
 void SwerveDrive::initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose) {
-    delete odometry_;
+    // delete odometry_;
     odometry_ = new frc::SwerveDriveOdometry<4>(kinematics_, gyroAngle, initPose);
 }
 
@@ -39,7 +40,7 @@ void SwerveDrive::initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d init
  * Updates or resets the odometry positin to the given position and orientation
 **/
 void SwerveDrive::updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose) {
-    odometry_->ResetPosition(robotPose, robotAngle); 
+    odometry_->ResetPosition(robotPose, robotAngle);
 }
 
 /**
@@ -81,8 +82,16 @@ void SwerveDrive::Periodic(units::meters_per_second_t dx, units::meters_per_seco
     //update odometry no matter the state
     odometry_->Update(units::degree_t{navx_->GetYaw()}, getRealModuleStates());
     lPose_ = limelight_.getPose(navx_->GetYaw(), turretAngle);
-    //limelight error checking
-    if (!(abs(lPose_.X().value()) > 10 || abs(lPose_.Y().value()) > 10 || (frc::Timer::GetFPGATimestamp().value() - limelight_.getLastUpdated()) >= 35)) {
+
+    /** Limelight error checking
+     * Only update if limelight can see the target
+     * If the reported X or Y positions are > 10, it's probably an error and odometry shouldn't be updated
+     * If it's been too long (35ms right now) since the last vision update, likely the data is out of date & odometry shouldn't be updated
+    */
+    if (limelight_.hasTarget() && 
+        !(abs(lPose_.X().value()) > 10 
+        || abs(lPose_.Y().value()) > 10 
+        || (frc::Timer::GetFPGATimestamp().value() - limelight_.getLastUpdated()) >= 35)) {
         updateLimelightOdom(turretAngle, false); 
     }
 
@@ -93,6 +102,7 @@ void SwerveDrive::Periodic(units::meters_per_second_t dx, units::meters_per_seco
             break;
         case PATH_FOLLOW:
             ramseteCommand_->Execute();
+            odometry_->Update(units::degree_t{navx_->GetYaw()}, getRealModuleStates());
             break;
         case STOP:
             stop();
@@ -213,7 +223,8 @@ std::shared_ptr<frc2::RamseteCommand> SwerveDrive::setupRamsete(std::string file
     deployDirectory = deployDirectory / "paths" / filePath;
     frc::Trajectory trajectory = frc::TrajectoryUtil::FromPathweaverJson(deployDirectory.string());
 
-    updateOdometry(trajectory.InitialPose().Rotation(), trajectory.InitialPose()); 
+    updateOdometry(trajectory.InitialPose().Rotation(), trajectory.InitialPose());
+    navx_->SetAngleAdjustment(-trajectory.InitialPose().Rotation().Degrees().value());
 
     std::shared_ptr<frc2::RamseteCommand> ramseteCommand = make_shared<frc2::RamseteCommand>(
         frc2::RamseteCommand(
@@ -225,7 +236,6 @@ std::shared_ptr<frc2::RamseteCommand> SwerveDrive::setupRamsete(std::string file
         speedPID_, speedPID_,
         [this] (units::volt_t leftVolts, units::volt_t rightVolts) { differentialDrive(leftVolts, rightVolts); } //lambda function to set wheel volts
     ));
-
     return ramseteCommand;
 }
 

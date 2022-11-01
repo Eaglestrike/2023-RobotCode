@@ -17,6 +17,7 @@ void Robot::AutonomousInit() {
 
 void Robot::AutonomousPeriodic() {
   swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
+  swerveDrive_->Periodic(0_mps, 0_mps, 0_rad / 1_s, 0);
 }
 
 void Robot::TeleopInit() {}
