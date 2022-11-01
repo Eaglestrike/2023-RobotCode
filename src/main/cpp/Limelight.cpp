@@ -20,8 +20,10 @@ std::vector<double> Limelight::getLLPython() {
    return llpython;
 }
 
-//gets pose of limelight
-//coordinates: gonna assume angle is zero when robot facing directly away
+/**
+ * gets pose of limelight
+ * coordinates: gonna assume angle is zero when robot facing directly away
+**/
 frc::Pose2d Limelight::getPose(double navx, double turretAngle) {
 
     std::vector<double> llpython = getLLPython();
