@@ -300,7 +300,7 @@ void SwerveDrive::updateLimelightOdom(double turretAngle, bool inAuto)
 {
     //get limelight pose (so this is the position of the camera)
     double limelightX_ = lPose_.X().value();
-    double limelightY_ = lPose_.Y().value();        
+    double limelightY_ = lPose_.Y().value();
 
     //adjust to get position of actual robot
     std::pair<double, double> trans = camToBot(turretAngle);

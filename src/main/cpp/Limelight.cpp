@@ -20,8 +20,10 @@ std::vector<double> Limelight::getLLPython() {
    return llpython;
 }
 
-//gets pose of limelight
-//coordinates: gonna assume angle is zero when robot facing directly away
+/**
+ * gets pose of limelight
+ * coordinates: gonna assume angle is zero when robot facing directly away
+**/
 frc::Pose2d Limelight::getPose(double navx, double turretAngle) {
 
     std::vector<double> llpython = getLLPython();
@@ -274,7 +276,7 @@ double Limelight::getAdjustedX() {
 /**
  * @returns angle between 2 points in the x direction
 **/
-int angleBetween(const LLCoordinate point, const LLCoordinate centerPoint) {
+int angleBetweenX(const LLCoordinate point, const LLCoordinate centerPoint) {
     int angleA = atan2(centerPoint.second - point.second, centerPoint.first - point.first) * 180 / M_PI;
     angleA = (angleA + 360) % 360;
 
@@ -295,7 +297,7 @@ struct AngleComparator {
     AngleComparator(LLCoordinate centerPoint_) : centerPoint(centerPoint_) {};
 
     bool operator ()(const LLCoordinate& a, const LLCoordinate& b) {
-        return angleBetween(a, centerPoint) > angleBetween(b, centerPoint);
+        return angleBetweenX(a, centerPoint) > angleBetweenX(b, centerPoint);
     }
 };
 
