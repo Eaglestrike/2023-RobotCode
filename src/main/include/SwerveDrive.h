@@ -16,6 +16,10 @@
 #include <frc/trajectory/TrajectoryGenerator.h>
 #include <frc2/command/RamseteCommand.h>
 #include <algorithm>
+#include <memory>
+#include <frc/Filesystem.h>
+#include <frc/trajectory/TrajectoryUtil.h>
+#include <wpi/fs.h>
 
 
 class SwerveDrive
@@ -39,7 +43,7 @@ class SwerveDrive
         void initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose);
         void updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose);
        
-        void initializeAutoTraj(/*todo take in file path*/);
+        void initializeAutoTraj(std::string filePath);
 
         wpi::array<frc::SwerveModuleState, 4> getRealModuleStates(); //real as opposed to goal
 
@@ -65,8 +69,8 @@ class SwerveDrive
 
         frc::DifferentialDriveWheelSpeeds getDifferentialWheelSpeeds();
         void differentialDrive(units::volt_t leftVolts, units::volt_t rightVolts);
-        frc2::RamseteCommand setupRamsete(/*todo take in file path*/);
-        frc2::RamseteCommand * ramseteCommand_; //will be set up in auto init
+        std::shared_ptr<frc2::RamseteCommand> setupRamsete(std::string filePath);
+        std::shared_ptr<frc2::RamseteCommand> ramseteCommand_; //will be set up in auto init
 
         frc::SwerveDriveKinematics<4> kinematics_{
             frc::Translation2d{0.3683_m, 0.3683_m}, frc::Translation2d{0.3683_m, -0.3683_m},

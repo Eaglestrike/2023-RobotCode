@@ -4,7 +4,7 @@
 #include "units/units.h"
 #include "string"
 #include "frc/I2C.h"
-#include "frc/Filesystem.h"
+#include <frc/Filesystem.h>
 
 using namespace std;
 
@@ -86,14 +86,11 @@ namespace SwerveConstants
     const double TREAD_RADIUS = 0.0508; 
     const double DRIVE_GEAR_RATIO = 1/6.12; 
 
-    //TODO: tune, these are dummy values
-    const units::meters_per_second_t kMaxSpeed = 0_mps;
-    const units::meters_per_second_squared_t kMaxAccel = 0_m / (1_s * 1_s);
+    const string twoBallPath = "TwoBall.wpilib.json";
 
-    //const double trPosAngle = atan2((SwerveConstants::WIDTH/2), (SwerveConstants::LENGTH/2));
-    //const double tlPosAngle = -trPosAngle;
-    //const double brPosAngle = 180 - trPosAngle;
-    //const double blPosAngle = trPosAngle - 180;
+    //can tune, using safe defaults
+    const units::meters_per_second_t kMaxSpeed = 3_mps;
+    const units::meters_per_second_squared_t kMaxAccel = 1_m / (1_s * 1_s);
 
     const int FRspeedPort = 13; //13, 3
     const int FLspeedPort = 11; //11, 1
@@ -120,6 +117,7 @@ namespace SwerveConstants
     const auto kv = 1.98 * 1_V * 1_s / 1_m;
     const auto ka = 0.2 * 1_V * 1_s * 1_s / 1_m;
     
+    //WPILib says these are good?
     const double kRamseteB = 2;
     const double kRamseteZeta = 0.7;
 

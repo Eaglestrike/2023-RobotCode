@@ -45,9 +45,8 @@ void SwerveDrive::updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPo
 /**
  * Called in autonomous init to initialize swerve's trajectory and ramsete (trajectory following) command.
 **/
-void SwerveDrive::initializeAutoTraj(/*todo take in file path*/) {
-    //TODO: how to do? something with smartpointers...?
-    //ramseteCommand_ = &setupRamsete(/*todo pass in file path*/); 
+void SwerveDrive::initializeAutoTraj(std::string filePath) {
+    ramseteCommand_ = setupRamsete(filePath); 
 }
 
 /**
@@ -200,30 +199,32 @@ void SwerveDrive::stop() {
 }
 
 /**
- * @returns a ramseteCommand object that, when executed, will result in the robot following the inputted traj file
+ * @param filePath the name of the file to be used for trajectory generation
+ * @returns a ramseteCommand shared pointer object that, when executed, will result in the robot following the inputted traj file
+ * Using a shared pointer so that the ramsete command can be initialized after construction, and so that the pointer can
+ * change owners (from this function to global SwerveDrive class)
 **/
-frc2::RamseteCommand SwerveDrive::setupRamsete(/*eventually take in file path*/) {
+std::shared_ptr<frc2::RamseteCommand> SwerveDrive::setupRamsete(std::string filePath) {
     frc::TrajectoryConfig config{SwerveConstants::kMaxSpeed, SwerveConstants::kMaxAccel};
     config.SetKinematics(kinematics_);
 
-    //todo this will read in from pathweaver thing
-    frc::Trajectory dummyTraj = frc::TrajectoryGenerator::GenerateTrajectory(
-        frc::Pose2d(0_m, 0_m, frc::Rotation2d(0_deg)), //dummy start pt
-        {frc::Translation2d(1_m, 1_m), frc::Translation2d(2_m, -1_m)}, //dummy waypts
-        frc::Pose2d(3_m, 0_m, frc::Rotation2d(0_deg)), //dummy end pt
-        config);
+    //get trajectory from pathweaver file
+    fs::path deployDirectory = frc::filesystem::GetDeployDirectory();
+    deployDirectory = deployDirectory / "paths" / filePath;
+    frc::Trajectory trajectory = frc::TrajectoryUtil::FromPathweaverJson(deployDirectory.string());
 
-    updateOdometry(frc::Rotation2d(0_deg), dummyTraj.InitialPose()); //todo get init pose from file
+    updateOdometry(trajectory.InitialPose().Rotation(), trajectory.InitialPose()); 
 
-    frc2::RamseteCommand ramseteCommand(
-        dummyTraj, [this]() { return odometry_->GetPose(); },
-        frc::RamseteController(SwerveConstants::kRamseteB, SwerveConstants::kRamseteZeta),
+    std::shared_ptr<frc2::RamseteCommand> ramseteCommand = make_shared<frc2::RamseteCommand>(
+        frc2::RamseteCommand(
+        trajectory, [this]() { return odometry_->GetPose(); }, //lambda function to get robot's position
+        frc::RamseteController(SwerveConstants::kRamseteB, SwerveConstants::kRamseteZeta), 
         frc::SimpleMotorFeedforward<units::meters>(SwerveConstants::ks, SwerveConstants::kv, SwerveConstants::ka),
         diffDriveKinematics_, 
-        [this] { return getDifferentialWheelSpeeds(); },
+        [this] { return getDifferentialWheelSpeeds(); }, //lambda function to get the robot's current wheel speeds
         speedPID_, speedPID_,
-        [this] (units::volt_t leftVolts, units::volt_t rightVolts) { differentialDrive(leftVolts, rightVolts); }
-    );
+        [this] (units::volt_t leftVolts, units::volt_t rightVolts) { differentialDrive(leftVolts, rightVolts); } //lambda function to set wheel volts
+    ));
 
     return ramseteCommand;
 }

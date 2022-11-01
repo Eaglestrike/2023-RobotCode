@@ -12,7 +12,7 @@ void Robot::RobotInit() {
 void Robot::RobotPeriodic() {}
 
 void Robot::AutonomousInit() {
-  swerveDrive_->initializeAutoTraj();
+  swerveDrive_->initializeAutoTraj(SwerveConstants::twoBallPath); //todo would be done with auto chooser
 }
 
 void Robot::AutonomousPeriodic() {
