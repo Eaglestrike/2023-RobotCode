@@ -80,10 +80,10 @@ class SwerveDrive
         frc::DifferentialDriveKinematics diffDriveKinematics_{0.7366_m};
 
 
-        SwerveModule flModule_{SwerveConstants::FLanglePort, SwerveConstants::FLspeedPort, SwerveConstants::FLencoder, false, SwerveConstants::FLOFF};
-        SwerveModule frModule_{SwerveConstants::FRanglePort, SwerveConstants::FRspeedPort, SwerveConstants::FRencoder, true, SwerveConstants::FROFF};
-        SwerveModule blModule_{SwerveConstants::BLanglePort, SwerveConstants::BLspeedPort, SwerveConstants::BLencoder, true, SwerveConstants::BLOFF};
-        SwerveModule brModule_{SwerveConstants::BRanglePort, SwerveConstants::BRspeedPort, SwerveConstants::BRencoder, false, SwerveConstants::BROFF};
+        SwerveModule flModule_{SwerveConstants::FLanglePort, SwerveConstants::FLspeedPort, SwerveConstants::FLencoder, SwerveConstants::FLOFF, false};
+        SwerveModule frModule_{SwerveConstants::FRanglePort, SwerveConstants::FRspeedPort, SwerveConstants::FRencoder, SwerveConstants::FROFF, true};
+        SwerveModule blModule_{SwerveConstants::BLanglePort, SwerveConstants::BLspeedPort, SwerveConstants::BLencoder, SwerveConstants::BLOFF, true};
+        SwerveModule brModule_{SwerveConstants::BRanglePort, SwerveConstants::BRspeedPort, SwerveConstants::BRencoder, SwerveConstants::BROFF, false};
 
         frc2::PIDController angPID_{SwerveConstants::P , SwerveConstants::I, SwerveConstants::D};
         frc2::PIDController speedPID_{SwerveConstants::sP , SwerveConstants::sI, SwerveConstants::sD};    
