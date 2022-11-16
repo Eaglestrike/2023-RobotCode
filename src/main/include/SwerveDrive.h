@@ -55,6 +55,8 @@ class SwerveDrive
         double getY();
         double getRobotGoalAng(double turretAngle);
 
+        void configSpeedPID(double P, double I, double D);
+
     private:
         AHRS * navx_;
         Limelight limelight_;
@@ -81,8 +83,8 @@ class SwerveDrive
 
 
         SwerveModule flModule_{SwerveConstants::FLanglePort, SwerveConstants::FLspeedPort, SwerveConstants::FLencoder, SwerveConstants::FLOFF, false};
-        SwerveModule frModule_{SwerveConstants::FRanglePort, SwerveConstants::FRspeedPort, SwerveConstants::FRencoder, SwerveConstants::FROFF, true};
-        SwerveModule blModule_{SwerveConstants::BLanglePort, SwerveConstants::BLspeedPort, SwerveConstants::BLencoder, SwerveConstants::BLOFF, true};
+        SwerveModule frModule_{SwerveConstants::FRanglePort, SwerveConstants::FRspeedPort, SwerveConstants::FRencoder, SwerveConstants::FROFF, false};
+        SwerveModule blModule_{SwerveConstants::BLanglePort, SwerveConstants::BLspeedPort, SwerveConstants::BLencoder, SwerveConstants::BLOFF, false};
         SwerveModule brModule_{SwerveConstants::BRanglePort, SwerveConstants::BRspeedPort, SwerveConstants::BRencoder, SwerveConstants::BROFF, false};
 
         frc2::PIDController angPID_{SwerveConstants::P , SwerveConstants::I, SwerveConstants::D};

@@ -12,6 +12,12 @@ SwerveDrive::SwerveDrive(AHRS * nx, Limelight limelight): navx_{nx}, limelight_{
     initializeOdometry(frc::Rotation2d{0_deg}, frc::Pose2d{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{0_deg}});
 }
 
+void SwerveDrive::configSpeedPID(double P, double I, double D) {
+    angPID_.SetP(P);
+    angPID_.SetI(I);
+    angPID_.SetD(D);
+}
+
 /**
  * Set's swerve drive's state
 **/

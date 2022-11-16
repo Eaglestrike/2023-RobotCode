@@ -97,22 +97,22 @@ namespace SwerveConstants
     const int FRspeedPort = 13; //13, 3
     const int FLspeedPort = 11; //11, 1
     const int BRspeedPort = 18; //18, 4
-    const int BLspeedPort = 15; //15, 22
+    const int BLspeedPort = 22; //15, 22
 
     const int FRanglePort = 14; //14, 5
     const int FLanglePort = 12; //12, 7
     const int BRanglePort = 17; //17, 10
-    const int BLanglePort = 16; //16, 19
+    const int BLanglePort = 19; //16, 19
 
     const int FRencoder = 62; //62, 2
     const int FLencoder = 10; //10, 9
     const int BRencoder = 8; //8, 8
-    const int BLencoder = 42; //42, 6
+    const int BLencoder = 6; //42, 6
     
     const double FROFF = 19.77; //19.77, 
     const double FLOFF = 109.952; //109.952
     const double BROFF = 197.5; //197.5
-    const double BLOFF = 356.39; // 356.39
+    const double BLOFF = -139.92 + 180; // 356.39
 
     //TODO: tune, these are dummy values
     const auto ks = 0.22_V;
@@ -127,7 +127,7 @@ namespace SwerveConstants
     const double I = 0.1;
     const double D = 0.0;
 
-    const double sP = 0.08;
+    const double sP = 0.06;
     const double sI = 0.1;
     const double sD = 0.0;
 

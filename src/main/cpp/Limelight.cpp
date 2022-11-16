@@ -29,7 +29,7 @@ frc::Pose2d Limelight::getPose(double navx, double turretAngle) {
     std::vector<double> llpython = getLLPython();
 
     if (llpython.size() == 0) {
-        std::cout << "you should have checked if has target before calling getPose!\n";
+      //  std::cout << "you should have checked if has target before calling getPose!\n";
         return {};
     } 
 

@@ -31,12 +31,12 @@ units::meters_per_second_t SwerveModule::talonVelToMps(double vel)
  * Gets the drive speed and angle of a swerve module
  * @returns a SwerveModuleState encapsulating that info
 **/
-// TODO: check input modulus of Rotation2d
 frc::SwerveModuleState SwerveModule::getState()
 {
-    frc::SwerveModuleState state; // TODO: can this be made inline?
+    frc::SwerveModuleState state;
     state.speed = talonVelToMps(speedMotor_.GetSelectedSensorVelocity());
-    state.angle = frc::Rotation2d{units::angle::degree_t{angleMotor_.GetSelectedSensorVelocity() + offset_}};
+    //converts module's angle (normalized to [-180, 180]) to a Rotation2d object
+    state.angle = frc::Rotation2d{units::angle::degree_t{frc::InputModulus(angleMotor_.GetSelectedSensorVelocity() + offset_, -180.0, 180.0)}};
     return state;
 }
 
@@ -71,8 +71,8 @@ double SwerveModule::getVelocity()
     return speedMotor_.GetSelectedSensorVelocity();
 }
 
-//note: in raw ticks, not rad or deg
+//in degrees
 double SwerveModule::getYaw()
 {
-    return canCoder_.GetAbsolutePosition();
+    return canCoder_.GetAbsolutePosition() + offset_;
 }
