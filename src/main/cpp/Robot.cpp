@@ -12,12 +12,12 @@ void Robot::RobotInit() {
 void Robot::RobotPeriodic() {}
 
 void Robot::AutonomousInit() {
-  swerveDrive_->initializeAutoTraj(SwerveConstants::twoBallPath); //todo would be done with auto chooser
+  swerveDrive_->initializeAutoTraj(SwerveConstants::testPath); //todo would be done with auto chooser
 }
 
 void Robot::AutonomousPeriodic() {
   // swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
-  // swerveDrive_->Periodic(0); //dummy turret value of 0 for testing purposes
+  // swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
 }
 
 void Robot::TeleopInit() {
@@ -45,7 +45,7 @@ void Robot::TeleopPeriodic() {
     0);
 
   //REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
- // swerveDrive_->Periodic(0, 0_mps); //go 1 meter per second in the x direction. for testing speed tuning
+ // swerveDrive_->Periodic( 1_mps, 0_mps, 0_rad / 1_s, 0); //go 1 meter per second in the x direction. for testing speed tuning
 }
 
 void Robot::DisabledInit() {}

@@ -51,9 +51,9 @@ frc::SwerveModuleState SwerveModule::getOptState(frc::SwerveModuleState state)
 }
 
 
-void SwerveModule::setAngMotorVoltage(double volts)
+void SwerveModule::setAngMotorVoltage(double voltage)
 {
-    angleMotor_.SetVoltage(units::volt_t{volts});
+    angleMotor_.SetVoltage(units::volt_t{voltage});
 }
 
 void SwerveModule::setSpeedMotor(double power)
@@ -61,8 +61,12 @@ void SwerveModule::setSpeedMotor(double power)
     speedMotor_.Set(ControlMode::PercentOutput, power);
 }
 
-void SwerveModule::setSpeedMotorVolts(units::volt_t volts) {
-    speedMotor_.SetVoltage(volts);
+void SwerveModule::setSpeedMotorVolts(double voltage) {
+    speedMotor_.SetVoltage(units::volt_t{voltage});
+}
+
+units::meters_per_second_t SwerveModule::getVelocityMPS() {
+    return talonVelToMps(getVelocity());
 }
 
 //note: in raw ticks, not mps

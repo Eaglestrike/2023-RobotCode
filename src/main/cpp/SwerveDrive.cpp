@@ -38,12 +38,11 @@ SwerveDrive::State SwerveDrive::getState() {
  * @param initPose the robots initial position on the field
 **/
 void SwerveDrive::initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose) {
-    // delete odometry_;
     odometry_ = new frc::SwerveDriveOdometry<4>(kinematics_, gyroAngle, initPose);
 }
 
 /**
- * Updates or resets the odometry positin to the given position and orientation
+ * Updates or resets the odometry position to the given position and orientation
 **/
 void SwerveDrive::updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose) {
     odometry_->ResetPosition(robotPose, robotAngle);
@@ -54,6 +53,7 @@ void SwerveDrive::updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPo
 **/
 void SwerveDrive::initializeAutoTraj(std::string filePath) {
     ramseteCommand_ = setupRamsete(filePath); 
+    ramseteCommand_->Initialize();
 }
 
 /**
@@ -147,24 +147,44 @@ void SwerveDrive::drive(units::meters_per_second_t dx, units::meters_per_second_
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
     flModule_.setSpeedMotor( 0.2*std::clamp(fl_opt.speed.value(), -1.0, 1.0) );
+    // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
+    // flModule_.setSpeedMotorVolts( std::clamp(
+    //     speedPID_.Calculate(flModule_.getVelocityMPS().value(), fl_opt.speed.value())
+    //     + speedFeedforward_.Calculate(fl_opt.speed).value(),
+    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
     frModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(frModule_.getYaw(), fr_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
     frModule_.setSpeedMotor( 0.2*std::clamp(fr_opt.speed.value(), -1.0, 1.0) );
+    // frc::SmartDashboard::PutNumber("fr speed error", fr_opt.speed.value() - frModule_.getVelocityMPS().value());
+    // frModule_.setSpeedMotorVolts( std::clamp(
+    //     speedPID_.Calculate(frModule_.getVelocityMPS().value(), fr_opt.speed.value())
+    //     + speedFeedforward_.Calculate(fr_opt.speed).value(),
+    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
     blModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(blModule_.getYaw(), bl_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
     blModule_.setSpeedMotor( 0.2*std::clamp(bl_opt.speed.value(), -1.0, 1.0) );
+    //frc::SmartDashboard::PutNumber("bl speed error", bl_opt.speed.value() - blModule_.getVelocityMPS().value());
+    // blModule_.setSpeedMotorVolts( std::clamp(
+    //     speedPID_.Calculate(blModule_.getVelocityMPS().value(), bl_opt.speed.value())
+    //     + speedFeedforward_.Calculate(bl_opt.speed).value(),
+    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
     brModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(brModule_.getYaw(), br_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
     brModule_.setSpeedMotor( 0.2*std::clamp(br_opt.speed.value(), -1.0, 1.0) );
+    // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
+    // brModule_.setSpeedMotorVolts( std::clamp(
+    //     speedPID_.Calculate(brModule_.getVelocityMPS().value(), br_opt.speed.value())
+    //     + speedFeedforward_.Calculate(br_opt.speed).value(),
+    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
 }
 
@@ -173,14 +193,14 @@ void SwerveDrive::drive(units::meters_per_second_t dx, units::meters_per_second_
 **/
 void SwerveDrive::differentialDrive(units::volt_t leftVolts, units::volt_t rightVolts) {
     //voltage constraints
-    leftVolts = std::clamp(leftVolts, units::volt_t{-GeneralConstants::MAX_VOLTAGE}, units::volt_t{-GeneralConstants::MAX_VOLTAGE});
-    rightVolts = std::clamp(rightVolts, units::volt_t{-GeneralConstants::MAX_VOLTAGE}, units::volt_t{-GeneralConstants::MAX_VOLTAGE});
+    double leftVoltsRaw = std::clamp(leftVolts.value(), -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE);
+    double rightVoltsRaw = std::clamp(rightVolts.value(), -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE);
 
-    flModule_.setSpeedMotorVolts(leftVolts);
-    blModule_.setSpeedMotorVolts(leftVolts);
+    flModule_.setSpeedMotorVolts(leftVoltsRaw);
+    blModule_.setSpeedMotorVolts(leftVoltsRaw);
 
-    frModule_.setSpeedMotorVolts(rightVolts);
-    brModule_.setSpeedMotorVolts(rightVolts);
+    frModule_.setSpeedMotorVolts(rightVoltsRaw);
+    brModule_.setSpeedMotorVolts(rightVoltsRaw);
 
     //set all angles to 0 because this is differential drive
     flModule_.setAngMotorVoltage( std::clamp(
@@ -236,7 +256,7 @@ std::shared_ptr<frc2::RamseteCommand> SwerveDrive::setupRamsete(std::string file
         frc2::RamseteCommand(
         trajectory, [this]() { return odometry_->GetPose(); }, //lambda function to get robot's position
         frc::RamseteController(SwerveConstants::kRamseteB, SwerveConstants::kRamseteZeta), 
-        frc::SimpleMotorFeedforward<units::meters>(SwerveConstants::ks, SwerveConstants::kv, SwerveConstants::ka),
+        speedFeedforward_,
         diffDriveKinematics_, 
         [this] { return getDifferentialWheelSpeeds(); }, //lambda function to get the robot's current wheel speeds
         speedPID_, speedPID_,

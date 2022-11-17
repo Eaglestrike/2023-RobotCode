@@ -89,5 +89,6 @@ class SwerveDrive
 
         frc2::PIDController angPID_{SwerveConstants::P , SwerveConstants::I, SwerveConstants::D};
         frc2::PIDController speedPID_{SwerveConstants::sP , SwerveConstants::sI, SwerveConstants::sD};    
+        frc::SimpleMotorFeedforward<units::meters> speedFeedforward_{SwerveConstants::ks, SwerveConstants::kv, SwerveConstants::ka};
 
 };
