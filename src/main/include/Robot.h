@@ -35,5 +35,4 @@ class Robot : public frc::TimedRobot {
    //subject to adjustment
   void joy_val_to_mps(double& val) { val *= 4; }
   void joy_rot_to_rps(double& rot) { rot *= 3*2*M_PI; }
-
 };
