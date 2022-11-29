@@ -25,14 +25,13 @@ class Robot : public frc::TimedRobot {
     void SimulationPeriodic() override;
 
  private:
-    AHRS * navx_; //can't be initialized as reference because doesn't have a constructor :(
-    SwerveDrive * swerveDrive_; //pointer because it relies on navx being initialized
-    Limelight limelight_;
+   AHRS * navx_; //can't be initialized as reference because doesn't have a constructor :(
+   SwerveDrive * swerveDrive_; //pointer because it relies on navx being initialized
+   Limelight limelight_;
 
    frc::Joystick ljoy{InputConstants::LJOY_PORT};
    frc::Joystick rjoy{InputConstants::RJOY_PORT};
 
-   //subject to adjustment
-  void joy_val_to_mps(double& val) { val *= 4; }
-  void joy_rot_to_rps(double& rot) { rot *= 3*2*M_PI; }
+   double joy_val_to_mps(double val);
+   double joy_rot_to_rps(double rot); 
 };

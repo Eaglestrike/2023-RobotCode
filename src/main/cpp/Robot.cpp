@@ -9,7 +9,9 @@ void Robot::RobotInit() {
   swerveDrive_ = new SwerveDrive(navx_, limelight_);
 }
 
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+  limelight_.lightOn(false);
+}
 
 void Robot::AutonomousInit() {
   swerveDrive_->initializeAutoTraj(SwerveConstants::testPath); //todo would be done with auto chooser
@@ -34,9 +36,10 @@ void Robot::TeleopPeriodic() {
   dy = abs(dy) < 0.1 ? 0.0: dy;
   dtheta = abs(dtheta) < 0.05 ? 0.0: dtheta;
 
-  joy_val_to_mps(dx);
-  joy_val_to_mps(dy);
-  joy_rot_to_rps(dtheta);
+  dx = joy_val_to_mps(dx);
+  dy = joy_val_to_mps(dy);
+  dtheta = joy_rot_to_rps(dtheta);
+  
 
   swerveDrive_->Periodic(
     units::meters_per_second_t{dx},
@@ -59,6 +62,22 @@ void Robot::TestPeriodic() {}
 void Robot::SimulationInit() {}
 
 void Robot::SimulationPeriodic() {}
+
+/**
+ * @returns joystick value converted to meters per second
+ * TODO: change this to match the velocity calculations from 2022-Offseason
+**/
+double joy_val_to_mps(double val) {
+  return val*4;
+}
+
+/**
+ * @returns joystick value converted to radians per second
+ * TODO: change this to match the angular velocity calculations from 2022-Offseason
+**/
+double joy_val_to_rps(double rot) {
+  return rot * 3*3*M_PI;
+}
 
 #ifndef RUNNING_FRC_TESTS
 int main() {
