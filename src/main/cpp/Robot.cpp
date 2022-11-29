@@ -67,7 +67,7 @@ void Robot::SimulationPeriodic() {}
  * @returns joystick value converted to meters per second
  * TODO: change this to match the velocity calculations from 2022-Offseason
 **/
-double joy_val_to_mps(double val) {
+double Robot::joy_val_to_mps(double val) {
   return val*4;
 }
 
@@ -75,7 +75,7 @@ double joy_val_to_mps(double val) {
  * @returns joystick value converted to radians per second
  * TODO: change this to match the angular velocity calculations from 2022-Offseason
 **/
-double joy_val_to_rps(double rot) {
+double Robot::joy_rot_to_rps(double rot) {
   return rot * 3*3*M_PI;
 }
 
