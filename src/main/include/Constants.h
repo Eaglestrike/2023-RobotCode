@@ -1,7 +1,9 @@
 #pragma once
 
 #include <math.h>
-#include "units/units.h"
+#include <units/velocity.h>
+#include <units/acceleration.h>
+#include <units/voltage.h>
 #include "string"
 #include "frc/I2C.h"
 #include <frc/Filesystem.h>
