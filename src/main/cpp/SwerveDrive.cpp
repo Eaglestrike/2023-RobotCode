@@ -78,12 +78,12 @@ frc::DifferentialDriveWheelSpeeds SwerveDrive::getDifferentialWheelSpeeds() {
 
 /**
  * Called periodically in Robot.cpp. encapsulates driving, path following, and odometry update
- * @param dx the desired robot velocity in the x direction
- * @param dy the desired robot velocity in the y direction
- * @param dtheta the desired robot rotational velocity
+ * @param vx the desired robot velocity in the x direction
+ * @param vy the desired robot velocity in the y direction
+ * @param vtheta the desired robot rotational velocity
  * @param turretAngle the turret's angle on the robot, used to help calculate odometry
 **/
-void SwerveDrive::Periodic(units::meters_per_second_t dx, units::meters_per_second_t dy, units::radians_per_second_t dtheta, double turretAngle) {
+void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle) {
 
     //update odometry no matter the state
     odometry_->Update(units::degree_t{navx_->GetYaw()}, getRealModuleStates());
@@ -104,7 +104,7 @@ void SwerveDrive::Periodic(units::meters_per_second_t dx, units::meters_per_seco
     //takes appropriate action based on current state
     switch(state_) {
         case DRIVE:
-            drive(dx, dy, dtheta, turretAngle);
+            drive(vx, vy, vtheta, turretAngle);
             break;
         case PATH_FOLLOW:
             ramseteCommand_->Execute();
@@ -119,17 +119,17 @@ void SwerveDrive::Periodic(units::meters_per_second_t dx, units::meters_per_seco
 
 /**
  * Controls swerve modules to drive in response to joystick driver input
- * @param dx the desired robot velocity in the x direction
- * @param dy the desired robot velocity in the y direction
- * @param dtheta the desired robot rotational velocity
+ * @param vx the desired robot velocity in the x direction
+ * @param vy the desired robot velocity in the y direction
+ * @param vtheta the desired robot rotational velocity
  * @param turretAngle the turret's angle on the robot, used to help calculate odometry
 **/
-void SwerveDrive::drive(units::meters_per_second_t dx, units::meters_per_second_t dy, units::radians_per_second_t dtheta, double turretAngle) {
+void SwerveDrive::drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle) {
     units::degree_t navx_yaw = units::degree_t{navx_->GetYaw()};
   
     //converts field-relative joystick input to robot-relative speeds
     frc::ChassisSpeeds speeds_ = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-        dx, dy, dtheta, frc::Rotation2d(navx_yaw));
+        vx, vy, vtheta, frc::Rotation2d(navx_yaw));
 
     //convert robot speeds into swerve module states (speed & angle of each module)
     auto [fl, fr, bl, br] = kinematics_.ToSwerveModuleStates(speeds_);

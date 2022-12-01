@@ -88,6 +88,10 @@ namespace SwerveConstants
     const double TREAD_RADIUS = 0.0508; 
     const double DRIVE_GEAR_RATIO = 1/6.12; 
 
+    //TODO: tune
+    const units::meters_per_second_t MAX_SPEED = 4_mps;
+    const units::radians_per_second_t MAX_ROT = units::radians_per_second_t{4*M_PI}; //2 revolutions per second
+
     const string testPath = "3mTest.wpilib.json";
 
     //can tune, using safe defaults

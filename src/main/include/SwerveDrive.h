@@ -37,8 +37,8 @@ class SwerveDrive
         SwerveDrive(AHRS * nx, Limelight limelight); //todo: add logger
         void setYaw(double yaw);
         
-        void Periodic(units::meters_per_second_t joy_x, units::meters_per_second_t joy_y, 
-        units::radians_per_second_t joy_theta, double turretAngle);
+        void Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, 
+        units::radians_per_second_t vtheta, double turretAngle);
 
         void initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose);
         void updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose);
@@ -66,7 +66,7 @@ class SwerveDrive
         State state_;
 
         std::pair<double, double> camToBot(double turretAngle);
-        void drive(units::meters_per_second_t dx, units::meters_per_second_t dy, units::radians_per_second_t dtheta, double turretAngle);
+        void drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle);
         void stop();
 
         frc::DifferentialDriveWheelSpeeds getDifferentialWheelSpeeds();

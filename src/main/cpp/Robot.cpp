@@ -29,22 +29,24 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  double dx = ljoy.GetRawAxis(1);
-  double dy = ljoy.GetRawAxis(0);
-  double dtheta = rjoy.GetX();
-  dx = abs(dx) < 0.1 ? 0.0: dx; 
-  dy = abs(dy) < 0.1 ? 0.0: dy;
-  dtheta = abs(dtheta) < 0.05 ? 0.0: dtheta;
+  double vx = ljoy.GetRawAxis(1);
+  double vy = ljoy.GetRawAxis(0);
+  double vtheta = rjoy.GetX();
+  //apply deadband
+  vx = abs(vx) < 0.1 ? 0.0: vx; 
+  vy = abs(vy) < 0.1 ? 0.0: vy;
+  vtheta = abs(vtheta) < 0.05 ? 0.0: vtheta;
 
-  dx = joy_val_to_mps(dx);
-  dy = joy_val_to_mps(dy);
-  dtheta = joy_rot_to_rps(dtheta);
+  //convert joystick input to desired velocities in meters or radians per second
+  vx = joy_val_to_mps(vx);
+  vy = joy_val_to_mps(vy);
+  vtheta = joy_rot_to_rps(vtheta);
   
 
   swerveDrive_->Periodic(
-    units::meters_per_second_t{dx},
-    units::meters_per_second_t{dy},
-    units::radians_per_second_t{0.7*dtheta},
+    units::meters_per_second_t{vx},
+    units::meters_per_second_t{vy},
+    units::radians_per_second_t{0.7*vtheta},
     0);
 
   //REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
@@ -63,20 +65,19 @@ void Robot::SimulationInit() {}
 
 void Robot::SimulationPeriodic() {}
 
+//NOTE: should these 2 functions go in swerve?
 /**
  * @returns joystick value converted to meters per second
- * TODO: change this to match the velocity calculations from 2022-Offseason
 **/
 double Robot::joy_val_to_mps(double val) {
-  return val*4;
+  return val* SwerveConstants::MAX_SPEED.value();
 }
 
 /**
  * @returns joystick value converted to radians per second
- * TODO: change this to match the angular velocity calculations from 2022-Offseason
 **/
 double Robot::joy_rot_to_rps(double rot) {
-  return rot * 3*3*M_PI;
+  return rot * SwerveConstants::MAX_ROT.value();
 }
 
 #ifndef RUNNING_FRC_TESTS
