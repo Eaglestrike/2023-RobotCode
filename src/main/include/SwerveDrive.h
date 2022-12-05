@@ -75,11 +75,11 @@ class SwerveDrive
         std::shared_ptr<frc2::RamseteCommand> ramseteCommand_; //will be set up in auto init
 
         frc::SwerveDriveKinematics<4> kinematics_{
-            frc::Translation2d{0.3683_m, 0.3683_m}, frc::Translation2d{0.3683_m, -0.3683_m},
-            frc::Translation2d{-0.3683_m, 0.3683_m}, frc::Translation2d{-0.3683_m, -0.3683_m}
+            frc::Translation2d{SwerveConstants::HALF_WIDTH, SwerveConstants::HALF_WIDTH}, frc::Translation2d{SwerveConstants::HALF_WIDTH, -SwerveConstants::HALF_WIDTH},
+            frc::Translation2d{-SwerveConstants::HALF_WIDTH, SwerveConstants::HALF_WIDTH}, frc::Translation2d{-SwerveConstants::HALF_WIDTH, -SwerveConstants::HALF_WIDTH}
         };
 
-        frc::DifferentialDriveKinematics diffDriveKinematics_{0.7366_m};
+        frc::DifferentialDriveKinematics diffDriveKinematics_{SwerveConstants::HALF_WIDTH*2};
 
 
         SwerveModule flModule_{SwerveConstants::FLanglePort, SwerveConstants::FLspeedPort, SwerveConstants::FLencoder, SwerveConstants::FLOFF, false};

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <frc/smartdashboard/SmartDashboard.h>
 
+//Initialize pointer objects
 void Robot::RobotInit() {
   navx_ = new AHRS(frc::SPI::Port::kMXP);
   swerveDrive_ = new SwerveDrive(navx_, limelight_);
@@ -14,9 +15,10 @@ void Robot::RobotPeriodic() {
 }
 
 void Robot::AutonomousInit() {
-  swerveDrive_->initializeAutoTraj(SwerveConstants::testPath); //todo would be done with auto chooser
+  swerveDrive_->initializeAutoTraj(SwerveConstants::testPath); //todo would be done with auto chooser depending on auto mode
 }
 
+//commented out for testing purposes
 void Robot::AutonomousPeriodic() {
   // swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
   // swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
@@ -29,6 +31,7 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
+  //get joystick input
   double vx = ljoy.GetRawAxis(1);
   double vy = ljoy.GetRawAxis(0);
   double vtheta = rjoy.GetX();
@@ -41,8 +44,8 @@ void Robot::TeleopPeriodic() {
   vx = joy_val_to_mps(vx);
   vy = joy_val_to_mps(vy);
   vtheta = joy_rot_to_rps(vtheta);
-  
 
+  //drive the robot with joystick inputs
   swerveDrive_->Periodic(
     units::meters_per_second_t{vx},
     units::meters_per_second_t{vy},
@@ -65,7 +68,7 @@ void Robot::SimulationInit() {}
 
 void Robot::SimulationPeriodic() {}
 
-//NOTE: should these 2 functions go in swerve?
+//NOTE: should these two functions go in swerve?
 /**
  * @returns joystick value converted to meters per second
 **/
