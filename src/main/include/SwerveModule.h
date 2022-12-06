@@ -7,7 +7,7 @@
 #include <string.h>
 #include "Controls.h"
 #include "Constants.h"
-#include <units/units.h> //todo only include what we need to decrease compile time
+#include <units/length.h>
 #include <frc/kinematics/SwerveDriveKinematics.h>
 #include <frc/MathUtil.h>
 
@@ -25,12 +25,13 @@ class SwerveModule
         frc::SwerveModuleState getState();
         frc::SwerveModuleState getOptState(frc::SwerveModuleState state);
         
+        units::meters_per_second_t getVelocityMPS();
         double getVelocity();
         double getYaw();
 
         void setAngMotorVoltage(double voltage);
         void setSpeedMotor(double power);
-        void setSpeedMotorVolts(units::volt_t volts);
+        void setSpeedMotorVolts(double voltage);
 
         void setP(double p){ akP_ = p; }
         void setD(double d){ akD_ = d; }

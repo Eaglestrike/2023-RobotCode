@@ -9,15 +9,17 @@ void Robot::RobotInit() {
   swerveDrive_ = new SwerveDrive(navx_, limelight_);
 }
 
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+  limelight_.lightOn(false);
+}
 
 void Robot::AutonomousInit() {
-  swerveDrive_->initializeAutoTraj(SwerveConstants::twoBallPath); //todo would be done with auto chooser
+  swerveDrive_->initializeAutoTraj(SwerveConstants::testPath); //todo would be done with auto chooser
 }
 
 void Robot::AutonomousPeriodic() {
   // swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
-  // swerveDrive_->Periodic(0); //dummy turret value of 0 for testing purposes
+  // swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
 }
 
 void Robot::TeleopInit() {
@@ -27,25 +29,28 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  double dx = ljoy.GetRawAxis(1);
-  double dy = ljoy.GetRawAxis(0);
-  double dtheta = rjoy.GetX();
-  dx = abs(dx) < 0.1 ? 0.0: dx; 
-  dy = abs(dy) < 0.1 ? 0.0: dy;
-  dtheta = abs(dtheta) < 0.05 ? 0.0: dtheta;
+  double vx = ljoy.GetRawAxis(1);
+  double vy = ljoy.GetRawAxis(0);
+  double vtheta = rjoy.GetX();
+  //apply deadband
+  vx = abs(vx) < 0.1 ? 0.0: vx; 
+  vy = abs(vy) < 0.1 ? 0.0: vy;
+  vtheta = abs(vtheta) < 0.05 ? 0.0: vtheta;
 
-  joy_val_to_mps(dx);
-  joy_val_to_mps(dy);
-  joy_rot_to_rps(dtheta);
+  //convert joystick input to desired velocities in meters or radians per second
+  vx = joy_val_to_mps(vx);
+  vy = joy_val_to_mps(vy);
+  vtheta = joy_rot_to_rps(vtheta);
+  
 
   swerveDrive_->Periodic(
-    units::meters_per_second_t{dx},
-    units::meters_per_second_t{dy},
-    units::radians_per_second_t{0.7*dtheta},
+    units::meters_per_second_t{vx},
+    units::meters_per_second_t{vy},
+    units::radians_per_second_t{0.7*vtheta},
     0);
 
   //REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
- // swerveDrive_->Periodic(0, 0_mps); //go 1 meter per second in the x direction. for testing speed tuning
+ // swerveDrive_->Periodic( 1_mps, 0_mps, 0_rad / 1_s, 0); //go 1 meter per second in the x direction. for testing speed tuning
 }
 
 void Robot::DisabledInit() {}
@@ -59,6 +64,21 @@ void Robot::TestPeriodic() {}
 void Robot::SimulationInit() {}
 
 void Robot::SimulationPeriodic() {}
+
+//NOTE: should these 2 functions go in swerve?
+/**
+ * @returns joystick value converted to meters per second
+**/
+double Robot::joy_val_to_mps(double val) {
+  return val* SwerveConstants::MAX_SPEED.value();
+}
+
+/**
+ * @returns joystick value converted to radians per second
+**/
+double Robot::joy_rot_to_rps(double rot) {
+  return rot * SwerveConstants::MAX_ROT.value();
+}
 
 #ifndef RUNNING_FRC_TESTS
 int main() {
