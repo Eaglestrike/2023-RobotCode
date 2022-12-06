@@ -25,12 +25,13 @@ class SwerveModule
         frc::SwerveModuleState getState();
         frc::SwerveModuleState getOptState(frc::SwerveModuleState state);
         
+        units::meters_per_second_t getVelocityMPS();
         double getVelocity();
         double getYaw();
 
         void setAngMotorVoltage(double voltage);
         void setSpeedMotor(double power);
-        void setSpeedMotorVolts(units::volt_t volts);
+        void setSpeedMotorVolts(double voltage);
 
         void setP(double p){ akP_ = p; }
         void setD(double d){ akD_ = d; }

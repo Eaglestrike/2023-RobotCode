@@ -90,7 +90,11 @@ namespace SwerveConstants
     const double TREAD_RADIUS = 0.0508; 
     const double DRIVE_GEAR_RATIO = 1/6.12; 
 
-    const string twoBallPath = "TwoBall.wpilib.json";
+    //TODO: tune
+    const units::meters_per_second_t MAX_SPEED = 4_mps;
+    const units::radians_per_second_t MAX_ROT = units::radians_per_second_t{4*M_PI}; //2 revolutions per second
+
+    const string testPath = "3mTest.wpilib.json";
 
     //can tune, using safe defaults
     const units::meters_per_second_t kMaxSpeed = 3_mps;
@@ -125,12 +129,12 @@ namespace SwerveConstants
     const double kRamseteB = 2;
     const double kRamseteZeta = 0.7;
 
-    const double P = 0.08;
+    const double P = 0.06;
     const double I = 0.1;
     const double D = 0.0;
 
-    const double sP = 0.06;
-    const double sI = 0.1;
+    const double sP = 4.4145;
+    const double sI = 0.0;
     const double sD = 0.0;
 
     const double MAX_LA = 2;

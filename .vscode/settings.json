@@ -83,6 +83,26 @@
     "xlocmon": "cpp",
     "xloctime": "cpp",
     "xtree": "cpp",
-    "*.inc": "cpp"
+    "*.inc": "cpp",
+    "array": "cpp",
+    "hash_map": "cpp",
+    "hash_set": "cpp",
+    "*.tcc": "cpp",
+    "codecvt": "cpp",
+    "complex": "cpp",
+    "condition_variable": "cpp",
+    "cstdarg": "cpp",
+    "cwctype": "cpp",
+    "deque": "cpp",
+    "unordered_set": "cpp",
+    "filesystem": "cpp",
+    "memory_resource": "cpp",
+    "numeric": "cpp",
+    "random": "cpp",
+    "set": "cpp",
+    "string_view": "cpp",
+    "fstream": "cpp",
+    "future": "cpp",
+    "cinttypes": "cpp"
   }
 }
