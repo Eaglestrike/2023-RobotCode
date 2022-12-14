@@ -4,6 +4,7 @@
 #include <units/velocity.h>
 #include <units/acceleration.h>
 #include <units/voltage.h>
+#include <units/angular_velocity.h>
 #include "string"
 #include "frc/I2C.h"
 #include <frc/Filesystem.h>
@@ -97,8 +98,8 @@ namespace SwerveConstants
     const string testPath = "3mTest.wpilib.json";
 
     //can tune, using safe defaults
-    const units::meters_per_second_t kMaxSpeed = 3_mps;
-    const units::meters_per_second_squared_t kMaxAccel = 1_m / (1_s * 1_s);
+    const units::meters_per_second_t kMaxSpeed = 1_mps;
+    const units::meters_per_second_squared_t kMaxAccel = 0.5_m / (1_s * 1_s);
 
     const int FRspeedPort = 13; //13, 3
     const int FLspeedPort = 11; //11, 1
@@ -121,19 +122,21 @@ namespace SwerveConstants
     const double BLOFF = -139.92 + 180; // 356.39
 
     //TODO: tune, these are dummy values
-    const auto ks = 0.22_V;
-    const auto kv = 1.98 * 1_V * 1_s / 1_m;
-    const auto ka = 0.2 * 1_V * 1_s * 1_s / 1_m;
+    const auto ks = 0.24387_V;
+    const auto kv = 2.1675 * 1_V * 1_s / 1_m;
+    const auto ka = 0.27807 * 1_V * 1_s * 1_s / 1_m;
     
     //WPILib says these are good?
     const double kRamseteB = 2;
     const double kRamseteZeta = 0.7;
 
+    //turning swerve motor pid
     const double P = 0.06;
     const double I = 0.1;
     const double D = 0.0;
 
-    const double sP = 4.4145;
+    //driving swerve motor pid
+    const double sP = 0.0;//6; 
     const double sI = 0.0;
     const double sD = 0.0;
 

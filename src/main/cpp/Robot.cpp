@@ -18,8 +18,8 @@ void Robot::AutonomousInit() {
 }
 
 void Robot::AutonomousPeriodic() {
-  // swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
-  // swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
+  swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
+  swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
 }
 
 void Robot::TeleopInit() {
@@ -29,8 +29,8 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  double vx = ljoy.GetRawAxis(1);
-  double vy = ljoy.GetRawAxis(0);
+  double vx = ljoy.GetY();
+  double vy = ljoy.GetX();
   double vtheta = rjoy.GetX();
   //apply deadband
   vx = abs(vx) < 0.1 ? 0.0: vx; 
@@ -42,15 +42,14 @@ void Robot::TeleopPeriodic() {
   vy = joy_val_to_mps(vy);
   vtheta = joy_rot_to_rps(vtheta);
   
-
   swerveDrive_->Periodic(
     units::meters_per_second_t{vx},
     units::meters_per_second_t{vy},
-    units::radians_per_second_t{0.7*vtheta},
+    units::radians_per_second_t{vtheta},
     0);
 
-  //REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
- // swerveDrive_->Periodic( 1_mps, 0_mps, 0_rad / 1_s, 0); //go 1 meter per second in the x direction. for testing speed tuning
+// REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
+ //swerveDrive_->Periodic( 0.5_mps, 0_mps, 0_rad / 1_s, 0); //go 1 meter per second in the x direction. for testing speed tuning
 }
 
 void Robot::DisabledInit() {}

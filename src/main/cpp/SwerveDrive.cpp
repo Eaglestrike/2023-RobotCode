@@ -13,9 +13,9 @@ SwerveDrive::SwerveDrive(AHRS * nx, Limelight limelight): navx_{nx}, limelight_{
 }
 
 void SwerveDrive::configSpeedPID(double P, double I, double D) {
-    angPID_.SetP(P);
-    angPID_.SetI(I);
-    angPID_.SetD(D);
+    speedPID_.SetP(P);
+    speedPID_.SetI(I);
+    speedPID_.SetD(D);
 }
 
 /**
@@ -141,50 +141,44 @@ void SwerveDrive::drive(units::meters_per_second_t vx, units::meters_per_second_
     auto br_opt = brModule_.getOptState(br);
 
     //set motor outputs
-    //TODO: tune drive pid
     flModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(flModule_.getYaw(), fl_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    flModule_.setSpeedMotor( 0.2*std::clamp(fl_opt.speed.value(), -1.0, 1.0) );
-    // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
-    // flModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(flModule_.getVelocityMPS().value(), fl_opt.speed.value())
-    //     + speedFeedforward_.Calculate(fl_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+    flModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(flModule_.getVelocityMPS().value(), fl_opt.speed.value())
+        + speedFeedforward_.Calculate(fl_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+
 
     frModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(frModule_.getYaw(), fr_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    frModule_.setSpeedMotor( 0.2*std::clamp(fr_opt.speed.value(), -1.0, 1.0) );
-    // frc::SmartDashboard::PutNumber("fr speed error", fr_opt.speed.value() - frModule_.getVelocityMPS().value());
-    // frModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(frModule_.getVelocityMPS().value(), fr_opt.speed.value())
-    //     + speedFeedforward_.Calculate(fr_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+    frModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(frModule_.getVelocityMPS().value(), fr_opt.speed.value())
+        + speedFeedforward_.Calculate(fr_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+
 
     blModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(blModule_.getYaw(), bl_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    blModule_.setSpeedMotor( 0.2*std::clamp(bl_opt.speed.value(), -1.0, 1.0) );
-    //frc::SmartDashboard::PutNumber("bl speed error", bl_opt.speed.value() - blModule_.getVelocityMPS().value());
-    // blModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(blModule_.getVelocityMPS().value(), bl_opt.speed.value())
-    //     + speedFeedforward_.Calculate(bl_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+    blModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(blModule_.getVelocityMPS().value(), bl_opt.speed.value())
+        + speedFeedforward_.Calculate(bl_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+
 
     brModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(brModule_.getYaw(), br_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    brModule_.setSpeedMotor( 0.2*std::clamp(br_opt.speed.value(), -1.0, 1.0) );
-    // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
-    // brModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(brModule_.getVelocityMPS().value(), br_opt.speed.value())
-    //     + speedFeedforward_.Calculate(br_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+    brModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(brModule_.getVelocityMPS().value(), br_opt.speed.value())
+        + speedFeedforward_.Calculate(br_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
 }
 
