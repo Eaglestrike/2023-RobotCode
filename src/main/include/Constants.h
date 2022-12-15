@@ -136,7 +136,7 @@ namespace SwerveConstants
     const double D = 0.0;
 
     //driving swerve motor pid
-    const double sP = 0.0;//6; 
+    const double sP = 0.0; //6; 
     const double sI = 0.0;
     const double sD = 0.0;
 
