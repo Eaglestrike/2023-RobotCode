@@ -38,14 +38,23 @@ SwerveDrive::State SwerveDrive::getState() {
  * @param initPose the robots initial position on the field
 **/
 void SwerveDrive::initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose) {
-    odometry_ = new frc::SwerveDriveOdometry<4>(kinematics_, gyroAngle, initPose);
+    odometry_ = new frc::SwerveDriveOdometry<4>(
+        kinematics_, 
+        gyroAngle, 
+        getModulePositions(), 
+        initPose
+    );
 }
 
 /**
  * Updates or resets the odometry position to the given position and orientation
 **/
-void SwerveDrive::updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose) {
-    odometry_->ResetPosition(robotPose, robotAngle);
+void SwerveDrive:: updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose) {
+    odometry_->ResetPosition(
+        robotAngle, 
+        getModulePositions(),
+        robotPose
+    );
 }
 
 /**
@@ -86,7 +95,7 @@ frc::DifferentialDriveWheelSpeeds SwerveDrive::getDifferentialWheelSpeeds() {
 void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle) {
 
     //update odometry no matter the state
-    odometry_->Update(units::degree_t{navx_->GetYaw()}, getRealModuleStates());
+    odometry_->Update(units::degree_t{navx_->GetYaw()}, getModulePositions());
     lPose_ = limelight_.getPose(navx_->GetYaw(), turretAngle);
 
     /** Limelight error checking
@@ -108,7 +117,7 @@ void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_seco
             break;
         case PATH_FOLLOW:
             ramseteCommand_->Execute();
-            odometry_->Update(units::degree_t{navx_->GetYaw()}, getRealModuleStates());
+            odometry_->Update(units::degree_t{navx_->GetYaw()}, getModulePositions());
             break;
         case STOP:
             stop();
@@ -290,6 +299,14 @@ double SwerveDrive::getDistance(double turretAngle)
     double limelightTtoGoalY = odometry_->GetPose().Y().value() + limelightToRobot.second;
 
     return sqrt(limelightToGoalX * limelightToGoalX + limelightTtoGoalY * limelightTtoGoalY);
+}
+
+/**
+ * @return array of SwerveModulePositions
+**/
+wpi::array<frc::SwerveModulePosition, 4> SwerveDrive::getModulePositions() 
+{
+    return {flModule_.getPosition(), frModule_.getPosition(), blModule_.getPosition(), brModule_.getPosition()};
 }
 
 /**

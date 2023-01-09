@@ -8,6 +8,7 @@
 #include "string"
 #include "frc/I2C.h"
 #include <frc/Filesystem.h>
+#include <frc/controller/RamseteController.h>
 
 using namespace std;
 
@@ -127,8 +128,8 @@ namespace SwerveConstants
     const auto ka = 0.2 * 1_V * 1_s * 1_s / 1_m;
     
     //WPILib says these are good?
-    const double kRamseteB = 2;
-    const double kRamseteZeta = 0.7;
+    const units::unit_t<frc::RamseteController::b_unit> kRamseteB = units::unit_t<frc::RamseteController::b_unit>{2};
+    const units::unit_t<frc::RamseteController::zeta_unit> kRamseteZeta = units::unit_t<frc::RamseteController::zeta_unit>{0.7};
 
     const double P = 0.06;
     const double I = 0.1;
