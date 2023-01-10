@@ -26,7 +26,7 @@ class Robot : public frc::TimedRobot {
     void SimulationPeriodic() override;
 
  private:
-   AHRS * navx_; //can't be initialized as reference because doesn't have a constructor :(
+   AHRS * navx_; //can't be initialized by compiler because doesn't have a constructor :(
    SwerveDrive * swerveDrive_; //pointer because it relies on navx being initialized
    Limelight limelight_;
    network_library::NetworkClient * jetson_client_;
