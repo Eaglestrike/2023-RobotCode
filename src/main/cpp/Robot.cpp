@@ -7,6 +7,8 @@
 void Robot::RobotInit() {
   navx_ = new AHRS(frc::SPI::Port::kMXP);
   swerveDrive_ = new SwerveDrive(navx_, limelight_);
+  jetson_client_ = new network_library::NetworkClient("10.1.14.42", 65432);
+  jetson_client_->send("HELLO");
 }
 
 void Robot::RobotPeriodic() {
@@ -20,6 +22,10 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {
   // swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
   // swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
+
+  // TODO: receive() returns a std::string message from the jetson, so do something with that lmao
+  // NOTE: if there's no data from the jetson this function will return empty string!
+  jetson_client_->receive();
 }
 
 void Robot::TeleopInit() {
@@ -51,6 +57,10 @@ void Robot::TeleopPeriodic() {
 
   //REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
  // swerveDrive_->Periodic( 1_mps, 0_mps, 0_rad / 1_s, 0); //go 1 meter per second in the x direction. for testing speed tuning
+
+  // TODO: receive() returns a std::string message from the jetson, so do something with that lmao
+  // NOTE: if there's no data from the jetson this function will return empty string!
+  jetson_client_->receive();
 }
 
 void Robot::DisabledInit() {}

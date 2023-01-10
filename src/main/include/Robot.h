@@ -8,6 +8,7 @@
 #include "Limelight.h"
 #include "frc/Joystick.h"
 #include "Constants.h"
+#include "network_library.h"
 
 class Robot : public frc::TimedRobot {
  public:
@@ -28,6 +29,7 @@ class Robot : public frc::TimedRobot {
    AHRS * navx_; //can't be initialized as reference because doesn't have a constructor :(
    SwerveDrive * swerveDrive_; //pointer because it relies on navx being initialized
    Limelight limelight_;
+   network_library::NetworkClient * jetson_client_;
 
    frc::Joystick ljoy{InputConstants::LJOY_PORT};
    frc::Joystick rjoy{InputConstants::RJOY_PORT};
