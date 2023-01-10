@@ -5,7 +5,7 @@
 
     // Set the Docker image to use
     // I will explain this below
-    "image":"wpilib/ubuntu-base:2023-22.04",
+    "image":"wpilib/ubuntu-base:22.04",
 
     // Set any default VSCode settings here
     "settings": {
