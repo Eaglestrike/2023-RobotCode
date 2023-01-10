@@ -65,6 +65,8 @@ class SwerveDrive
         frc::Pose2d lPose_; //public so limelight calculation will only happen once per period to save time
         State state_;
 
+        wpi::array<frc::SwerveModulePosition, 4> getModulePositions();
+
         std::pair<double, double> camToBot(double turretAngle);
         void drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle);
         void stop();
