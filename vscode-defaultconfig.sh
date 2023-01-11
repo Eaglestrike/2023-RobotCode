@@ -10,7 +10,7 @@ fi
 
 if [ -e .vscode/launch.json.default ]
  then cp .vscode/launch.json.default .vscode/launch.json
-fi
+fifff
 
 if [ -e .vscode/extensions.json.default ]
  then cp .vscode/extensions.json.default .vscode/extensions.json
