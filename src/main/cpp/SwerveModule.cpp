@@ -23,7 +23,7 @@ units::meters_per_second_t SwerveModule::talonVelToMps(double vel)
 {
     double wheel_radius = 0.05;                      // in meters
     double meters_per_rev = wheel_radius * 2 * M_PI; // wheel circumberence
-    double ticks_per_rev = 12650;
+    double ticks_per_rev = SwerveConstants::TICKS_PER_REV;
     return units::meters_per_second_t{vel / 0.1 * (meters_per_rev / ticks_per_rev)};
 }
 
