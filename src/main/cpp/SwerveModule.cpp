@@ -36,7 +36,7 @@ frc::SwerveModuleState SwerveModule::getState()
     frc::SwerveModuleState state;
     state.speed = talonVelToMps(speedMotor_.GetSelectedSensorVelocity());
     //converts module's angle (normalized to [-180, 180]) to a Rotation2d object
-    state.angle = frc::Rotation2d{units::angle::degree_t{frc::InputModulus(angleMotor_.GetSelectedSensorVelocity() + offset_, -180.0, 180.0)}};
+    state.angle = frc::Rotation2d{units::angle::degree_t{frc::InputModulus(canCoder_.GetAbsolutePosition() + offset_, -180.0, 180.0)}};
     return state;
 }
 

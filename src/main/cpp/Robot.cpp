@@ -48,7 +48,6 @@ void Robot::TeleopPeriodic() {
     units::radians_per_second_t{vtheta},
     0);
 
-// REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
  //swerveDrive_->Periodic( 0.5_mps, 0_mps, 0_rad / 1_s, 0); //go 1 meter per second in the x direction. for testing speed tuning
 }
 
