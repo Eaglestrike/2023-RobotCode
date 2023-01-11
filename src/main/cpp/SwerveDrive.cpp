@@ -16,9 +16,9 @@ SwerveDrive::SwerveDrive(AHRS * nx, Limelight limelight): navx_{nx}, limelight_{
  * Can be called when tuning the swerve module PID
 **/
 void SwerveDrive::configSpeedPID(double P, double I, double D) {
-    angPID_.SetP(P);
-    angPID_.SetI(I);
-    angPID_.SetD(D);
+    speedPID_.SetP(P);
+    speedPID_.SetI(I);
+    speedPID_.SetD(D);
 }
 
 /**
@@ -62,7 +62,7 @@ void SwerveDrive::initializeAutoTraj(std::string filePath) {
 /**
  * @returns moduleStates, an array that contains the speed and angle of each swerve module as a SwerveModuleState
 **/
-wpi::array<frc::SwerveModuleState, 4> SwerveDrive::getRealModuleStates() {
+wpi::array<frc::SwerveModuleState, 4> SwerveDrive::getRealModuleStates() {    
     wpi::array<frc::SwerveModuleState, 4> moduleStates = {
         flModule_.getState(), frModule_.getState(), blModule_.getState(), brModule_.getState() };
     return moduleStates;
@@ -74,8 +74,12 @@ wpi::array<frc::SwerveModuleState, 4> SwerveDrive::getRealModuleStates() {
 **/
 frc::DifferentialDriveWheelSpeeds SwerveDrive::getDifferentialWheelSpeeds() {
     auto moduleStates = getRealModuleStates();
-    double leftSpeed = (moduleStates[0].speed() + moduleStates[2].speed())/2;
-    double rightSpeed = (moduleStates[1].speed() + moduleStates[3].speed())/2;
+    double leftSpeed = (moduleStates[0].speed.value() + moduleStates[2].speed.value())/2;
+    double rightSpeed = (moduleStates[1].speed.value() + moduleStates[3].speed.value())/2;
+
+    frc::SmartDashboard::PutNumber("left speed", leftSpeed);
+    frc::SmartDashboard::PutNumber("right speed", rightSpeed);
+
     return {units::meters_per_second_t(leftSpeed), units::meters_per_second_t(rightSpeed)};
 }
 
@@ -89,7 +93,7 @@ frc::DifferentialDriveWheelSpeeds SwerveDrive::getDifferentialWheelSpeeds() {
 void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle) {
 
     //update odometry no matter the state
-    odometry_->Update(units::degree_t{navx_->GetYaw()}, getRealModuleStates());
+    odometry_->Update(units::degree_t{-navx_->GetYaw()}, getRealModuleStates());
     lPose_ = limelight_.getPose(navx_->GetYaw(), turretAngle);
 
     /** Limelight error checking
@@ -111,7 +115,6 @@ void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_seco
             break;
         case PATH_FOLLOW:
             ramseteCommand_->Execute();
-            odometry_->Update(units::degree_t{navx_->GetYaw()}, getRealModuleStates());
             break;
         case STOP:
             stop();
@@ -144,50 +147,48 @@ void SwerveDrive::drive(units::meters_per_second_t vx, units::meters_per_second_
     auto br_opt = brModule_.getOptState(br);
 
     //set motor outputs
-    //TODO: tune drive pid
     flModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(flModule_.getYaw(), fl_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    flModule_.setSpeedMotor( 0.2*std::clamp(fl_opt.speed.value(), -1.0, 1.0) );
-    // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
-    // flModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(flModule_.getVelocityMPS().value(), fl_opt.speed.value())
-    //     + speedFeedforward_.Calculate(fl_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+   // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
+    flModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(flModule_.getVelocityMPS().value(), fl_opt.speed.value())
+        + speedFeedforward_.Calculate(fl_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+
 
     frModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(frModule_.getYaw(), fr_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    frModule_.setSpeedMotor( 0.2*std::clamp(fr_opt.speed.value(), -1.0, 1.0) );
-    // frc::SmartDashboard::PutNumber("fr speed error", fr_opt.speed.value() - frModule_.getVelocityMPS().value());
-    // frModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(frModule_.getVelocityMPS().value(), fr_opt.speed.value())
-    //     + speedFeedforward_.Calculate(fr_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+ //   frc::SmartDashboard::PutNumber("fr speed error", fr_opt.speed.value() - frModule_.getVelocityMPS().value());
+    frModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(frModule_.getVelocityMPS().value(), fr_opt.speed.value())
+        + speedFeedforward_.Calculate(fr_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+
 
     blModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(blModule_.getYaw(), bl_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    blModule_.setSpeedMotor( 0.2*std::clamp(bl_opt.speed.value(), -1.0, 1.0) );
-    //frc::SmartDashboard::PutNumber("bl speed error", bl_opt.speed.value() - blModule_.getVelocityMPS().value());
-    // blModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(blModule_.getVelocityMPS().value(), bl_opt.speed.value())
-    //     + speedFeedforward_.Calculate(bl_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+ //   frc::SmartDashboard::PutNumber("bl speed error", bl_opt.speed.value() - blModule_.getVelocityMPS().value());
+    blModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(blModule_.getVelocityMPS().value(), bl_opt.speed.value())
+        + speedFeedforward_.Calculate(bl_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+
 
     brModule_.setAngMotorVoltage( std::clamp(
         angPID_.Calculate(brModule_.getYaw(), br_opt.angle.Degrees().value()),
         -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
-    brModule_.setSpeedMotor( 0.2*std::clamp(br_opt.speed.value(), -1.0, 1.0) );
-    // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
-    // brModule_.setSpeedMotorVolts( std::clamp(
-    //     speedPID_.Calculate(brModule_.getVelocityMPS().value(), br_opt.speed.value())
-    //     + speedFeedforward_.Calculate(br_opt.speed).value(),
-    //     -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+  //  frc::SmartDashboard::PutNumber("br speed error", br_opt.speed.value() - brModule_.getVelocityMPS().value());
+    brModule_.setSpeedMotorVolts( std::clamp(
+        speedPID_.Calculate(brModule_.getVelocityMPS().value(), br_opt.speed.value())
+        + speedFeedforward_.Calculate(br_opt.speed).value(),
+        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
 
 }
 
@@ -196,8 +197,14 @@ void SwerveDrive::drive(units::meters_per_second_t vx, units::meters_per_second_
 **/
 void SwerveDrive::differentialDrive(units::volt_t leftVolts, units::volt_t rightVolts) {
     //voltage constraints
-    double leftVoltsRaw = std::clamp(leftVolts.value(), -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE);
-    double rightVoltsRaw = std::clamp(rightVolts.value(), -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE);
+    double leftVoltsRaw = std::clamp(leftVolts.value(), -5.0, 5.0);
+    double rightVoltsRaw = std::clamp(rightVolts.value(), -5.0, 5.0);
+
+    frc::SmartDashboard::PutNumber("left volts", leftVoltsRaw);
+    frc::SmartDashboard::PutNumber("right volts", rightVoltsRaw);
+
+    frc::SmartDashboard::PutNumber("Odom x", odometry_->GetPose().X().value());
+    frc::SmartDashboard::PutNumber("Odom y", odometry_->GetPose().Y().value());
 
     flModule_.setSpeedMotorVolts(leftVoltsRaw);
     blModule_.setSpeedMotorVolts(leftVoltsRaw);

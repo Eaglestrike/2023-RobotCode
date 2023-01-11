@@ -404,7 +404,7 @@ Limelight::sortCorners(LLRectangle rectCorners) {
             counter ++;
         }
         else {
-            std::cout << "Something went wrong... more than 2 corners on bottom\n";
+           // std::cout << "Something went wrong... more than 2 corners on bottom\n";
         }
     }
 
@@ -432,7 +432,7 @@ Limelight::getCoords(std::vector<double> llpython) {
     std::vector<LLRectangle> corners = getCorners(llpython);
     
     if (corners.size() < 3) { //
-        std::cout << "sus\n";
+      //  std::cout << "sus\n";
     }
 
     std::vector<LL3DCoordinate> coords = std::vector<LL3DCoordinate> ();

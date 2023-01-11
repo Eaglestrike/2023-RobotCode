@@ -20,8 +20,8 @@ void Robot::AutonomousInit() {
 
 //commented out for testing purposes
 void Robot::AutonomousPeriodic() {
-  // swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
-  // swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
+  swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
+  swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
 }
 
 void Robot::TeleopInit() {
@@ -31,9 +31,8 @@ void Robot::TeleopInit() {
 
 void Robot::TeleopPeriodic() {
 
-  //get joystick input
-  double vx = ljoy.GetRawAxis(1);
-  double vy = ljoy.GetRawAxis(0);
+  double vx = ljoy.GetY();
+  double vy = ljoy.GetX();
   double vtheta = rjoy.GetX();
   //apply deadband
   vx = abs(vx) < 0.1 ? 0.0: vx; 
@@ -49,11 +48,9 @@ void Robot::TeleopPeriodic() {
   swerveDrive_->Periodic(
     units::meters_per_second_t{vx},
     units::meters_per_second_t{vy},
-    units::radians_per_second_t{0.7*vtheta},
+    units::radians_per_second_t{vtheta},
     0);
 
-  //REMEMBER TO COMMENT IN USE OF SPEED PID BEFORE TESTING
- // swerveDrive_->Periodic( 1_mps, 0_mps, 0_rad / 1_s, 0); //go 1 meter per second in the x direction. for testing speed tuning
 }
 
 void Robot::DisabledInit() {}
