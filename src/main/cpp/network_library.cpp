@@ -4,14 +4,36 @@
 #include <cstring>
 #include <iostream>
 
+#ifdef _WIN32
+// Note: No windows support for now
+#else
 extern "C" {
 #include <fcntl.h>
 }
-
+#endif
 
 namespace network_library
 {
+	
+#ifdef _WIN32
+// Stub out functions since there's no windows support yet
+NetworkClient::NetworkClient(const std::string& remote_addr, const int port)
+    : m_sockfd(0)
+    , m_remote_addr()
+    , m_recv_buffer(0)
+{}
 
+int NetworkClient::send(const std::string& message)
+{ return 0; }
+
+std::string NetworkClient::receive()
+{ return ""; }
+
+NetworkClient::~NetworkClient()
+{}
+	
+#else
+// normal roborio implementation	
 NetworkClient::NetworkClient(const std::string& remote_addr, const int port)
     : m_sockfd(socket(PF_INET, SOCK_DGRAM, 0))
     , m_remote_addr()
@@ -94,5 +116,7 @@ NetworkClient::~NetworkClient()
         close(m_sockfd);
     }
 }
+
+#endif
 
 }
