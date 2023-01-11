@@ -3,11 +3,15 @@
 #include <string>
 #include <vector>
 
+#ifdef _WIN32
+// no windows support necessary
+#else
 extern "C" {
 #include <arpa/inet.h>
 #include <sys/socket.h>
 #include <unistd.h>
 }
+#endif
 
 
 namespace network_library {
@@ -26,7 +30,11 @@ public:
 
 private:
     int m_sockfd;
+    #ifdef _WIN32
+    // TODO add windows socket here
+    #else
     struct sockaddr_in m_remote_addr;
+    #endif
     std::vector<char> m_recv_buffer;
 };
 
