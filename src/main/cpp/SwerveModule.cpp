@@ -22,8 +22,8 @@ speedMotor_{speedMotorPort, "Drivebase"}, canCoder_{canCoderPort, "Drivebase"}, 
 units::meters_per_second_t SwerveModule::talonVelToMps(double vel)
 {
     double wheel_radius = 0.05;                      // in meters
-    double meters_per_rev = wheel_radius * 2 * M_PI; // wheel circumference
-    double ticks_per_rev = 12650;
+    double meters_per_rev = wheel_radius * 2 * M_PI; // wheel circumberence
+    double ticks_per_rev = SwerveConstants::TICKS_PER_REV;
     return units::meters_per_second_t{vel / 0.1 * (meters_per_rev / ticks_per_rev)};
 }
 
@@ -50,7 +50,7 @@ frc::SwerveModuleState SwerveModule::getState()
     frc::SwerveModuleState state;
     state.speed = talonVelToMps(speedMotor_.GetSelectedSensorVelocity());
     //converts module's angle (normalized to [-180, 180]) to a Rotation2d object
-    state.angle = frc::Rotation2d{units::angle::degree_t{frc::InputModulus(angleMotor_.GetSelectedSensorVelocity() + offset_, -180.0, 180.0)}};
+    state.angle = frc::Rotation2d{units::angle::degree_t{frc::InputModulus(canCoder_.GetAbsolutePosition() + offset_, -180.0, 180.0)}};
     return state;
 }
 

@@ -1,6 +1,12 @@
 #include "Limelight.h"
 
 
+/** 
+ * Many things in this class are unique to the 2022 game. Since we don't know how much of this will be useful in the 2023 game
+ * (we're still figuring out what our vision system will be), this class is mostly frozen until we know what we're doing with it
+**/
+
+
 /**
  * Initializes limelight object. Initializes network table (used to communicate with limelight)
 **/
@@ -398,7 +404,7 @@ Limelight::sortCorners(LLRectangle rectCorners) {
             counter ++;
         }
         else {
-            std::cout << "Something went wrong... more than 2 corners on bottom\n";
+           // std::cout << "Something went wrong... more than 2 corners on bottom\n";
         }
     }
 
@@ -426,7 +432,7 @@ Limelight::getCoords(std::vector<double> llpython) {
     std::vector<LLRectangle> corners = getCorners(llpython);
     
     if (corners.size() < 3) { //
-        std::cout << "sus\n";
+      //  std::cout << "sus\n";
     }
 
     std::vector<LL3DCoordinate> coords = std::vector<LL3DCoordinate> ();
@@ -557,16 +563,6 @@ Limelight::getYOff(){
 bool Limelight::hasTarget()
 {
   //  return network_table->GetNumber("tv", 0) != 0;
-
-   // double targets = network_table->GetNumber("tv", -1);
-    // if(targets == -1 || targets == 0)
-    // {
-    //     return false;
-    // } 
-    // else 
-    // {
-    //     return true;
-    // }
 
     return getLLPython().size() > 0;
 }
