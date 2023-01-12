@@ -28,6 +28,20 @@ units::meters_per_second_t SwerveModule::talonVelToMps(double vel)
 }
 
 /**
+ * @returns a SwerveModulePosition with distance and angle of the swerve module
+**/
+frc::SwerveModulePosition SwerveModule::getPosition()
+{
+    double wheel_radius = 0.05;                      // in meters
+    double meters_per_rev = wheel_radius * 2 * M_PI; // wheel circumference
+    double ticks_per_rev = 12650;
+    return {
+        units::meter_t{speedMotor_.GetSelectedSensorPosition()/ticks_per_rev/360*meters_per_rev},
+        units::angle::degree_t{frc::InputModulus(angleMotor_.GetSelectedSensorVelocity() + offset_, -180.0, 180.0)}
+    };
+}
+
+/**
  * Gets the drive speed and angle of a swerve module
  * @returns a SwerveModuleState encapsulating that info
 **/

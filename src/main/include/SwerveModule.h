@@ -22,6 +22,7 @@ class SwerveModule
         double calcDrivePID(double driveSpeed);
         double findError(double setAngle, double angle);
 
+        frc::SwerveModulePosition getPosition();
         frc::SwerveModuleState getState();
         frc::SwerveModuleState getOptState(frc::SwerveModuleState state);
         
