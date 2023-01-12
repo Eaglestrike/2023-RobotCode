@@ -13,8 +13,8 @@
 Limelight::Limelight(){
     network_table = nt::NetworkTableInstance::GetDefault().GetTable(table_name);
     //add listener to llpython entry to update lastUpdated_ with timestamp
-    std::function<void(const nt::EntryNotification& event)> lambda = [this] (nt::EntryNotification event) {lastUpdated_ = frc::Timer::GetFPGATimestamp().value(); };
-    network_table->GetEntry("llpython").AddListener(lambda, nt::EntryListenerFlags::kNew | nt::EntryListenerFlags::kUpdate);
+    // std::function<void(const nt::EntryNotification& event)> lambda = [this] (nt::EntryNotification event) {lastUpdated_ = frc::Timer::GetFPGATimestamp().value(); };
+    // network_table->GetEntry("llpython").AddListener(lambda, nt::EntryListenerFlags::kNew | nt::EntryListenerFlags::kUpdate);
 }
 
 /**
