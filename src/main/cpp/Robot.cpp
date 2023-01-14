@@ -3,14 +3,29 @@
 #include <fmt/core.h>
 #include <iostream>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DataLogManager.h>
 
 //Initialize pointer objects
 void Robot::RobotInit() {
   navx_ = new AHRS(frc::SPI::Port::kMXP);
   swerveDrive_ = new SwerveDrive(navx_);
+
+  // logging setup
+  frc::DataLogManager::Start();
+
+  wpi::log::DataLog& log = frc::DataLogManager::GetLog();
+  swerveX = wpi::log::DoubleLogEntry(log, "swerve.X");
+  swerveY = wpi::log::DoubleLogEntry(log, "swerve.Y");
 }
 
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+
+  // log value of registered data fields
+  swerveX.Append(swerveDrive_->getX());
+  swerveY.Append(swerveDrive_->getY());
+  
+}
+
 
 void Robot::AutonomousInit() {
   swerveDrive_->initializeAutoTraj(SwerveConstants::testPath); //todo would be done with auto chooser depending on auto mode

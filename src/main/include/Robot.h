@@ -7,6 +7,7 @@
 #include "SwerveDrive.h"
 #include "frc/Joystick.h"
 #include "Constants.h"
+#include <wpi/DataLog.h>
 
 class Robot : public frc::TimedRobot {
  public:
@@ -32,4 +33,7 @@ class Robot : public frc::TimedRobot {
 
    double joy_val_to_mps(double val);
    double joy_rot_to_rps(double rot); 
+
+   wpi::log::DoubleLogEntry swerveX;
+   wpi::log::DoubleLogEntry swerveY;
 };
