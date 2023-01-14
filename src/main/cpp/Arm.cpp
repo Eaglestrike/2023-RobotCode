@@ -5,6 +5,8 @@ void Arm::init(){
         frc::SmartDashboard::PutNumber("Base Length", m_baseArmLength);
         frc::SmartDashboard::PutNumber("Top Length", m_topArmLength);
         frc::SmartDashboard::PutNumber("Pivot Height", m_pivotHeight);
+        frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
+        frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
     }
     if(configPID){
         frc::SmartDashboard::PutNumber("Max Volts", m_maxVolts);
@@ -20,25 +22,35 @@ void Arm::init(){
 void Arm::periodic(){
     //Very basic joint space implementation
     if(m_targetZ < 0.0){//If target is under the floor
+        frc::SmartDashboard::PutBoolean("Target", false);
         return;
     }
-    double targetdy = m_pivotHeight - m_targetZ;
-    double distance = sqrt((m_targetX*m_targetX) + (targetdy*targetdy));
+    double targetdz = m_pivotHeight - m_targetZ;
+    double distance = sqrt((m_targetX*m_targetX) + (targetdz*targetdz));
     if(distance > m_baseArmLength + m_topArmLength){
+        frc::SmartDashboard::PutBoolean("Target", false);
         return;
     }
+    frc::SmartDashboard::PutBoolean("Target", true);
+    double angle = atan2(targetdz, m_targetX);//Angle to target
     //Finding ideal angles
     //https://www.google.com/search?q=law+of+cosine
     double a = m_baseArmLength;
     double b = m_topArmLength;
     double c = distance;
-    double baseArmAng = acos(((c*c)-(a*a)-(b*b))/(2*a*b)); //Angle between 2 arms
+    double topArmAng = acos(((c*c)-(a*a)-(b*b))/(2*a*b)); //Angle between 2 arms
     //https://www.google.com/search?q=law+of+sines
-    double topArmAng = (sin(baseArmAng)/c) * b; //Angle of base arm
+    double baseArmAng = (sin(baseArmAng)/c) * b; //Angle of base arm
+    if(m_targetX > 0){
+        topArmAng = -topArmAng;
+    }
+    else{
+        baseArmAng = -baseArmAng;
+    }
 
     //Difference of angles (dAng) ~ error
-    double dAngBase = getAngDiff(getAng(m_baseMotor), baseArmAng);
-    double dAngTop = getAngDiff(getAng(m_baseMotor), topArmAng);
+    double dAngBase = getAngDiff(getAng(m_baseMotor), baseArmAng + angle + m_angOffsetBase);
+    double dAngTop = getAngDiff(getAng(m_baseMotor), topArmAng + m_angOffsetTop);
 
     double pidBaseOutput = m_pidBase.Calculate(dAngBase);
     double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
@@ -52,6 +64,8 @@ void Arm::periodic(){
         m_baseArmLength = frc::SmartDashboard::GetNumber("Base Length", m_baseArmLength);
         m_topArmLength = frc::SmartDashboard::GetNumber("Top Length", m_topArmLength);
         m_pivotHeight = frc::SmartDashboard::GetNumber("Pivot Height", m_pivotHeight);
+        m_angOffsetBase = frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
+        m_angOffsetTop = frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
     }
     if(configPID){
         m_maxVolts = frc::SmartDashboard::GetNumber("Max Volts", m_maxVolts);

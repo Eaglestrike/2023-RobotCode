@@ -23,6 +23,9 @@ class Arm{
         double m_topArmLength = ArmConstants::TOP_ARM_LENGTH;
         double m_pivotHeight = ArmConstants::PIVOT_HEIGHT;
 
+        double m_angOffsetBase = ArmConstants::BASE_OFFSET;//Radians
+        double m_angOffsetTop = ArmConstants::TOP_OFFSET;//Radians
+
         double m_targetX;
         double m_targetZ;
 

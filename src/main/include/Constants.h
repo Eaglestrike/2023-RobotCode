@@ -28,6 +28,9 @@ namespace ArmConstants{
     const double TOP_ARM_LENGTH = 0.0;
     const double PIVOT_HEIGHT = 0.0;
 
+    const double BASE_OFFSET = 0.0; //Radians
+    const double TOP_OFFSET = 0.0; //Radians
+
     const double BASE_PID[3] = {0.0, 0.0, 0.0};
     const double TOP_PID[3] = {0.0, 0.0, 0.0};
 }
