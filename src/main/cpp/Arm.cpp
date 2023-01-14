@@ -40,7 +40,7 @@ void Arm::periodic(){
     double c = distance;
     double topArmAng = acos(((c*c)-(a*a)-(b*b))/(2*a*b)); //Angle between 2 arms
     //https://www.google.com/search?q=law+of+sines
-    double baseArmAng = (sin(baseArmAng)/c) * b; //Angle of base arm
+    double baseArmAng = asin((sin(baseArmAng)/c) * b); //Angle of base arm
     if(m_targetX > 0){
         topArmAng = -topArmAng;
     }
