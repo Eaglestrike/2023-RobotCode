@@ -5,7 +5,6 @@
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
 #include "SwerveDrive.h"
-#include "Limelight.h"
 #include "frc/Joystick.h"
 #include "Constants.h"
 #include <wpi/DataLog.h>
@@ -28,7 +27,6 @@ class Robot : public frc::TimedRobot {
  private:
    AHRS * navx_; //can't be initialized by compiler because doesn't have a constructor :(
    SwerveDrive * swerveDrive_; //pointer because it relies on navx being initialized
-   Limelight limelight_;
 
    frc::Joystick ljoy{InputConstants::LJOY_PORT};
    frc::Joystick rjoy{InputConstants::RJOY_PORT};

@@ -5,7 +5,6 @@
 #include <math.h>
 #include "Controls.h"
 #include "Constants.h"
-#include "Limelight.h"
 #include <AHRS.h>
 #include <frc/kinematics/SwerveDriveOdometry.h>
 #include "SwerveModule.h"
@@ -34,11 +33,11 @@ class SwerveDrive
         void setState(State state);
         State getState();
 
-        SwerveDrive(AHRS * nx, Limelight limelight); //todo: add logger
+        SwerveDrive(AHRS * nx); //todo: add logger
         void setYaw(double yaw);
         
         void Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, 
-        units::radians_per_second_t vtheta, double turretAngle);
+        units::radians_per_second_t vtheta);
 
         void initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose);
         void updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose);
@@ -47,7 +46,7 @@ class SwerveDrive
 
         wpi::array<frc::SwerveModuleState, 4> getRealModuleStates(); //real as opposed to goal
 
-        void updateLimelightOdom(double turretAngle, bool inAuto);
+        void updateLimelightOdom(double turretAngle, bool inAuto); //TODO replace with apriltag
 
         double getDistance(double turretAngle);
         frc::ChassisSpeeds getRobotSpeeds();
@@ -59,7 +58,6 @@ class SwerveDrive
 
     private:
         AHRS * navx_;
-        Limelight limelight_;
 
         frc::SwerveDriveOdometry<4> * odometry_; //will need to be initialized later with selected robot start pose
         frc::Pose2d lPose_; //public so limelight calculation will only happen once per period to save time
@@ -68,7 +66,7 @@ class SwerveDrive
         wpi::array<frc::SwerveModulePosition, 4> getModulePositions();
 
         std::pair<double, double> camToBot(double turretAngle);
-        void drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle);
+        void drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta);
         void stop();
 
         frc::DifferentialDriveWheelSpeeds getDifferentialWheelSpeeds();

@@ -8,7 +8,7 @@
 //Initialize pointer objects
 void Robot::RobotInit() {
   navx_ = new AHRS(frc::SPI::Port::kMXP);
-  swerveDrive_ = new SwerveDrive(navx_, limelight_);
+  swerveDrive_ = new SwerveDrive(navx_);
 
   // logging setup
   frc::DataLogManager::Start();
@@ -19,12 +19,13 @@ void Robot::RobotInit() {
 }
 
 void Robot::RobotPeriodic() {
-  limelight_.lightOn(false);
 
   // log value of registered data fields
   swerveX.Append(swerveDrive_->getX());
   swerveY.Append(swerveDrive_->getY());
+  
 }
+
 
 void Robot::AutonomousInit() {
   swerveDrive_->initializeAutoTraj(SwerveConstants::testPath); //todo would be done with auto chooser depending on auto mode
@@ -33,7 +34,7 @@ void Robot::AutonomousInit() {
 //commented out for testing purposes
 void Robot::AutonomousPeriodic() {
   swerveDrive_->setState(SwerveDrive::State::PATH_FOLLOW); //todo would be moved into auto executor
-  swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s, 0);
+  swerveDrive_->Periodic( 0_mps, 0_mps, 0_rad / 1_s);
 }
 
 void Robot::TeleopInit() {
@@ -60,8 +61,7 @@ void Robot::TeleopPeriodic() {
   swerveDrive_->Periodic(
     units::meters_per_second_t{vx},
     units::meters_per_second_t{vy},
-    units::radians_per_second_t{vtheta},
-    0);
+    units::radians_per_second_t{vtheta});
 
 }
 

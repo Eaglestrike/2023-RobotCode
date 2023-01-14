@@ -3,9 +3,8 @@
 /**
  * Initializes a swerve drive object (for right now that just entails getting navx + limelight & setting some PID settings)
  * @param nx the navx object
- * @param limelight the limelight object
 **/
-SwerveDrive::SwerveDrive(AHRS * nx, Limelight limelight): navx_{nx}, limelight_{limelight}
+SwerveDrive::SwerveDrive(AHRS * nx): navx_{nx}
 {
     angPID_.EnableContinuousInput(-180, 180);
     angPID_.SetIntegratorRange(-0.5, 0.5);
@@ -86,8 +85,8 @@ frc::DifferentialDriveWheelSpeeds SwerveDrive::getDifferentialWheelSpeeds() {
     double leftSpeed = (moduleStates[0].speed.value() + moduleStates[2].speed.value())/2;
     double rightSpeed = (moduleStates[1].speed.value() + moduleStates[3].speed.value())/2;
 
-    frc::SmartDashboard::PutNumber("left speed", leftSpeed);
-    frc::SmartDashboard::PutNumber("right speed", rightSpeed);
+    // frc::SmartDashboard::PutNumber("left speed", leftSpeed);
+    // frc::SmartDashboard::PutNumber("right speed", rightSpeed);
 
     return {units::meters_per_second_t(leftSpeed), units::meters_per_second_t(rightSpeed)};
 }
@@ -97,30 +96,18 @@ frc::DifferentialDriveWheelSpeeds SwerveDrive::getDifferentialWheelSpeeds() {
  * @param vx the desired robot velocity in the x direction
  * @param vy the desired robot velocity in the y direction
  * @param vtheta the desired robot rotational velocity
- * @param turretAngle the turret's angle on the robot, used to help calculate odometry
 **/
-void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle) {
+void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta) {
 
     //update odometry no matter the state
     odometry_->Update(units::degree_t{navx_->GetYaw()}, getModulePositions());
-    lPose_ = limelight_.getPose(navx_->GetYaw(), turretAngle);
 
-    /** Limelight error checking
-     * Only update if limelight can see the target
-     * If the reported X or Y positions are > 10, it's probably an error and odometry shouldn't be updated
-     * If it's been too long (35ms right now) since the last vision update, likely the data is out of date & odometry shouldn't be updated
-    */
-    if (limelight_.hasTarget() && 
-        !(abs(lPose_.X().value()) > 10 
-        || abs(lPose_.Y().value()) > 10 
-        || (frc::Timer::GetFPGATimestamp().value() - limelight_.getLastUpdated()) >= 35)) {
-        updateLimelightOdom(turretAngle, false); 
-    }
+    //do something with apriltag
 
     //takes appropriate action based on current state
     switch(state_) {
         case DRIVE:
-            drive(vx, vy, vtheta, turretAngle);
+            drive(vx, vy, vtheta);
             break;
         case PATH_FOLLOW:
             ramseteCommand_->Execute();
@@ -138,9 +125,8 @@ void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_seco
  * @param vx the desired robot velocity in the x direction
  * @param vy the desired robot velocity in the y direction
  * @param vtheta the desired robot rotational velocity
- * @param turretAngle the turret's angle on the robot, used to help calculate odometry
 **/
-void SwerveDrive::drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta, double turretAngle) {
+void SwerveDrive::drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta) {
     units::degree_t navx_yaw = units::degree_t{navx_->GetYaw()};
   
     //converts field-relative joystick input to robot-relative speeds
@@ -210,11 +196,11 @@ void SwerveDrive::differentialDrive(units::volt_t leftVolts, units::volt_t right
     double leftVoltsRaw = std::clamp(leftVolts.value(), -5.0, 5.0);
     double rightVoltsRaw = std::clamp(rightVolts.value(), -5.0, 5.0);
 
-    frc::SmartDashboard::PutNumber("left volts", leftVoltsRaw);
-    frc::SmartDashboard::PutNumber("right volts", rightVoltsRaw);
+    // frc::SmartDashboard::PutNumber("left volts", leftVoltsRaw);
+    // frc::SmartDashboard::PutNumber("right volts", rightVoltsRaw);
 
-    frc::SmartDashboard::PutNumber("Odom x", odometry_->GetPose().X().value());
-    frc::SmartDashboard::PutNumber("Odom y", odometry_->GetPose().Y().value());
+    // frc::SmartDashboard::PutNumber("Odom x", odometry_->GetPose().X().value());
+    // frc::SmartDashboard::PutNumber("Odom y", odometry_->GetPose().Y().value());
 
     flModule_.setSpeedMotorVolts(leftVoltsRaw);
     blModule_.setSpeedMotorVolts(leftVoltsRaw);
@@ -301,6 +287,7 @@ frc::ChassisSpeeds SwerveDrive::getRobotSpeeds() {
 
 /**
  * @returns the distance from the center of the robot to the center of the goal
+ * TODO: replace with apriltag equivalent
 **/
 double SwerveDrive::getDistance(double turretAngle)
 {
@@ -322,6 +309,7 @@ wpi::array<frc::SwerveModulePosition, 4> SwerveDrive::getModulePositions()
 
 /**
  * Compute vector from limelight position to center of robot
+ * TODO: replace with new camera(s) position
 **/
 std::pair<double, double> SwerveDrive::camToBot(double turretAngle) {
 
@@ -349,6 +337,7 @@ std::pair<double, double> SwerveDrive::camToBot(double turretAngle) {
 
 /**
  * Average wheel odometry with limelight calculated position
+ * TODO: replace with apriltag equivalent
 **/
 void SwerveDrive::updateLimelightOdom(double turretAngle, bool inAuto)
 {
@@ -371,7 +360,7 @@ void SwerveDrive::updateLimelightOdom(double turretAngle, bool inAuto)
 
 /**
  * @returns robot-relative angle to goal
- * Goal is (0, 0). X and Y technically negative relative to goal, but atan so doesn't really matter
+ * TODO: replace with apriltag equivalent?
 **/
 double SwerveDrive::getRobotGoalAng(double turretAngle)
 {
