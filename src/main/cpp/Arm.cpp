@@ -17,6 +17,8 @@ void Arm::init(){
         frc::SmartDashboard::PutNumber("Top I", m_pidTop.GetI());
         frc::SmartDashboard::PutNumber("Top D", m_pidTop.GetD());
     }
+    m_pidBase.Reset();
+    m_pidTop.Reset();
 }
 
 void Arm::periodic(){
@@ -28,6 +30,10 @@ void Arm::periodic(){
     double targetdz = m_pivotHeight - m_targetZ;
     double distance = sqrt((m_targetX*m_targetX) + (targetdz*targetdz));
     if(distance > m_baseArmLength + m_topArmLength){
+        frc::SmartDashboard::PutBoolean("Target", false);
+        return;
+    }
+    if(distance < abs(m_baseArmLength - m_topArmLength)){
         frc::SmartDashboard::PutBoolean("Target", false);
         return;
     }
@@ -49,8 +55,8 @@ void Arm::periodic(){
     }
 
     //Difference of angles (dAng) ~ error
-    double dAngBase = getAngDiff(getAng(m_baseMotor), baseArmAng + angle + m_angOffsetBase);
-    double dAngTop = getAngDiff(getAng(m_baseMotor), topArmAng + m_angOffsetTop);
+    double dAngBase = getAngDiff(getAng(m_baseMotor) + m_angOffsetBase, baseArmAng + angle);
+    double dAngTop = getAngDiff(getAng(m_baseMotor) + m_angOffsetTop, topArmAng);
 
     double pidBaseOutput = m_pidBase.Calculate(dAngBase);
     double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
