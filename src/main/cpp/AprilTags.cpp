@@ -2,61 +2,53 @@
 #include <frc/apriltag/AprilTag.h>
 #include <units/length.h>
 #include <frc/DriverStation.h>
+#include "Constants.h"
 
 
 using namespace units::length;
 using namespace frc;
 
 frc::AprilTagFieldLayout AprilTags::getAprilTagFieldLayout() {
-    // check if we are blue alliance
-    units::meter_t field_length = 54_ft + 3.25_in;
-    units::meter_t field_width = 26_ft + 3.25_in;
-    units::meter_t grid_apriltag_x = 3_ft + 1_in;
-    units::meter_t grid_apriltag_low_y = 3_ft + 6_in;
-    units::meter_t grid_apriltag_mid_y = 9_ft;
-    units::meter_t grid_apriltag_top_y = 14_ft + 6_in;
-    units::meter_t double_substation_apriltag_x = 1_ft + 2_in;
-    units::meter_t double_substation_apriltag_y = 22_ft + 0.3125_in;
     // if blue alliance or invalid
     if (DriverStation::GetAlliance() != DriverStation::Alliance::kRed) {
         AprilTag tag1(1, Pose3d(Pose2d(
-            field_length - grid_apriltag_x,
-            grid_apriltag_low_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_LOW_Y,
             Rotation2d((units::degree_t) 180)
         )));
         AprilTag tag2(2, Pose3d(Pose2d(
-            field_length - grid_apriltag_x,
-            grid_apriltag_mid_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_MID_Y,
             Rotation2d((units::degree_t) 180)
         )));
         AprilTag tag3(3, Pose3d(Pose2d(
-            field_length - grid_apriltag_x,
-            grid_apriltag_top_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_TOP_Y,
             Rotation2d((units::degree_t) 180)
         )));
         AprilTag tag4(4, Pose3d(Pose2d(
-            field_length - double_substation_apriltag_x,
-            double_substation_apriltag_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
+            AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
             Rotation2d((units::degree_t) 180)
         )));
         AprilTag tag5(5, Pose3d(Pose2d(
-            double_substation_apriltag_x,
-            double_substation_apriltag_y,
+            AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
+            AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
             Rotation2d((units::degree_t) 0)
         )));
         AprilTag tag6(6, Pose3d(Pose2d(
-            grid_apriltag_x,
-            grid_apriltag_top_y,
+            AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_TOP_Y,
             Rotation2d((units::degree_t) 0)
         )));
         AprilTag tag7(7, Pose3d(Pose2d(
-            grid_apriltag_x,
-            grid_apriltag_mid_y,
+            AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_MID_Y,
             Rotation2d((units::degree_t) 0)
         )));
         AprilTag tag8(8, Pose3d(Pose2d(
-            grid_apriltag_x,
-            grid_apriltag_low_y,
+            AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_LOW_Y,
             Rotation2d((units::degree_t) 0)
         )));
         std::vector<AprilTag> aprilTags;
@@ -70,48 +62,48 @@ frc::AprilTagFieldLayout AprilTags::getAprilTagFieldLayout() {
         aprilTags.push_back(tag8);
         AprilTagFieldLayout layout(
             aprilTags,
-            field_length, field_width
+            AprilTagsConstants::FIELD_LENGTH, AprilTagsConstants::FIELD_WIDTH
         );
         return layout;
     } else { // if red alliance
         AprilTag tag1(1, Pose3d(Pose2d(
-            grid_apriltag_x,
-            grid_apriltag_low_y,
+            AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_LOW_Y,
             Rotation2d((units::degree_t) 0)
         )));
         AprilTag tag2(2, Pose3d(Pose2d(
-            grid_apriltag_x,
-            grid_apriltag_mid_y,
+            AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_MID_Y,
             Rotation2d((units::degree_t) 0)
         )));
         AprilTag tag3(3, Pose3d(Pose2d(
-            grid_apriltag_x,
-            grid_apriltag_top_y,
+            AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_TOP_Y,
             Rotation2d((units::degree_t) 0)
         )));
         AprilTag tag4(4, Pose3d(Pose2d(
-            double_substation_apriltag_x,
-            double_substation_apriltag_y,
+            AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
+            AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
             Rotation2d((units::degree_t) 0)
         )));
         AprilTag tag5(5, Pose3d(Pose2d(
-            field_length - double_substation_apriltag_x,
-            double_substation_apriltag_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
+            AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
             Rotation2d((units::degree_t) 180)
         )));
         AprilTag tag6(6, Pose3d(Pose2d(
-            field_length - grid_apriltag_x,
-            grid_apriltag_top_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_TOP_Y,
             Rotation2d((units::degree_t) 180)
         )));
         AprilTag tag7(7, Pose3d(Pose2d(
-            field_length - grid_apriltag_x,
-            grid_apriltag_mid_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_MID_Y,
             Rotation2d((units::degree_t) 180)
         )));
         AprilTag tag8(8, Pose3d(Pose2d(
-            field_length - grid_apriltag_x,
-            grid_apriltag_low_y,
+            AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
+            AprilTagsConstants::GRID_APRILTAG_LOW_Y,
             Rotation2d((units::degree_t) 180)
         )));
         std::vector<AprilTag> aprilTags;
@@ -125,7 +117,7 @@ frc::AprilTagFieldLayout AprilTags::getAprilTagFieldLayout() {
         aprilTags.push_back(tag8);
         AprilTagFieldLayout layout(
             aprilTags,
-            field_length, field_width
+            AprilTagsConstants::FIELD_LENGTH, AprilTagsConstants::FIELD_WIDTH
         );
         return layout;
     }
