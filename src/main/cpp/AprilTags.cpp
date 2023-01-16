@@ -14,42 +14,42 @@ frc::AprilTagFieldLayout AprilTags::getAprilTagFieldLayout() {
         AprilTag tag1(1, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_LOW_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         AprilTag tag2(2, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_MID_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         AprilTag tag3(3, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_TOP_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         AprilTag tag4(4, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
             AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         AprilTag tag5(5, Pose3d(Pose2d(
             AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
             AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         AprilTag tag6(6, Pose3d(Pose2d(
             AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_TOP_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         AprilTag tag7(7, Pose3d(Pose2d(
             AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_MID_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         AprilTag tag8(8, Pose3d(Pose2d(
             AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_LOW_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         std::vector<AprilTag> aprilTags;
         aprilTags.push_back(tag1);
@@ -69,42 +69,42 @@ frc::AprilTagFieldLayout AprilTags::getAprilTagFieldLayout() {
         AprilTag tag1(1, Pose3d(Pose2d(
             AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_LOW_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         AprilTag tag2(2, Pose3d(Pose2d(
             AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_MID_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         AprilTag tag3(3, Pose3d(Pose2d(
             AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_TOP_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         AprilTag tag4(4, Pose3d(Pose2d(
             AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
             AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
-            Rotation2d((units::degree_t) 0)
+            Rotation2d(0_deg)
         )));
         AprilTag tag5(5, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_X,
             AprilTagsConstants::DOUBLE_SUBSTATION_APRILTAG_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         AprilTag tag6(6, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_TOP_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         AprilTag tag7(7, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_MID_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         AprilTag tag8(8, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
             AprilTagsConstants::GRID_APRILTAG_LOW_Y,
-            Rotation2d((units::degree_t) 180)
+            Rotation2d(180_deg)
         )));
         std::vector<AprilTag> aprilTags;
         aprilTags.push_back(tag1);
