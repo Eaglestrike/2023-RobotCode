@@ -11,7 +11,8 @@ using namespace Helpers;
 class Arm{
     public:
         void init();
-        void periodic();
+        void Periodic();
+        void DisabledPeriodic();
         void setTarget(double targetX, double targetY);
 
     private:

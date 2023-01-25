@@ -9,8 +9,6 @@ class Controls
 {
     public:
         Controls();
-        void periodic();
-
         double getXStrafe();
         double getYStrafe();
 

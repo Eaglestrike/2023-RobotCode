@@ -23,7 +23,7 @@ void Arm::init(){
     m_pidTop.Reset();
 }
 
-void Arm::periodic(){
+void Arm::Periodic(){
     //Very basic joint space implementation
     if(m_targetZ < 0.0){//If target is under the floor
         frc::SmartDashboard::PutBoolean("Target", false);
@@ -96,12 +96,26 @@ void Arm::periodic(){
         m_kGravityTop = frc::SmartDashboard::GetNumber("Top Gravity Constant", m_kGravityTop);
     }
     if(debug){
+        
         frc::SmartDashboard::PutNumber("Target Ang Base", ang1);
         frc::SmartDashboard::PutNumber("Target Ang Top", ang2);
         frc::SmartDashboard::PutNumber("Ang Diff Base", dAngBase);
         frc::SmartDashboard::PutNumber("Ang Diff Top", dAngTop);
         frc::SmartDashboard::PutNumber("Base Voltage", baseVoltage);
         frc::SmartDashboard::PutNumber("Top Voltage", topVoltage);
+    }
+}
+
+void Arm::DisabledPeriodic(){
+    double baseReading = getAng(m_baseMotor) + m_angOffsetBase;
+    double topReading = getAng(m_topMotor) + m_angOffsetTop;
+     if(configDimensions){
+        m_angOffsetBase = frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
+        m_angOffsetTop = frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
+    }
+    if(debug){
+        frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
+        frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }
 }
 
