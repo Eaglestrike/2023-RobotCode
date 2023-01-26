@@ -14,14 +14,12 @@ using namespace std;
 
 #define M_PI 3.14159265358979323846 //for simulation
 
-namespace GeneralConstants
-{
+namespace GeneralConstants{
     const int TICKS_PER_ROTATION = 2048;
     const double TICKS_PER_RADIAN = TICKS_PER_ROTATION/(2*M_PI);
 }
 
-namespace InputConstants
-{
+namespace InputConstants{
     const int XBOX_PORT = 2;
     const int XBOX_LJOY_X = 0;
     const int XBOX_LJOY_Y = 1;
@@ -32,12 +30,12 @@ namespace InputConstants
 }
 
 namespace ArmConstants{
-    const int BASE_MOTOR_ID = 0;
-    const int TOP_MOTOR_ID = 0;
+    const int BASE_MOTOR_ID = 20;
+    const int TOP_MOTOR_ID = 14;
 
-    const double BASE_ARM_LENGTH = 0.0;
-    const double TOP_ARM_LENGTH = 0.0;
-    const double PIVOT_HEIGHT = 0.0;
+    const double BASE_ARM_LENGTH = 31.0;
+    const double TOP_ARM_LENGTH = 31.0;
+    const double PIVOT_HEIGHT = 32.0;
 
     const double BASE_OFFSET = 0.0; //Radians
     const double TOP_OFFSET = 0.0; //Radians

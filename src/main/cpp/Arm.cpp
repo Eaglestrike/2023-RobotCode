@@ -29,7 +29,7 @@ void Arm::Periodic(){
         frc::SmartDashboard::PutBoolean("Target", false);
         return;
     }
-    double targetdz = m_pivotHeight - m_targetZ;
+    double targetdz = m_targetZ - m_pivotHeight;
     double distance = sqrt((m_targetX*m_targetX) + (targetdz*targetdz));
     if(distance > m_baseArmLength + m_topArmLength){
         frc::SmartDashboard::PutBoolean("Target", false);
@@ -40,7 +40,7 @@ void Arm::Periodic(){
         return;
     }
     frc::SmartDashboard::PutBoolean("Target", true);
-    double angle = atan2(m_targetX, m_targetZ);//Angle to target (0 is upwards)
+    double angle = atan2(m_targetX, targetdz);//Angle to target (0 is upwards)
     //Finding ideal angles
     //https://www.google.com/search?q=law+of+cosine
     double a = m_baseArmLength;
@@ -96,7 +96,10 @@ void Arm::Periodic(){
         m_kGravityTop = frc::SmartDashboard::GetNumber("Top Gravity Constant", m_kGravityTop);
     }
     if(debug){
-        
+        frc::SmartDashboard::GetNumber("Target X", m_targetX);
+        frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
+        frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
+        frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
         frc::SmartDashboard::PutNumber("Target Ang Base", ang1);
         frc::SmartDashboard::PutNumber("Target Ang Top", ang2);
         frc::SmartDashboard::PutNumber("Ang Diff Base", dAngBase);
@@ -114,6 +117,8 @@ void Arm::DisabledPeriodic(){
         m_angOffsetTop = frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
     }
     if(debug){
+        frc::SmartDashboard::GetNumber("Target X", m_targetX);
+        frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }
@@ -122,6 +127,13 @@ void Arm::DisabledPeriodic(){
 void Arm::setTarget(double targetX, double targetZ){
     m_targetX = targetX;
     m_targetZ = targetZ;
+    m_pidBase.Reset();
+    m_pidTop.Reset();
+}
+
+void Arm::moveTarget(double dx, double dz){
+    m_targetX += dx;
+    m_targetZ += dz;
     m_pidBase.Reset();
     m_pidTop.Reset();
 }

@@ -13,7 +13,8 @@ class Arm{
         void init();
         void Periodic();
         void DisabledPeriodic();
-        void setTarget(double targetX, double targetY);
+        void setTarget(double targetX, double targetZ);
+        void moveTarget(double dx, double dz);
 
     private:
         WPI_TalonFX m_baseMotor = WPI_TalonFX(ArmConstants::BASE_MOTOR_ID);
