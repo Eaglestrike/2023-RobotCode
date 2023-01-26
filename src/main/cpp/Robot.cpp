@@ -33,7 +33,7 @@ void Robot::TeleopPeriodic() {
     frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   }
   */
-  arm.moveTarget(controller.getXStrafe(), controller.getYStrafe());
+  arm.moveTarget(controller.getXStrafe()*0.02, controller.getYStrafe()*0.02);
   arm.Periodic();
 }
 
@@ -49,6 +49,7 @@ void Robot::DisabledPeriodic() {
     frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   }
   */
+  arm.DisabledPeriodic();
 }
 
 void Robot::TestInit() {}

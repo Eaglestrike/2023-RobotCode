@@ -53,11 +53,11 @@ void Arm::Periodic(){
     double ang2;
     if(m_targetX > 0){
         ang1 = angle - baseArmAng;
-        ang2 = M_PI - topArmAng;
+        ang2 = M_PI - topArmAng + ang1;
     }
     else{
         ang1 = angle + baseArmAng;
-        ang2 = topArmAng - M_PI;
+        ang2 = topArmAng - M_PI + ang1;
     }
     ang1 = getPrincipalAng2(ang1);
     ang2 = getPrincipalAng2(ang2);
@@ -71,11 +71,11 @@ void Arm::Periodic(){
 
     double pidBaseOutput = m_pidBase.Calculate(dAngBase) + m_kGravityBot*sin(baseReading);
     double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
-    //m_baseMotor.SetVoltage(baseVoltage);
+    m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
 
     double pidTopOutput = m_pidTop.Calculate(dAngTop) + m_kGravityTop*sin(topReading);
     double topVoltage = std::clamp(pidTopOutput, -m_maxVolts, m_maxVolts);
-    //m_topMotor.SetVoltage(topVoltage);
+    m_topMotor.SetVoltage(units::volt_t{topVoltage});
 
     if(configDimensions){
         m_baseArmLength = frc::SmartDashboard::GetNumber("Base Length", m_baseArmLength);

@@ -46,5 +46,5 @@ class Arm{
                                         ArmConstants::TOP_PID[2]
                                     };
         double m_kGravityTop = 0.0;
-        double m_maxVolts = 0;
+        double m_maxVolts = 4.0;
 };
