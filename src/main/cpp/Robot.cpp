@@ -3,6 +3,7 @@
 #include <fmt/core.h>
 #include <iostream>
 #include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DataLogManager.h>
 
 //Initialize pointer objects
 void Robot::RobotInit() {
@@ -11,7 +12,14 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
 }
 
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+
+  // log value of registered data fields
+  swerveX.Append(swerveDrive_->getX());
+  swerveY.Append(swerveDrive_->getY());
+  
+}
+
 
 void Robot::AutonomousInit() {
 }

@@ -6,6 +6,7 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include "Arm.h"
 #include "Constants.h"
+#include <wpi/DataLog.h>
 
 class Robot : public frc::TimedRobot {
  public:
