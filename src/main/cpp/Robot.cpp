@@ -13,10 +13,6 @@ void Robot::RobotInit() {
 }
 
 void Robot::RobotPeriodic() {
-
-  // log value of registered data fields
-  swerveX.Append(swerveDrive_->getX());
-  swerveY.Append(swerveDrive_->getY());
   
 }
 
