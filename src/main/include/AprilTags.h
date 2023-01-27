@@ -1,3 +1,5 @@
+#pragma once
+
 #include <frc/apriltag/AprilTagFieldLayout.h>
 
 class AprilTags {
