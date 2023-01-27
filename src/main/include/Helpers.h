@@ -1,5 +1,6 @@
 #include <ctre/Phoenix.h>
 #include "Constants.h"
+#include <cmath>
 
 namespace Helpers{
     /**
@@ -47,5 +48,11 @@ namespace Helpers{
 
     static double getAbsAngDiff(double ang1, double ang2){//Just subtract lmao
         return ang2 - ang1;
+    }
+
+    static double scaleError(double k1, double k2, double error){//https://www.desmos.com/calculator/478yleqngu
+        double exp = -(1.0/k1)*error*error;
+        double hump = k2*std::pow(2.0, exp) + 1.0; 
+        return error * hump;
     }
 }

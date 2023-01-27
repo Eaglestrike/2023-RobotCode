@@ -14,6 +14,7 @@ class Arm{
         void init();
         void Periodic();
         void DisabledPeriodic();
+        void DisabledInit();
         void setTarget(double targetX, double targetZ);
         void moveTarget(double dx, double dz);
         void resetTarget();
@@ -48,5 +49,5 @@ class Arm{
                                         ArmConstants::TOP_PID[2]
                                     };
         double m_kGravityTop = ArmConstants::TOP_KGRAVITY;
-        double m_maxVolts = 4.0;
+        double m_maxVolts = ArmConstants::MAX_VOLTS;
 };

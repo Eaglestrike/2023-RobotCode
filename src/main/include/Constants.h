@@ -40,8 +40,10 @@ namespace ArmConstants{
     const double BASE_OFFSET = 0.0; //Radians
     const double TOP_OFFSET = 0.0; //Radians
 
-    const double BASE_PID[3] = {10.0, 0.0, 0.0};
-    const double BASE_KGRAVITY = 2.0;
-    const double TOP_PID[3] = {10.0, 0.0, 0.0};
+    const double BASE_PID[3] = {20.0, 0.0, 0.0};
+    const double BASE_KGRAVITY = 3.0;
+    const double TOP_PID[3] = {15.0, 0.0, 0.0};
     const double TOP_KGRAVITY = 2.0;
+
+    const double MAX_VOLTS = 5;
 }

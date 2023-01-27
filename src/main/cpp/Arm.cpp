@@ -54,8 +54,6 @@ void Arm::Periodic(){
         frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
     }
 
-    std::cout << m_pidTop.GetPositionError() << std::endl;
-
     //Very basic joint space implementation
     double baseReading = -getAng(m_baseMotor) + m_angOffsetBase;
     double topReading = getAng(m_topMotor) + m_angOffsetTop;
@@ -116,6 +114,9 @@ void Arm::Periodic(){
     double dAngBase = getAngDiff(ang1, baseReading);
     double dAngTop = getAngDiff(ang2, topReading);
 
+    dAngBase = scaleError(2.1, 0.07, dAngBase);
+    dAngTop = scaleError(2.1, 0.07, dAngTop);
+
     double pidBaseOutput = m_pidBase.Calculate(dAngBase) - m_kGravityBot*sin(baseReading);
     double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
     m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
@@ -133,6 +134,13 @@ void Arm::Periodic(){
         frc::SmartDashboard::PutNumber("Base Voltage", baseVoltage);
         frc::SmartDashboard::PutNumber("Top Voltage", topVoltage);
     }
+}
+
+void Arm::DisabledInit(){
+    m_baseMotor.SetNeutralMode(NeutralMode::Coast);
+    m_topMotor.SetNeutralMode(NeutralMode::Coast);
+    m_baseMotor.SetVoltage(units::volt_t{0});
+    m_topMotor.SetVoltage(units::volt_t{0});
 }
 
 void Arm::DisabledPeriodic(){

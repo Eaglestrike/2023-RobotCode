@@ -10,6 +10,10 @@ void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Target Z", 0.0);
   arm.init();
   //frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
+  //hi this is caleb
+  //caleb says hi
+  //this is caleb when the car comes by
+  //husrfhvgaehgvadhgvadhga
 }
 
 void Robot::RobotPeriodic() {
