@@ -89,5 +89,5 @@ namespace FFUConstants {
 
     const double kG1 = 1;
     const double kG2 = 1;
-    const double KGOtherArm = 1;
+    const double kGOtherArm = 1;
 }

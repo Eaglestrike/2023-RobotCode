@@ -61,5 +61,5 @@ std::array<double, 2> Team971FFU::getffu(double thetaArm1, double thetaArm2, dou
     double gravityAddArm1 = FFUConstants::kG1 * std::cos(thetaArm1) + ret(1, 0) * FFUConstants::kGOtherArm;
     double gravityAddArm2 = FFUConstants::kG2 * std::cos(thetaArm2);
 
-    return {ret(0, 0), ret(1, 0)};
+    return {ret(0, 0) + gravityAddArm1, ret(1, 0) + gravityAddArm2};
 }
