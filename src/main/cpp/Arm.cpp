@@ -19,24 +19,70 @@ void Arm::init(){
         frc::SmartDashboard::PutNumber("Top D", m_pidTop.GetD());
         frc::SmartDashboard::PutNumber("Top Gravity Constant", m_kGravityTop);
     }
+    //frc::SmartDashboard::PutNumber("Target Ang Base", 0);
+    //frc::SmartDashboard::PutNumber("Target Ang Top", 0);
+
+    m_baseMotor.SetSelectedSensorPosition(0);
+    m_topMotor.SetSelectedSensorPosition(0);
     m_pidBase.Reset();
     m_pidTop.Reset();
+    m_pidBase.SetIntegratorRange(-m_maxVolts, m_maxVolts);
+    m_pidTop.SetIntegratorRange(-m_maxVolts, m_maxVolts);
 }
 
 void Arm::Periodic(){
+    if(configDimensions){
+        m_baseArmLength = frc::SmartDashboard::GetNumber("Base Length", m_baseArmLength);
+        m_topArmLength = frc::SmartDashboard::GetNumber("Top Length", m_topArmLength);
+        m_pivotHeight = frc::SmartDashboard::GetNumber("Pivot Height", m_pivotHeight);
+        m_angOffsetBase = frc::SmartDashboard::GetNumber("Base Ang Offset", m_angOffsetBase);
+        m_angOffsetTop = frc::SmartDashboard::GetNumber("Top Ang Offset", m_angOffsetTop);
+    }
+    if(configPID){
+        m_maxVolts = frc::SmartDashboard::GetNumber("Max Volts", m_maxVolts);
+        m_pidBase.SetP(frc::SmartDashboard::GetNumber("Base P", m_pidBase.GetP()));
+        m_pidBase.SetI(frc::SmartDashboard::GetNumber("Base I", m_pidBase.GetI()));
+        m_pidBase.SetD(frc::SmartDashboard::GetNumber("Base D", m_pidBase.GetD()));
+        m_kGravityBot = frc::SmartDashboard::GetNumber("Base Gravity Constant", m_kGravityBot);
+        m_pidTop.SetP(frc::SmartDashboard::GetNumber("Top P", m_pidTop.GetP()));
+        m_pidTop.SetI(frc::SmartDashboard::GetNumber("Top I", m_pidTop.GetI()));
+        m_pidTop.SetD(frc::SmartDashboard::GetNumber("Top D", m_pidTop.GetD()));
+        m_kGravityTop = frc::SmartDashboard::GetNumber("Top Gravity Constant", m_kGravityTop);
+    }
+    if(debug){
+        frc::SmartDashboard::PutNumber("Target X", m_targetX);
+        frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
+    }
+
+    std::cout << m_pidTop.GetPositionError() << std::endl;
+
     //Very basic joint space implementation
+    double baseReading = -getAng(m_baseMotor) + m_angOffsetBase;
+    double topReading = getAng(m_topMotor) + m_angOffsetTop;
     if(m_targetZ < 0.0){//If target is under the floor
         frc::SmartDashboard::PutBoolean("Target", false);
+        std::cout<<"Under the floor"<<std::endl;
+        m_topMotor.SetVoltage(units::volt_t{m_kGravityTop*sin(topReading)});
+        m_baseMotor.SetVoltage(units::volt_t{-m_kGravityBot*sin(baseReading)});
         return;
     }
     double targetdz = m_targetZ - m_pivotHeight;
     double distance = sqrt((m_targetX*m_targetX) + (targetdz*targetdz));
+    
+    frc::SmartDashboard::PutNumber("Target Distance", distance);
+
     if(distance > m_baseArmLength + m_topArmLength){
         frc::SmartDashboard::PutBoolean("Target", false);
+        std::cout<<"Too Far"<<std::endl;
+        m_topMotor.SetVoltage(units::volt_t{m_kGravityTop*sin(topReading)});
+        m_baseMotor.SetVoltage(units::volt_t{-m_kGravityBot*sin(baseReading)});
         return;
     }
     if(distance < abs(m_baseArmLength - m_topArmLength)){
         frc::SmartDashboard::PutBoolean("Target", false);
+        m_topMotor.SetVoltage(units::volt_t{m_kGravityTop*sin(topReading)});
+        m_baseMotor.SetVoltage(units::volt_t{-m_kGravityBot*sin(baseReading)});
+        std::cout<<"Too Close"<<std::endl;
         return;
     }
     frc::SmartDashboard::PutBoolean("Target", true);
@@ -63,41 +109,21 @@ void Arm::Periodic(){
     ang2 = getPrincipalAng2(ang2);
 
     //Difference of angles (dAng) ~ error
-    double baseReading = getAng(m_baseMotor) + m_angOffsetBase;
-    double topReading = getAng(m_topMotor) + m_angOffsetTop;
 
-    double dAngBase = getAngDiff(baseReading, ang1);
-    double dAngTop = getAngDiff(topReading, ang2);
+    //ang1 = frc::SmartDashboard::GetNumber("Target Ang Base", baseReading);
+    //ang2 = frc::SmartDashboard::GetNumber("Target Ang Top", topReading);
 
-    double pidBaseOutput = m_pidBase.Calculate(dAngBase) + m_kGravityBot*sin(baseReading);
+    double dAngBase = getAngDiff(ang1, baseReading);
+    double dAngTop = getAngDiff(ang2, topReading);
+
+    double pidBaseOutput = m_pidBase.Calculate(dAngBase) - m_kGravityBot*sin(baseReading);
     double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
     m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
 
-    double pidTopOutput = m_pidTop.Calculate(dAngTop) + m_kGravityTop*sin(topReading);
-    double topVoltage = std::clamp(pidTopOutput, -m_maxVolts, m_maxVolts);
+    double pidTopOutput = m_pidTop.Calculate(dAngTop) - m_kGravityTop*sin(topReading);
+    double topVoltage = -std::clamp(pidTopOutput, -m_maxVolts, m_maxVolts);
     m_topMotor.SetVoltage(units::volt_t{topVoltage});
-
-    if(configDimensions){
-        m_baseArmLength = frc::SmartDashboard::GetNumber("Base Length", m_baseArmLength);
-        m_topArmLength = frc::SmartDashboard::GetNumber("Top Length", m_topArmLength);
-        m_pivotHeight = frc::SmartDashboard::GetNumber("Pivot Height", m_pivotHeight);
-        m_angOffsetBase = frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
-        m_angOffsetTop = frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
-    }
-    if(configPID){
-        m_maxVolts = frc::SmartDashboard::GetNumber("Max Volts", m_maxVolts);
-        m_pidBase.SetP(frc::SmartDashboard::GetNumber("Base P", m_pidBase.GetP()));
-        m_pidBase.SetI(frc::SmartDashboard::GetNumber("Base I", m_pidBase.GetI()));
-        m_pidBase.SetD(frc::SmartDashboard::GetNumber("Base D", m_pidBase.GetD()));
-        m_kGravityBot = frc::SmartDashboard::GetNumber("Base Gravity Constant", m_kGravityBot);
-        m_pidTop.SetP(frc::SmartDashboard::GetNumber("Top P", m_pidTop.GetP()));
-        m_pidTop.SetI(frc::SmartDashboard::GetNumber("Top I", m_pidTop.GetI()));
-        m_pidTop.SetD(frc::SmartDashboard::GetNumber("Top D", m_pidTop.GetD()));
-        m_kGravityTop = frc::SmartDashboard::GetNumber("Top Gravity Constant", m_kGravityTop);
-    }
     if(debug){
-        frc::SmartDashboard::GetNumber("Target X", m_targetX);
-        frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
         frc::SmartDashboard::PutNumber("Target Ang Base", ang1);
@@ -113,8 +139,8 @@ void Arm::DisabledPeriodic(){
     double baseReading = getAng(m_baseMotor) + m_angOffsetBase;
     double topReading = getAng(m_topMotor) + m_angOffsetTop;
      if(configDimensions){
-        m_angOffsetBase = frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
-        m_angOffsetTop = frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
+        m_angOffsetBase = frc::SmartDashboard::GetNumber("Base Ang Offset", m_angOffsetBase);
+        m_angOffsetTop = frc::SmartDashboard::GetNumber("Top Ang Offset", m_angOffsetTop);
     }
     if(debug){
         frc::SmartDashboard::GetNumber("Target X", m_targetX);
@@ -122,6 +148,8 @@ void Arm::DisabledPeriodic(){
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }
+    //frc::SmartDashboard::PutNumber("Ticks Bottom", m_baseMotor.GetSelectedSensorPosition());
+    //frc::SmartDashboard::PutNumber("Ticks Top", m_topMotor.GetSelectedSensorPosition());
 }
 
 void Arm::setTarget(double targetX, double targetZ){
@@ -134,6 +162,13 @@ void Arm::setTarget(double targetX, double targetZ){
 void Arm::moveTarget(double dx, double dz){
     m_targetX += dx;
     m_targetZ += dz;
+    m_pidBase.Reset();
+    m_pidTop.Reset();
+}
+
+void Arm::resetTarget(){
+    m_targetX = 0.0;
+    m_targetZ = m_baseArmLength + m_topArmLength + m_pivotHeight;
     m_pidBase.Reset();
     m_pidTop.Reset();
 }

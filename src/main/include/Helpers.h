@@ -16,8 +16,8 @@ namespace Helpers{
  * 
 */
     static double getPrincipalAng2(double ang){//Input radians, output [-pi, pi]
-        int div = (ang - M_PI) / (2.0*M_PI) + 1;
-        double multiple = ((double)div) * 2.0*M_PI;
+        double div = floor(((ang - M_PI) / (2.0*M_PI)) + 1);
+        double multiple = div * 2.0*M_PI;
         double mod = ang - multiple; 
         return mod;
     }

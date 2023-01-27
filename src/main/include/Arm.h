@@ -6,6 +6,7 @@
 #include <frc/controller/PIDController.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <math.h>
+#include <iostream>
 
 using namespace Helpers;
 class Arm{
@@ -15,6 +16,7 @@ class Arm{
         void DisabledPeriodic();
         void setTarget(double targetX, double targetZ);
         void moveTarget(double dx, double dz);
+        void resetTarget();
 
     private:
         WPI_TalonFX m_baseMotor = WPI_TalonFX(ArmConstants::BASE_MOTOR_ID);
@@ -30,8 +32,8 @@ class Arm{
         double m_angOffsetBase = ArmConstants::BASE_OFFSET;//Radians
         double m_angOffsetTop = ArmConstants::TOP_OFFSET;//Radians
 
-        double m_targetX;
-        double m_targetZ;
+        double m_targetX = 0.0;
+        double m_targetZ = m_baseArmLength + m_topArmLength + m_pivotHeight;
 
         const bool configPID = true;
         frc2::PIDController m_pidBase{ 
@@ -39,12 +41,12 @@ class Arm{
                                         ArmConstants::BASE_PID[1], 
                                         ArmConstants::BASE_PID[2]
                                     };
-        double m_kGravityBot = 0.0;
+        double m_kGravityBot = ArmConstants::BASE_KGRAVITY;;
         frc2::PIDController m_pidTop{
                                         ArmConstants::TOP_PID[0], 
                                         ArmConstants::TOP_PID[1],
                                         ArmConstants::TOP_PID[2]
                                     };
-        double m_kGravityTop = 0.0;
+        double m_kGravityTop = ArmConstants::TOP_KGRAVITY;
         double m_maxVolts = 4.0;
 };
