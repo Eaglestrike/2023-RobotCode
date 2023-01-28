@@ -90,4 +90,6 @@ namespace FFUConstants {
     const double kG1 = 1;
     const double kG2 = 1;
     const double kGOtherArm = 1;
+
+    const int trajectory_size = 1000;
 }
