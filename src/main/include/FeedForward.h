@@ -4,9 +4,9 @@
 //#include <Eigen/src/Core/Matrix.h>
 #include <Eigen/Core>
 
-class Team971FFU {
+class FeedForward {
 public:
-    Team971FFU();
+    FeedForward();
     /**
      * This function needs the second arm position, velocity, and acceleration relative to the ground, NOT relative to the frist arm.
     */
