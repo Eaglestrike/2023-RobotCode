@@ -41,7 +41,7 @@ void Robot::TeleopPeriodic() {
   */
   arm.moveTarget(moveInchesPerSecond*controller.getXStrafe()*0.02,
                 moveInchesPerSecond*controller.getYStrafe()*0.02);
-  if(controller.A_IsPressed()){
+  if (controller.A_IsPressed()) {
     arm.resetTarget();
   }
   arm.Periodic();
