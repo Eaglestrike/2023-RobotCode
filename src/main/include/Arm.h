@@ -9,7 +9,8 @@
 #include <iostream>
 
 using namespace Helpers;
-class Arm{
+
+class Arm {
     public:
         void init();
         void Periodic();
