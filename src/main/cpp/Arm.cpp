@@ -103,6 +103,7 @@ void Arm::Periodic() {
     double ang2;
 
     // Handling cases when the target is front of or behind the arm
+    // Including the case where the elbow bend is facing down, like ^
     if (m_targetX > 0) {
         ang1 = angle - baseArmAng;
         ang2 = M_PI - topArmAng + ang1;
@@ -145,7 +146,7 @@ void Arm::Periodic() {
     }
 }
 
-// Stops the motors from moving
+// Turns the motors off
 void Arm::DisabledInit() {
     m_baseMotor.SetNeutralMode(NeutralMode::Coast);
     m_topMotor.SetNeutralMode(NeutralMode::Coast);
