@@ -1,4 +1,5 @@
 #include "Arm.h"
+#include "FeedForward.h"
 
 void Arm::init(){
     if(configDimensions){
@@ -54,7 +55,21 @@ void Arm::periodic(){
         baseArmAng = -baseArmAng;
     }
 
-    //Difference of angles (dAng) ~ error
+    auto traj = trajManager.get_traj(units::angle::radian_t(getAng(m_baseMotor) + m_angOffsetBase), 
+        units::angle::radian_t(baseArmAng + angle),
+        units::angle::radian_t(getAng(m_topMotor) + m_angOffsetTop),
+        units::angle::radian_t(baseArmAng + angle));
+    auto ffu_volts = FeedForward::getffu(traj);
+
+    double baseVoltage = std::clamp(ffu_volts[0], -m_maxVolts, m_maxVolts);
+    m_baseMotor.SetVoltage(units::voltage::volt_t(baseVoltage));
+
+    double topVoltage = std::clamp(ffu_volts[1], -m_maxVolts, m_maxVolts);
+    m_topMotor.SetVoltage(units::voltage::volt_t(topVoltage));
+
+    return;
+
+    /*//Difference of angles (dAng) ~ error
     double dAngBase = getAngDiff(getAng(m_baseMotor) + m_angOffsetBase, baseArmAng + angle);
     double dAngTop = getAngDiff(getAng(m_baseMotor) + m_angOffsetTop, topArmAng);
 
@@ -81,7 +96,7 @@ void Arm::periodic(){
         m_pidTop.SetP(frc::SmartDashboard::GetNumber("Top P", m_pidTop.GetP()));
         m_pidTop.SetI(frc::SmartDashboard::GetNumber("Top I", m_pidTop.GetI()));
         m_pidTop.SetD(frc::SmartDashboard::GetNumber("Top D", m_pidTop.GetD()));
-    }
+    }*/
 }
 
 void Arm::setTarget(double targetX, double targetZ){

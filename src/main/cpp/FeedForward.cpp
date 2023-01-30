@@ -30,6 +30,16 @@ std::array<Eigen::Matrix<double, 2, 2>, 4> FeedForward::NormalizedMatricesForSta
     return {K1, K2, FFUConstants::K3, FFUConstants::K4};
 }
 
+std::array<double, 2> FeedForward::getffu(ArmTrajectoryPoint trajPoint) {
+    return FeedForward::getffu(
+        std::get<0>(trajPoint).first.to<double>(),
+        std::get<0>(trajPoint).second.to<double>(),
+        std::get<1>(trajPoint).first.to<double>(),
+        std::get<1>(trajPoint).second.to<double>(),
+        std::get<2>(trajPoint).first.to<double>(),
+        std::get<2>(trajPoint).second.to<double>());
+}
+
 /**
  * Un-normalizes K3 matrix to be specialized for desired state 
  * 
@@ -54,8 +64,20 @@ std::array<Eigen::Matrix<double, 2, 2>, 4> FeedForward::MatricesForState(Eigen::
 Eigen::Matrix<double, 2, 1> FeedForward::ff_u(Eigen::Matrix<double, 4, 1> X, Eigen::Matrix<double, 2, 1> omega_t, Eigen::Matrix<double, 2, 1> alpha_t) {
     auto matrices = MatricesForState(X);
 
+    Eigen::Matrix<double, 2, 1> theta_real {
+        {X(0, 0)},
+        {X(2, 0) - X(0, 0)}
+    };
+
+    Eigen::Matrix<double, 2, 2> KGravity {
+        {FFUConstants::kG1, FFUConstants::kGOtherArm + FFUConstants::kG2},
+        {0.0, FFUConstants::kG2}
+    };
+
+    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t + KGravity * theta_real;
+
     // inverse K3
-    return matrices.at(2).inverse() * (matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t);
+    return matrices.at(2).inverse() * torque;
 }
 
 /**

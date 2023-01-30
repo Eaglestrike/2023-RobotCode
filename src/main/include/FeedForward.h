@@ -3,10 +3,12 @@
 //#include <Eigen/src/Core/Matrix.h>
 //#include <Eigen/src/Core/Matrix.h>
 #include <Eigen/Core>
+#include "TrajectoryManager.h"
 
 class FeedForward {
 public:
     FeedForward();
+    static std::array<double, 2> getffu(ArmTrajectoryPoint trajPoint);
     /**
      * This function needs the second arm position, velocity, and acceleration relative to the ground, NOT relative to the frist arm.
     */

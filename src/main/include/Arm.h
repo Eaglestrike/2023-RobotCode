@@ -6,6 +6,7 @@
 #include <frc/controller/PIDController.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <math.h>
+#include "TrajectoryManager.h"
 
 using namespace Helpers;
 class Arm{
@@ -41,4 +42,6 @@ class Arm{
                                         ArmConstants::TOP_PID[2]
                                     };
         double m_maxVolts = 0;
+
+        TrajectoryManager trajManager;
 };

@@ -92,4 +92,7 @@ namespace FFUConstants {
     const double kGOtherArm = 1;
 
     const int trajectory_size = 1000;
+
+    const double arm_1_trajectory_time_multiplier = 1;
+    const double arm_2_trajectory_time_multiplier = 1;
 }
