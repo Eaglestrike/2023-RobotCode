@@ -154,16 +154,26 @@ void Arm::DisabledInit() {
     m_topMotor.SetVoltage(units::volt_t{0});
 }
 
-// Reads the motor values, outputs them to SmartDashboard
-void Arm::DisabledPeriodic() {
-    double baseReading = getAng(m_baseMotor) + m_angOffsetBase;
+void Arm::DisabledPeriodic(){
+    double baseReading = -getAng(m_baseMotor) + m_angOffsetBase;
     double topReading = getAng(m_topMotor) + m_angOffsetTop;
     
     if (configDimensions) {
         m_angOffsetBase = frc::SmartDashboard::GetNumber("Base Ang Offset", m_angOffsetBase);
         m_angOffsetTop = frc::SmartDashboard::GetNumber("Top Ang Offset", m_angOffsetTop);
     }
-    if (debug) {
+    if(configPID){
+        m_maxVolts = frc::SmartDashboard::GetNumber("Max Volts", m_maxVolts);
+        m_pidBase.SetP(frc::SmartDashboard::GetNumber("Base P", m_pidBase.GetP()));
+        m_pidBase.SetI(frc::SmartDashboard::GetNumber("Base I", m_pidBase.GetI()));
+        m_pidBase.SetD(frc::SmartDashboard::GetNumber("Base D", m_pidBase.GetD()));
+        m_kGravityBot = frc::SmartDashboard::GetNumber("Base Gravity Constant", m_kGravityBot);
+        m_pidTop.SetP(frc::SmartDashboard::GetNumber("Top P", m_pidTop.GetP()));
+        m_pidTop.SetI(frc::SmartDashboard::GetNumber("Top I", m_pidTop.GetI()));
+        m_pidTop.SetD(frc::SmartDashboard::GetNumber("Top D", m_pidTop.GetD()));
+        m_kGravityTop = frc::SmartDashboard::GetNumber("Top Gravity Constant", m_kGravityTop);
+    }
+    if(debug){
         frc::SmartDashboard::GetNumber("Target X", m_targetX);
         frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
