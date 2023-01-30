@@ -121,10 +121,10 @@ namespace SwerveConstants
 namespace AprilTagsConstants {
     const units::meter_t FIELD_LENGTH = 54_ft + 3.25_in;
     const units::meter_t FIELD_WIDTH = 26_ft + 3.25_in;
-    const units::meter_t GRID_APRILTAG_X = 3_ft + 1_in;
-    const units::meter_t GRID_APRILTAG_LOW_Y = 3_ft + 6_in;
-    const units::meter_t GRID_APRILTAG_MID_Y = 9_ft;
-    const units::meter_t GRID_APRILTAG_TOP_Y = 14_ft + 6_in;
-    const units::meter_t DOUBLE_SUBSTATION_APRILTAG_X = 1_ft + 2_in;
-    const units::meter_t DOUBLE_SUBSTATION_APRILTAG_Y = 22_ft + 0.3125_in;
+    const units::meter_t GRID_APRILTAG_X = 40.45_in;
+    const units::meter_t GRID_APRILTAG_LOW_Y = 42.19_in;
+    const units::meter_t GRID_APRILTAG_MID_Y = 108.19_in;
+    const units::meter_t GRID_APRILTAG_TOP_Y = 174.19_in;
+    const units::meter_t DOUBLE_SUBSTATION_APRILTAG_X = 14.25_in;
+    const units::meter_t DOUBLE_SUBSTATION_APRILTAG_Y = 265.74_in;
 }
