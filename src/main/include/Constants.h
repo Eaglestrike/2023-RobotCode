@@ -49,24 +49,24 @@ namespace AprilTagsConstants {
 
 namespace FFUConstants {
     // TODO tune these constants
-    const double l1 = 1;
-    const double l2 = 1;
+    const double l1 = 31.0 * 0.0254;
+    const double l2 = 31.0 * 0.0254;
     
-    const double m1 = 1;
-    const double m2 = 1;
+    const double m1 = 0.381;
+    const double m2 = 0.381;
 
-    const double I1 = 1;
-    const double I2 = 1;
+    const double r1 = 31.0 / 2 * 0.0254;
+    const double r2 = 31.0 / 2 * 0.0254;
 
-    const double r1 = 1;
-    const double r2 = 1;
+    const double I1 = r1 * r1 * m1;
+    const double I2 = r2 * r2 * m2;
 
     const double G1 = 1;
     const double G2 = 1;
 
-    const double stall_torque = 1;
-    const double free_speed = 1;
-    const double stall_current = 1;
+    const double stall_torque = 4.69;
+    const double free_speed = (6380.0 / 60.0) * 2 * M_PI;
+    const double stall_current = 257;
     const double R = 12.0 / stall_current;
 
     const double Kv = free_speed / 12.0;
@@ -87,8 +87,8 @@ namespace FFUConstants {
         {0.0, G2 * G2 * Kt * kNumDistalMotors / (Kv * R)}
     };
 
-    const double kG1 = 1;
-    const double kG2 = 1;
+    const double kG1 = m1 * 9.81 * r1;
+    const double kG2 = m2 * 9.81 * r2;
     const double kGOtherArm = 1;
 
     const int trajectory_size = 1000;

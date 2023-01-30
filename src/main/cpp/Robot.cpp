@@ -48,7 +48,9 @@ void Robot::DisabledPeriodic() {
 
 void Robot::TestInit() {}
 
-void Robot::TestPeriodic() {}
+void Robot::TestPeriodic() {
+  arm.init();
+}
 
 void Robot::SimulationInit() {}
 

@@ -64,9 +64,9 @@ std::array<Eigen::Matrix<double, 2, 2>, 4> FeedForward::MatricesForState(Eigen::
 Eigen::Matrix<double, 2, 1> FeedForward::ff_u(Eigen::Matrix<double, 4, 1> X, Eigen::Matrix<double, 2, 1> omega_t, Eigen::Matrix<double, 2, 1> alpha_t) {
     auto matrices = MatricesForState(X);
 
-    Eigen::Matrix<double, 2, 1> theta_real {
-        {X(0, 0)},
-        {X(2, 0) - X(0, 0)}
+    Eigen::Matrix<double, 2, 1> theta_real_cos {
+        {std::cos(X(0, 0))},
+        {std::cos(X(2, 0) - X(0, 0))}
     };
 
     Eigen::Matrix<double, 2, 2> KGravity {
@@ -74,7 +74,7 @@ Eigen::Matrix<double, 2, 1> FeedForward::ff_u(Eigen::Matrix<double, 4, 1> X, Eig
         {0.0, FFUConstants::kG2}
     };
 
-    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t + KGravity * theta_real;
+    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t + KGravity * theta_real_cos;
 
     // inverse K3
     return matrices.at(2).inverse() * torque;
