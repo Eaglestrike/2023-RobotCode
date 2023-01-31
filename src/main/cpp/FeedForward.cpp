@@ -2,6 +2,7 @@
 #include <cmath>
 #include "Constants.h"
 #include <Eigen/LU>
+#include <iostream>
 
 FeedForward::FeedForward() {
     
@@ -69,12 +70,16 @@ Eigen::Matrix<double, 2, 1> FeedForward::ff_u(Eigen::Matrix<double, 4, 1> X, Eig
         {std::cos(X(2, 0) - X(0, 0))}
     };
 
+    //std::cout << theta_real_cos << std::endl;
+
     Eigen::Matrix<double, 2, 2> KGravity {
-        {FFUConstants::kG1, FFUConstants::kGOtherArm + FFUConstants::kG2},
+        {FFUConstants::kG1, FFUConstants::kG2},
         {0.0, FFUConstants::kG2}
     };
 
-    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t;// + KGravity * theta_real_cos;
+    //std::cout << "mult matrices: " << KGravity * theta_real_cos << std::endl;
+
+    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t;// + KGravity * theta_real_cos; 
 
     // inverse K3
     return matrices.at(2).inverse() * torque;

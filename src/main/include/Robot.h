@@ -6,6 +6,7 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include "Arm.h"
 #include "Constants.h"
+#include "Controls.h"
 
 class Robot : public frc::TimedRobot {
  public:
@@ -24,4 +25,6 @@ class Robot : public frc::TimedRobot {
 
  private:
    Arm arm;
+   Controls controller;
+   double moveInchesPerSecond = 3.0;
 };

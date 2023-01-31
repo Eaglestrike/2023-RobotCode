@@ -8,10 +8,16 @@
 void Robot::RobotInit() {
   frc::SmartDashboard::PutNumber("Target X", 0.0);
   frc::SmartDashboard::PutNumber("Target Z", 0.0);
-  frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
+  arm.init();
+  //frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
+  //hi this is caleb
+  //caleb says hi
+  //this is caleb when the car comes by
+  //husrfhvgaehgvadhgvadhga
 }
 
-void Robot::RobotPeriodic() {}
+void Robot::RobotPeriodic() {
+}
 
 void Robot::AutonomousInit() {
 }
@@ -21,23 +27,10 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
-  arm.init();
 }
 
 void Robot::TeleopPeriodic() {
-  int newTarget = frc::SmartDashboard::GetNumber("Switch to one to set new target", 0);
-  if(newTarget == 1){
-    double targetX = 1;//frc::SmartDashboard::GetNumber("Target X", 1);
-    double targetZ = 1;//frc::SmartDashboard::GetNumber("Target Z", 1);
-    arm.setTarget(targetX, targetZ);
-    frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
-  }
-  arm.periodic();
-}
-
-void Robot::DisabledInit() {}
-
-void Robot::DisabledPeriodic() {
+  /*
   int newTarget = frc::SmartDashboard::GetNumber("Switch to one to set new target", 0);
   if(newTarget == 1){
     double targetX = frc::SmartDashboard::GetNumber("Target X", 0.0);
@@ -45,6 +38,31 @@ void Robot::DisabledPeriodic() {
     arm.setTarget(targetX, targetZ);
     frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   }
+  */
+  arm.moveTarget(moveInchesPerSecond*controller.getXStrafe()*0.02,
+                moveInchesPerSecond*controller.getYStrafe()*0.02);
+  if (controller.A_IsPressed()) {
+    arm.resetTarget();
+  }
+  arm.Periodic();
+}
+
+void Robot::DisabledInit() {
+}
+
+void Robot::DisabledPeriodic() {
+  /*
+  int newTarget = frc::SmartDashboard::GetNumber("Switch to one to set new target", 0);
+  if(newTarget == 1){
+    double targetX = frc::SmartDashboard::GetNumber("Target X", 0.0);
+    double targetZ = frc::SmartDashboard::GetNumber("Target Z", 0.0);
+    arm.setTarget(targetX, targetZ);
+    frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
+  }
+  */
+  arm.moveTarget(moveInchesPerSecond*controller.getXStrafe()*0.02,
+                 moveInchesPerSecond*controller.getYStrafe()*0.02);
+  arm.DisabledPeriodic();
 }
 
 void Robot::TestInit() {}
