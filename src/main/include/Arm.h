@@ -8,8 +8,6 @@
 #include <math.h>
 #include <iostream>
 
-using namespace Helpers;
-
 class Arm {
     public:
         void init();
@@ -43,7 +41,7 @@ class Arm {
                                         ArmConstants::BASE_PID[1], 
                                         ArmConstants::BASE_PID[2]
                                     };
-        double m_kGravityBot = ArmConstants::BASE_KGRAVITY;;
+        double m_kGravityBot = ArmConstants::BASE_KGRAVITY;
         frc2::PIDController m_pidTop{
                                         ArmConstants::TOP_PID[0], 
                                         ArmConstants::TOP_PID[1],

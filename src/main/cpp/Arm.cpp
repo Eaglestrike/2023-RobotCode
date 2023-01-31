@@ -1,4 +1,5 @@
 #include "Arm.h"
+using namespace Helpers;
 
 // Sets up SmartDashboard, zeroes motor readings.
 void Arm::init(){
@@ -98,7 +99,7 @@ void Arm::Periodic() {
     double c = distance;
     double topArmAng = acos(((a*a)+(b*b)-(c*c))/(2*a*b)); //Angle between 2 arms
     //https://www.google.com/search?q=law+of+sines
-    double baseArmAng = M_PI - asin((sin(baseArmAng)/c) * a) - topArmAng; //Angle of base arm relative to target
+    double baseArmAng = M_PI - asin((sin(topArmAng)/c) * a) - topArmAng; //Angle of base arm relative to target
     double ang1;
     double ang2;
 
