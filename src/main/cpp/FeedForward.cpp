@@ -70,16 +70,12 @@ Eigen::Matrix<double, 2, 1> FeedForward::ff_u(Eigen::Matrix<double, 4, 1> X, Eig
         {std::cos(X(2, 0) - X(0, 0))}
     };
 
-    //std::cout << theta_real_cos << std::endl;
-
     Eigen::Matrix<double, 2, 2> KGravity {
         {FFUConstants::kG1, FFUConstants::kG2},
         {0.0, FFUConstants::kG2}
     };
 
-    //std::cout << "mult matrices: " << KGravity * theta_real_cos << std::endl;
-
-    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t;// + KGravity * theta_real_cos; 
+    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t + KGravity * theta_real_cos; 
 
     // inverse K3
     return matrices.at(2).inverse() * torque;
@@ -116,8 +112,8 @@ std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, do
 
     Eigen::Matrix<double, 2, 1> ret = ff_u(X, omega_t, alpha_t);
 
-    double gravityAddArm1 = FFUConstants::kG1 * std::cos(thetaArm1) + ret(1, 0) * FFUConstants::kGOtherArm;
-    double gravityAddArm2 = FFUConstants::kG2 * std::cos(thetaArm2);
+    //double gravityAddArm1 = FFUConstants::kG1 * std::cos(thetaArm1) + ret(1, 0) * FFUConstants::kGOtherArm;
+    //double gravityAddArm2 = FFUConstants::kG2 * std::cos(thetaArm2);
 
-    return {ret(0, 0) + gravityAddArm1, ret(1, 0) + gravityAddArm2};
+    return {ret(0, 0), ret(1, 0)};
 }
