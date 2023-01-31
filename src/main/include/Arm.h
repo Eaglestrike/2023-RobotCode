@@ -7,6 +7,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <math.h>
 #include "TrajectoryManager.h"
+#include "FeedForward.h"
 #include "Helpers.h"
 
 class Arm{
@@ -52,4 +53,5 @@ class Arm{
         double m_maxVolts = ArmConstants::MAX_VOLTS;
 		
 		TrajectoryManager trajManager;
+        FeedForward ff;
 };

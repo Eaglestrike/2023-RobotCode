@@ -142,7 +142,7 @@ void Arm::Periodic() {
         units::angle::radian_t(ang1),
         units::angle::radian_t(topReading),
         units::angle::radian_t(ang2));
-    auto ffu_volts = FeedForward::getffu(traj);
+    auto ffu_volts = ff.getffu(traj);
 
     //std::cout << "volts: " << ffu_volts[0] << ", " << ffu_volts[1] << "\n";
 
