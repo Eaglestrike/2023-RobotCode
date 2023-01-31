@@ -27,6 +27,7 @@ class Arm{
         const bool debug = true;
 
         const bool configDimensions = false;
+        bool m_temp_equate_traj_start_end = false;
         double m_baseArmLength = ArmConstants::BASE_ARM_LENGTH;
         double m_topArmLength = ArmConstants::TOP_ARM_LENGTH;
         double m_pivotHeight = ArmConstants::PIVOT_HEIGHT;

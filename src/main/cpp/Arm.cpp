@@ -27,6 +27,7 @@ void Arm::init(){
     }
     //frc::SmartDashboard::PutNumber("Target Ang Base", 0);
     //frc::SmartDashboard::PutNumber("Target Ang Top", 0);
+    frc::SmartDashboard::PutBoolean("Equate Traj Start End", m_temp_equate_traj_start_end);
 
     m_baseMotor.SetSelectedSensorPosition(0);
     m_topMotor.SetSelectedSensorPosition(0);
@@ -60,6 +61,8 @@ void Arm::Periodic() {
         frc::SmartDashboard::PutNumber("Target X", m_targetX);
         frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
     }
+
+    m_temp_equate_traj_start_end = frc::SmartDashboard::GetBoolean("Equate Traj Start End", m_temp_equate_traj_start_end);
 
     // Very basic joint space implementation
     double baseReading = -getAng(m_baseMotor) + m_angOffsetBase;
@@ -139,9 +142,9 @@ void Arm::Periodic() {
     //m_topMotor.SetVoltage(units::volt_t{topVoltage});
 
     auto traj = trajManager.get_traj(units::angle::radian_t(baseReading), 
-        units::angle::radian_t(ang1),
+        units::angle::radian_t(m_temp_equate_traj_start_end ? baseReading : ang1),
         units::angle::radian_t(topReading),
-        units::angle::radian_t(ang2));
+        units::angle::radian_t(m_temp_equate_traj_start_end ? topReading : ang2));
     auto ffu_volts = ff.getffu(traj);
 
     //std::cout << "volts: " << ffu_volts[0] << ", " << ffu_volts[1] << "\n";

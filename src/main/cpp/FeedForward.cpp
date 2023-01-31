@@ -139,6 +139,9 @@ std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, do
         alphaArm1 = 0.0;
         alphaArm2 = 0.0;
     }
+
+    frc::SmartDashboard::PutNumber("ffu thetaArm1", thetaArm1);
+    frc::SmartDashboard::PutNumber("ffu thetaArm2", thetaArm2);
     
 
     Eigen::Matrix<double, 4, 1> X {
