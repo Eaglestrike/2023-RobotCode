@@ -6,26 +6,7 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 
 FeedForward::FeedForward() {
-    // put vals to smartdashboard
-    frc::SmartDashboard::PutNumber("l1", m_l1);
-    frc::SmartDashboard::PutNumber("l2", m_l2);
-    frc::SmartDashboard::PutNumber("m1", m_m1);
-    frc::SmartDashboard::PutNumber("m2", m_m2);
-    frc::SmartDashboard::PutNumber("r1", m_r1);
-    frc::SmartDashboard::PutNumber("r2", m_r2);
-    frc::SmartDashboard::PutNumber("I1", m_I1);
-    frc::SmartDashboard::PutNumber("I2", m_I2);
-    frc::SmartDashboard::PutNumber("G1", m_G1);
-    frc::SmartDashboard::PutNumber("G2", m_G2);
-    frc::SmartDashboard::PutNumber("stall_torque", m_stall_torque);
-    frc::SmartDashboard::PutNumber("stall_current", m_stall_current);
-    frc::SmartDashboard::PutNumber("free_speed", m_free_speed);
-    frc::SmartDashboard::PutNumber("kG1", m_kG1);
-    frc::SmartDashboard::PutNumber("kG2", m_kG2);
-    frc::SmartDashboard::PutNumber("kGOtherArm", m_kGOtherArm);
-    frc::SmartDashboard::PutNumber("arm_1_trajectory_multiplier", m_arm_1_trajectory_time_multiplier);
-    frc::SmartDashboard::PutNumber("arm_2_trajectory_multiplier", m_arm_2_trajectory_time_multiplier);
-    frc::SmartDashboard::PutNumber("feedforward zero omega alpha", m_zeroOmegaAlpha);
+    putValuesToSmartDashboard();
 }
 
 /**
@@ -134,12 +115,7 @@ std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, do
     m_arm_2_trajectory_time_multiplier = frc::SmartDashboard::GetNumber("arm_2_trajectory_multiplier", m_arm_2_trajectory_time_multiplier);
     m_zeroOmegaAlpha = frc::SmartDashboard::GetBoolean("feedforward zero omega alpha", m_zeroOmegaAlpha);
 
-    if (m_zeroOmegaAlpha) {
-        omegaArm1 = 0.0;
-        omegaArm2 = 0.0;
-        alphaArm1 = 0.0;
-        alphaArm2 = 0.0;
-    }
+    
 
     m_R = 12.0 / m_stall_current;
     m_Kt = m_stall_torque / m_stall_current;
@@ -154,6 +130,15 @@ std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, do
         {m_G1 * m_G1 * m_Kt / (m_Kv * m_R), 0.0},
         {0.0, m_G2 * m_G2 * m_Kt * m_kNumDistalMotors / (m_Kv * m_R)}
     };
+
+    putValuesToSmartDashboard();
+
+    if (m_zeroOmegaAlpha) {
+        omegaArm1 = 0.0;
+        omegaArm2 = 0.0;
+        alphaArm1 = 0.0;
+        alphaArm2 = 0.0;
+    }
     
 
     Eigen::Matrix<double, 4, 1> X {
@@ -179,4 +164,27 @@ std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, do
     //double gravityAddArm2 = m_kG2 * std::cos(thetaArm2);
 
     return {ret(0, 0), ret(1, 0)};
+}
+
+void FeedForward::putValuesToSmartDashboard() {
+    // put vals to smartdashboard
+    frc::SmartDashboard::PutNumber("l1", m_l1);
+    frc::SmartDashboard::PutNumber("l2", m_l2);
+    frc::SmartDashboard::PutNumber("m1", m_m1);
+    frc::SmartDashboard::PutNumber("m2", m_m2);
+    frc::SmartDashboard::PutNumber("r1", m_r1);
+    frc::SmartDashboard::PutNumber("r2", m_r2);
+    frc::SmartDashboard::PutNumber("I1", m_I1);
+    frc::SmartDashboard::PutNumber("I2", m_I2);
+    frc::SmartDashboard::PutNumber("G1", m_G1);
+    frc::SmartDashboard::PutNumber("G2", m_G2);
+    frc::SmartDashboard::PutNumber("stall_torque", m_stall_torque);
+    frc::SmartDashboard::PutNumber("stall_current", m_stall_current);
+    frc::SmartDashboard::PutNumber("free_speed", m_free_speed);
+    frc::SmartDashboard::PutNumber("kG1", m_kG1);
+    frc::SmartDashboard::PutNumber("kG2", m_kG2);
+    frc::SmartDashboard::PutNumber("kGOtherArm", m_kGOtherArm);
+    frc::SmartDashboard::PutNumber("arm_1_trajectory_multiplier", m_arm_1_trajectory_time_multiplier);
+    frc::SmartDashboard::PutNumber("arm_2_trajectory_multiplier", m_arm_2_trajectory_time_multiplier);
+    frc::SmartDashboard::PutNumber("feedforward zero omega alpha", m_zeroOmegaAlpha);
 }

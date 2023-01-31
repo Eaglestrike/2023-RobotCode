@@ -17,6 +17,7 @@ private:
     std::array<Eigen::Matrix<double, 2, 2>, 4> NormalizedMatricesForState(Eigen::Matrix<double, 4, 1> X);
     std::array<Eigen::Matrix<double, 2, 2>, 4> MatricesForState(Eigen::Matrix<double, 4, 1> X);
     Eigen::Matrix<double, 2, 1> ff_u(Eigen::Matrix<double, 4, 1> X, Eigen::Matrix<double, 2, 1> omega_t, Eigen::Matrix<double, 2, 1> alpha_t);
+    void putValuesToSmartDashboard();
 
     bool configFeedForward = true;
     bool m_zeroOmegaAlpha = false;
