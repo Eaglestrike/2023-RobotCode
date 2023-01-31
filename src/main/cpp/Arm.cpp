@@ -1,6 +1,9 @@
 #include "Arm.h"
 #include "FeedForward.h"
 
+
+#include <iostream>
+
 void Arm::init(){
     if(configDimensions){
         frc::SmartDashboard::PutNumber("Base Length", m_baseArmLength);
@@ -34,7 +37,7 @@ void Arm::periodic(){
         frc::SmartDashboard::PutBoolean("Target", false);
         return;
     }
-    if(distance < abs(m_baseArmLength - m_topArmLength)){
+    if(distance < abs(m_baseArmLength - m_topArmLength) || distance == 0){
         frc::SmartDashboard::PutBoolean("Target", false);
         return;
     }
@@ -55,11 +58,29 @@ void Arm::periodic(){
         baseArmAng = -baseArmAng;
     }
 
+    //frc::SmartDashboard::PutNumber("Base Ang", baseArmAng);
+
     auto traj = trajManager.get_traj(units::angle::radian_t(getAng(m_baseMotor) + m_angOffsetBase), 
         units::angle::radian_t(baseArmAng + angle),
         units::angle::radian_t(getAng(m_topMotor) + m_angOffsetTop),
         units::angle::radian_t(baseArmAng + angle));
     auto ffu_volts = FeedForward::getffu(traj);
+
+    std::cout << "volts: " << ffu_volts[0] << ", " << ffu_volts[1] << "\n";
+
+    frc::SmartDashboard::PutNumber("base voltage", ffu_volts[0]);
+    frc::SmartDashboard::PutNumber("top voltage", ffu_volts[1]);
+
+    double dAngBase = getAngDiff(getAng(m_baseMotor), baseArmAng + angle);
+    double dAngTop = getAngDiff(getAng(m_topMotor), topArmAng);
+
+   // std::cout << "get Ang bottom " <<  getAng(m_baseMotor) << ", base arm: " << baseArmAng << ", angle: " <<  angle << "\n";
+
+    frc::SmartDashboard::PutNumber("dAngBase", dAngBase);
+    frc::SmartDashboard::PutNumber("dAngTop", dAngTop);
+
+    frc::SmartDashboard::PutNumber("base angle", m_baseMotor.GetSelectedSensorPosition() / 4096 * 2*M_PI);
+    frc::SmartDashboard::PutNumber("top angle", (m_topMotor.GetSelectedSensorPosition() - m_baseMotor.GetSelectedSensorPosition()) / 4096 * 2*M_PI);
 
     double baseVoltage = std::clamp(ffu_volts[0], -m_maxVolts, m_maxVolts);
     m_baseMotor.SetVoltage(units::voltage::volt_t(baseVoltage));

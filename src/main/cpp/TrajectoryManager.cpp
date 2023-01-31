@@ -55,8 +55,8 @@ void TrajectoryManager::gen_new_traj(units::radian_t arm1Curr, units::radian_t a
 units::radian_t arm2Curr, units::radian_t arm2Target) {
     start_time = frc::Timer::GetFPGATimestamp();
     elapsed_time = 0_s;
-    arm_1_trajectory_time = 0_s;
-    arm_2_trajectory_time = 0_s;
+    arm_1_trajectory_time = 5_s;
+    arm_2_trajectory_time = 5_s;
     arm_1_trajectory = Trajectory::calcTraj(arm1Curr, arm1Target, arm_1_trajectory_time);
     arm_2_trajectory = Trajectory::calcTraj(arm2Curr, arm2Target, arm_2_trajectory_time);
     firstRun = false;

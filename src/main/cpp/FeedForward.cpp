@@ -74,7 +74,7 @@ Eigen::Matrix<double, 2, 1> FeedForward::ff_u(Eigen::Matrix<double, 4, 1> X, Eig
         {0.0, FFUConstants::kG2}
     };
 
-    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t + KGravity * theta_real_cos;
+    auto torque = matrices.at(0) * alpha_t + matrices.at(1) * omega_t + matrices.at(3) * omega_t;// + KGravity * theta_real_cos;
 
     // inverse K3
     return matrices.at(2).inverse() * torque;

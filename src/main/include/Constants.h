@@ -22,11 +22,11 @@ namespace GeneralConstants
 }
 
 namespace ArmConstants{
-    const int BASE_MOTOR_ID = 0;
-    const int TOP_MOTOR_ID = 0;
+    const int BASE_MOTOR_ID = 20;
+    const int TOP_MOTOR_ID = 14;
 
-    const double BASE_ARM_LENGTH = 0.0;
-    const double TOP_ARM_LENGTH = 0.0;
+    const double BASE_ARM_LENGTH = 31.0 * 0.0254;
+    const double TOP_ARM_LENGTH = 31.0 * 0.0254;
     const double PIVOT_HEIGHT = 0.0;
 
     const double BASE_OFFSET = 0.0; //Radians

@@ -27,8 +27,8 @@ class Arm{
         double m_angOffsetBase = ArmConstants::BASE_OFFSET;//Radians
         double m_angOffsetTop = ArmConstants::TOP_OFFSET;//Radians
 
-        double m_targetX;
-        double m_targetZ;
+        double m_targetX = 1;
+        double m_targetZ = 1;
 
         const bool configPID = true;
         frc2::PIDController m_pidBase{ 
@@ -41,7 +41,7 @@ class Arm{
                                         ArmConstants::TOP_PID[1],
                                         ArmConstants::TOP_PID[2]
                                     };
-        double m_maxVolts = 0;
+        double m_maxVolts = 4;
 
         TrajectoryManager trajManager;
 };
