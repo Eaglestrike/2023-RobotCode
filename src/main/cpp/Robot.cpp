@@ -19,10 +19,20 @@ void Robot::RobotInit() {
 }
 
 void Robot::RobotPeriodic() {
-
+  
   // log value of registered data fields
   swerveX.Append(swerveDrive_->getX());
   swerveY.Append(swerveDrive_->getY());
+
+  frc::SmartDashboard::PutNumber("Tag x", 0);
+  frc::SmartDashboard::PutNumber("Tag y", 0);
+  frc::SmartDashboard::PutNumber("Tag z", 0);
+
+  frc::SmartDashboard::PutNumber("Tag roll (x)", 0);
+  frc::SmartDashboard::PutNumber("Tag pitch (y)", 0);
+  frc::SmartDashboard::PutNumber("Tag yaw (z)", 0);
+
+  frc::SmartDashboard::PutNumber("Tag num", 0);
   
 }
 
@@ -43,6 +53,34 @@ void Robot::TeleopInit() {
 }
 
 void Robot::TeleopPeriodic() {
+
+  double x = frc::SmartDashboard::GetNumber("Tag x", 0);
+  double y = frc::SmartDashboard::GetNumber("Tag y", 0);
+  double z = frc::SmartDashboard::GetNumber("Tag z", 0);
+
+  double ax = frc::SmartDashboard::GetNumber("Tag roll (x)", 0);
+  double ay = frc::SmartDashboard::GetNumber("Tag pitch (y)", 0);
+  double az = frc::SmartDashboard::GetNumber("Tag yaw (z)", 0);
+
+  double num = frc::SmartDashboard::GetNumber("Tag num", 0);
+
+  frc::Translation3d tagTrans = {units::meter_t{x}, units::meter_t{y}, units::meter_t{z}};
+  frc::Rotation3d tagRot = {units::degree_t{ax}, units::degree_t{ay}, units::degree_t{az}};
+  frc::Pose3d tagPose = {tagTrans, tagRot};
+  
+  poseEstimator_.updateField(tagPose, num);
+
+
+  //MAKE SURE THIS IS THE CORRECT SMARTDASHBOARD JETSON FORMAT
+  std::vector<double> data = frc::SmartDashboard::GetNumberArray("data", {});
+    
+  frc::Translation3d trans{units::meter_t{data[0]}, units::meter_t{data[1]}, units::meter_t{data[2]}};
+  frc::Rotation3d rot{units::degree_t{data[3]}, units::degree_t{data[4]}, units::degree_t{data[5]}};
+  frc::Pose3d pose{trans, rot};
+
+  frc::SmartDashboard::PutNumber("Robot x", poseEstimator_.getPose(pose, data[6]).X().value());
+  frc::SmartDashboard::PutNumber("Robot y", poseEstimator_.getPose(pose, data[6]).Y().value());
+
 
   double vx = ljoy.GetY();
   double vy = ljoy.GetX();

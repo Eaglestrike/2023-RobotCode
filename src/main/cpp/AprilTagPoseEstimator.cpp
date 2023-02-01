@@ -1,6 +1,8 @@
 #include "AprilTagPoseEstimator.h"
 #include <cmath>
 
+#include <iostream>
+
 using namespace frc;
 
 // this function expects to get the april tag the april tag pose reading in the following format:
@@ -20,6 +22,11 @@ Pose2d AprilTagPoseEstimator::getPose(Pose3d aprilTagPosReading, int aprilTagNum
 
     Pose3d aprilTagPos = aprilTagFieldLayout.GetTagPose(aprilTagNum).value();
 
+    std::cout << aprilTagFieldLayout.GetTagPose(0).value().X().value() << "\n";
+    std::cout << aprilTagFieldLayout.GetTagPose(0).value().Y().value() << "\n";
+    std::cout << aprilTagFieldLayout.GetTagPose(0).value().Z().value() << "\n";
+    std::cout << "\n";
+
     // apriltag rotation
     units::radian_t aprilTagRot = aprilTagPos.Rotation().ToRotation2d().Radians();
 
@@ -38,4 +45,15 @@ Pose2d AprilTagPoseEstimator::getPose(Pose3d aprilTagPosReading, int aprilTagNum
     units::radian_t robotRot = aprilTagRot + gamma;
 
     return Pose2d{robotX, robotY, robotRot};
+}
+
+
+
+frc::AprilTagFieldLayout AprilTagPoseEstimator::updateField(Pose3d newPose, int tagNum) {
+    AprilTag tag(tagNum, newPose);
+    std::vector<AprilTag> aprilTags = {tag};
+    
+    aprilTagFieldLayout = AprilTagFieldLayout(aprilTags, AprilTagsConstants::FIELD_LENGTH, AprilTagsConstants::FIELD_WIDTH);
+
+    return aprilTagFieldLayout;
 }

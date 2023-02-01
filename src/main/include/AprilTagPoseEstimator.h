@@ -2,6 +2,7 @@
 #include <frc/geometry/Pose3d.h>
 #include <frc/apriltag/AprilTagFieldLayout.h>
 #include "AprilTags.h"
+#include "Constants.h"
 
 
 class AprilTagPoseEstimator {
@@ -14,6 +15,12 @@ public:
     */
     frc::Pose2d getPose(frc::Pose3d aprilTagPosReading, int aprilTagNum);
 
+    void updatePeriodic();
+
+    //for testing purposes
+    frc::AprilTagFieldLayout updateField(frc::Pose3d newPose, int tagNum);
+
 private:
     frc::AprilTagFieldLayout aprilTagFieldLayout = AprilTags::getAprilTagFieldLayout();
+  
 };

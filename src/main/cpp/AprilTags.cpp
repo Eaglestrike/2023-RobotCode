@@ -10,6 +10,7 @@ using namespace frc;
 
 frc::AprilTagFieldLayout AprilTags::getAprilTagFieldLayout() {
     // if blue alliance or invalid
+
     if (DriverStation::GetAlliance() != DriverStation::Alliance::kRed) {
         AprilTag tag1(1, Pose3d(Pose2d(
             AprilTagsConstants::FIELD_LENGTH - AprilTagsConstants::GRID_APRILTAG_X,
