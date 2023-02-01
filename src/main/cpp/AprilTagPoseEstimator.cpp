@@ -24,7 +24,7 @@ Pose2d AprilTagPoseEstimator::getPose(Pose3d aprilTagPosReading, int aprilTagNum
     units::radian_t aprilTagRot = aprilTagPos.Rotation().ToRotation2d().Radians();
 
     // calculate rotation sine and cosine values
-    units::radian_t rotAngle = -aprilTagRot - Rotation2d(-90_deg).Radians();
+    units::radian_t rotAngle = aprilTagRot - Rotation2d(90_deg).Radians() + gamma;
     double cosVal = std::cos(unit_cast<double>(rotAngle));
     double sinVal = std::sin(unit_cast<double>(rotAngle));
 
@@ -35,7 +35,7 @@ Pose2d AprilTagPoseEstimator::getPose(Pose3d aprilTagPosReading, int aprilTagNum
     // add april tag location coordinates to get robot position
     units::meter_t robotX = translatedX + aprilTagPos.X();
     units::meter_t robotY = translatedY + aprilTagPos.Y();
-    units::radian_t robotRot = aprilTagRot + gamma + Rotation2d(180_deg).Radians();
+    units::radian_t robotRot = aprilTagRot + gamma;
 
     return Pose2d{robotX, robotY, robotRot};
 }
