@@ -1,379 +1,545 @@
 #include "SwerveDrive.h"
 
-/**
- * Initializes a swerve drive object (for right now that just entails getting navx + limelight & setting some PID settings)
- * @param nx the navx object
-**/
-SwerveDrive::SwerveDrive(AHRS * nx): navx_{nx}
+SwerveDrive::SwerveDrive()
 {
-    angPID_.EnableContinuousInput(-180, 180);
-    angPID_.SetIntegratorRange(-0.5, 0.5);
-    initializeOdometry(frc::Rotation2d{0_deg}, frc::Pose2d{frc::Translation2d{0_m, 0_m}, frc::Rotation2d{0_deg}});
+    // autoX_ = 0;
+    // autoY_ = 0;
+    trackingTag_ = false;
+    foundTag_ = false;
+    tagPos_ = -1;
+    tagFollowingStartTime_ = 0;
+
+    // aprilTagX_ = 0;
+    // aprilTagY_ = 0;
 }
 
-/**
- * Can be called when tuning the swerve module PID
-**/
-void SwerveDrive::configSpeedPID(double P, double I, double D) {
-    speedPID_.SetP(P);
-    speedPID_.SetI(I);
-    speedPID_.SetD(D);
+void SwerveDrive::setYaw(double yaw)
+{
+    yaw_ = yaw;
 }
 
-/**
- * Set's swerve drive's state
-**/
-void SwerveDrive::setState(State state) {
-    state_ = state;
+void SwerveDrive::periodic(double yaw, Controls *controls)
+{
+    frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
+
+    setYaw(yaw);
+    //updateAprilTagFieldXY(); TODO here
+    calcOdometry();
+
+    if (frc::DriverStation::IsTeleop())
+    {
+        if (controls->lXTriggerPressed()) // TODO lJoyTriggerPressed
+        {
+            if (!trackingTag_)
+            {
+                tagPos_ = checkScoringPos();
+
+                double wantedX, wantedY, wantedYaw;
+                if (tagPos_ < 0 || tagPos_ > 10)
+                {
+                    drive(controls->getXStrafe(), controls->getYStrafe(), controls->getTurn());
+                    return;
+                }
+                else if (tagPos_ != 10)
+                {
+                    trackingTag_ = true;
+                    wantedY = tagPos_ * 0.5588;
+                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    {
+                        wantedYaw = 90;
+                        wantedX = FieldConstants::BLUE_SCORING_X;
+                    }
+                    else
+                    {
+                        wantedYaw = -90;
+                        wantedX = FieldConstants::RED_SCORING_X;
+                    }
+                }
+                else
+                {
+                    trackingTag_ = true;
+                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    {
+                        wantedYaw = -90;
+                        wantedX = 16.178784 - 0.5;
+                        wantedY = 6.749796;
+                    }
+                    else
+                    {
+                        wantedYaw = -90;
+                        wantedX = 0.36195 + 0.5;
+                        wantedY = 6.749796;
+                    }
+                }
+                SwervePose currPose(robotX_, robotY_, yaw_, 0, 0, 0, 0, 0, 0);        // TODO vel and acc, use odometry to start?
+                SwervePose wantedPose(wantedX, wantedY, wantedYaw, 0, 0, 0, 0, 0, 0); // TODO vel and acc, figure out yaw somehow (arm or closest)
+
+                tagPath_.reset();
+                tagPath_.addPoint(currPose);
+                tagPath_.addPoint(wantedPose);
+                tagPath_.generateTrajectory(false);
+                tagFollowingStartTime_ = timer_.GetFPGATimestamp().value();
+
+                // TEST BELOW
+            }
+
+            bool end = false;
+            double time = timer_.GetFPGATimestamp().value() - tagFollowingStartTime_;
+            SwervePose *wantedPose = tagPath_.getPose(time, end);
+            if (!end)
+            {
+                // drivePose(*wantedPose);
+            }
+            delete wantedPose;
+        }
+        else
+        {
+            trackingTag_ = false;
+            double xStrafe, yStrafe;
+            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            {
+                xStrafe = controls->getYStrafe();
+                yStrafe = -controls->getXStrafe();
+            }
+            else
+            {
+                xStrafe = -controls->getYStrafe();
+                yStrafe = controls->getXStrafe();
+            }
+            drive(xStrafe, yStrafe, controls->getTurn());
+        }
+    }
 }
 
-/**
- * Gets swerve drive's state
-**/
-SwerveDrive::State SwerveDrive::getState() {
-    return state_;
-} 
+void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
+{
+    calcModules(xSpeed, ySpeed, turn, false);
 
-/**
- * Initializes the odometry object with an initial angle and 2d position
- * @param gyroAngle the robot's initial heading/angle
- * @param initPose the robots initial position on the field
-**/
-void SwerveDrive::initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose) {
-    odometry_ = new frc::SwerveDriveOdometry<4>(
-        kinematics_, 
-        gyroAngle, 
-        getModulePositions(), 
-        initPose
-    );
+    // double volts = frc::SmartDashboard::GetNumber("Swerve Volts", 0.0);
+
+    // if(abs(xSpeed) > 0.1 || abs(ySpeed) > 0.1 || abs(turn) > 0.1)
+    // {
+    //     topRight_->periodic(volts, trAngle_, true);
+    //     topLeft_->periodic(volts, tlAngle_, true);
+    //     bottomRight_->periodic(volts, brAngle_, true);
+    //     bottomLeft_->periodic(volts, blAngle_, true);
+    // }
+    // else
+    // {
+    //     topRight_->periodic(0, trAngle_, true);
+    //     topLeft_->periodic(0, tlAngle_, true);
+    //     bottomRight_->periodic(0, brAngle_, true);
+    //     bottomLeft_->periodic(0, blAngle_, true);
+    // }
+
+    // 0.65, 0, 0
+    // 1, 610, 0.15534
+    // 2, 2480, 0.63156
+    // 3, 4600, 1.17144
+    // 4, 6300, 1.60436
+    // 5, 8400, 2.13915
+    // 6, 10200, 2.59754
+    // m = 2.044, b = 0.669435
+
+    // turn
+    // 1, 530, 9.66532
+    // 2, 2400, 43.7675
+    // 3, 4000, 72.94584
+    // 4, 6200, 113.0661
+    // 5, 8100, 147.7153
+    // 6, 9800, 178.7173
+    // m = 0.0291946, b = 0.746574
+
+    topRight_->periodic(trSpeed_, trAngle_, false);
+    topLeft_->periodic(tlSpeed_, tlAngle_, false);
+    bottomRight_->periodic(brSpeed_, brAngle_, false);
+    bottomLeft_->periodic(blSpeed_, blAngle_, false);
+
+    // double speed = frc::SmartDashboard::GetNumber("Swerve Volts", 0);
+    // topRight_->periodic(speed, trAngle_, true);
+    // topLeft_->periodic(speed, tlAngle_, true);
+    // bottomRight_->periodic(speed, brAngle_, true);
+    // bottomLeft_->periodic(speed, blAngle_, true);
 }
 
-/**
- * Updates or resets the odometry position to the given position and orientation
-**/
-void SwerveDrive:: updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose) {
-    odometry_->ResetPosition(
-        robotAngle, 
-        getModulePositions(),
-        robotPose
-    );
-}
+/*void SwerveDrive::driveAutoPose(double yaw, SwervePose pose)
+{
+    setYaw(yaw);
+    calcOdometry();
 
-/**
- * Called in autonomous init to initialize swerve's trajectory and ramsete (trajectory following) command.
-**/
-void SwerveDrive::initializeAutoTraj(std::string filePath) {
-    ramseteCommand_ = setupRamsete(filePath); 
-    ramseteCommand_->Initialize();
-}
+    /*frc::SmartDashboard::PutNumber("AX", autoX_);
+    frc::SmartDashboard::PutNumber("AY", autoY_);
+    frc::SmartDashboard::PutNumber("WAX", pose.getX());
+    frc::SmartDashboard::PutNumber("WAY", pose.getY());
 
-/**
- * @returns moduleStates, an array that contains the speed and angle of each swerve module as a SwerveModuleState
-**/
-wpi::array<frc::SwerveModuleState, 4> SwerveDrive::getRealModuleStates() {    
-    wpi::array<frc::SwerveModuleState, 4> moduleStates = {
-        flModule_.getState(), frModule_.getState(), blModule_.getState(), brModule_.getState() };
-    return moduleStates;
-}
+    frc::SmartDashboard::PutNumber("WVX", pose.getXVel());
+    frc::SmartDashboard::PutNumber("WVY", pose.getYVel());*
 
-/**
- * @returns a DifferentialDriveWheelSpeeds object representing the swerve drive's left side & right side wheel speeds. 
- * For use in trajectory following where swerve drive is treated as differential drive
-**/
-frc::DifferentialDriveWheelSpeeds SwerveDrive::getDifferentialWheelSpeeds() {
-    auto moduleStates = getRealModuleStates();
-    double leftSpeed = (moduleStates[0].speed.value() + moduleStates[2].speed.value())/2;
-    double rightSpeed = (moduleStates[1].speed.value() + moduleStates[3].speed.value())/2;
-
-    // frc::SmartDashboard::PutNumber("left speed", leftSpeed);
-    // frc::SmartDashboard::PutNumber("right speed", rightSpeed);
-
-    return {units::meters_per_second_t(leftSpeed), units::meters_per_second_t(rightSpeed)};
-}
-
-/**
- * Called periodically in Robot.cpp. encapsulates driving, path following, and odometry update
- * @param vx the desired robot velocity in the x direction
- * @param vy the desired robot velocity in the y direction
- * @param vtheta the desired robot rotational velocity
-**/
-void SwerveDrive::Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta) {
-
-    //update odometry no matter the state
-    odometry_->Update(units::degree_t{navx_->GetYaw()}, getModulePositions());
-
-    //do something with apriltag
-
-    //takes appropriate action based on current state
-    switch(state_) {
-        case DRIVE:
-            drive(vx, vy, vtheta);
-            break;
-        case PATH_FOLLOW:
-            ramseteCommand_->Execute();
-            odometry_->Update(units::degree_t{navx_->GetYaw()}, getModulePositions());
-            break;
-        case STOP:
-            stop();
-            break;
+    double xVel = pose.getXVel();
+    double yVel = pose.getYVel();
+    if(pose.getXVel() != 0 || pose.getYVel() != 0)
+    {
+        xVel += (pose.getX() - autoX_) * SwerveConstants::klP + pose.getXAcc() * SwerveConstants::klA;
+        yVel += (pose.getY() - autoY_) * SwerveConstants::klP + pose.getYAcc() * SwerveConstants::klA;
     }
 
-}
 
-/**
- * Controls swerve modules to drive in response to joystick driver input
- * @param vx the desired robot velocity in the x direction
- * @param vy the desired robot velocity in the y direction
- * @param vtheta the desired robot rotational velocity
-**/
-void SwerveDrive::drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta) {
-    units::degree_t navx_yaw = units::degree_t{navx_->GetYaw()};
-  
-    //converts field-relative joystick input to robot-relative speeds
-    frc::ChassisSpeeds speeds_ = frc::ChassisSpeeds::FromFieldRelativeSpeeds(
-        vx, vy, vtheta, frc::Rotation2d(navx_yaw));
+    double yawVel = pose.getYawVel();
+    //frc::SmartDashboard::PutNumber("WYAW", yawVel);
 
-    //convert robot speeds into swerve module states (speed & angle of each module)
-    auto [fl, fr, bl, br] = kinematics_.ToSwerveModuleStates(speeds_);
+    //frc::SmartDashboard::PutNumber("wy", pose.getYaw());
+    if(pose.getXVel() != 0 || pose.getYVel() != 0 || pose.getYawVel() != 0)
+    {
+        yawVel += (pose.getYaw() - (-yaw_)) * SwerveConstants::kaP + pose.getYawAcc() * SwerveConstants::kaA;
+    }
 
-    //optimize module states so they can have most direct path to goal speed + angle
-    auto fl_opt = flModule_.getOptState(fl);
-    auto fr_opt = frModule_.getOptState(fr);
-    auto bl_opt = blModule_.getOptState(bl);
-    auto br_opt = brModule_.getOptState(br);
+    calcModules(xVel, yVel, yawVel, true);
 
-    //set motor outputs
-    flModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(flModule_.getYaw(), fl_opt.angle.Degrees().value()),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
+    topRight_->periodic(trSpeed_, trAngle_, true);
+    topLeft_->periodic(tlSpeed_, tlAngle_, true);
+    bottomRight_->periodic(brSpeed_, brAngle_, true);
+    bottomLeft_->periodic(blSpeed_, blAngle_, true);
+}*/
 
-   // frc::SmartDashboard::PutNumber("fl speed error", fl_opt.speed.value() - flModule_.getVelocityMPS().value());
-    flModule_.setSpeedMotorVolts( std::clamp(
-        speedPID_.Calculate(flModule_.getVelocityMPS().value(), fl_opt.speed.value())
-        + speedFeedforward_.Calculate(fl_opt.speed).value(),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-
-
-    frModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(frModule_.getYaw(), fr_opt.angle.Degrees().value()),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-
- //   frc::SmartDashboard::PutNumber("fr speed error", fr_opt.speed.value() - frModule_.getVelocityMPS().value());
-    frModule_.setSpeedMotorVolts( std::clamp(
-        speedPID_.Calculate(frModule_.getVelocityMPS().value(), fr_opt.speed.value())
-        + speedFeedforward_.Calculate(fr_opt.speed).value(),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-
-
-    blModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(blModule_.getYaw(), bl_opt.angle.Degrees().value()),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-
- //   frc::SmartDashboard::PutNumber("bl speed error", bl_opt.speed.value() - blModule_.getVelocityMPS().value());
-    blModule_.setSpeedMotorVolts( std::clamp(
-        speedPID_.Calculate(blModule_.getVelocityMPS().value(), bl_opt.speed.value())
-        + speedFeedforward_.Calculate(bl_opt.speed).value(),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-
-
-    brModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(brModule_.getYaw(), br_opt.angle.Degrees().value()),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-
-  //  frc::SmartDashboard::PutNumber("br speed error", br_opt.speed.value() - brModule_.getVelocityMPS().value());
-    brModule_.setSpeedMotorVolts( std::clamp(
-        speedPID_.Calculate(brModule_.getVelocityMPS().value(), br_opt.speed.value())
-        + speedFeedforward_.Calculate(br_opt.speed).value(),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-
-}
-
-/**
- * Controls swerve modules to behave like differential drive with given @param leftVolts and @param rightVolts
-**/
-void SwerveDrive::differentialDrive(units::volt_t leftVolts, units::volt_t rightVolts) {
-    //voltage constraints
-    double leftVoltsRaw = std::clamp(leftVolts.value(), -5.0, 5.0);
-    double rightVoltsRaw = std::clamp(rightVolts.value(), -5.0, 5.0);
-
-    // frc::SmartDashboard::PutNumber("left volts", leftVoltsRaw);
-    // frc::SmartDashboard::PutNumber("right volts", rightVoltsRaw);
-
-    // frc::SmartDashboard::PutNumber("Odom x", odometry_->GetPose().X().value());
-    // frc::SmartDashboard::PutNumber("Odom y", odometry_->GetPose().Y().value());
-
-    flModule_.setSpeedMotorVolts(leftVoltsRaw);
-    blModule_.setSpeedMotorVolts(leftVoltsRaw);
-
-    frModule_.setSpeedMotorVolts(rightVoltsRaw);
-    brModule_.setSpeedMotorVolts(rightVoltsRaw);
-
-    //set all angles to 0 because this is differential drive
-    flModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(flModule_.getYaw(), 0),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-    frModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(frModule_.getYaw(), 0),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-    blModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(blModule_.getYaw(), 0),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-    brModule_.setAngMotorVoltage( std::clamp(
-        angPID_.Calculate(brModule_.getYaw(), 0),
-        -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE) );
-}
-
-/**
- * Freezes all swerve modules in place such that the robot stops moving.
-**/
-void SwerveDrive::stop() {
-    flModule_.setAngMotorVoltage(0);
-    flModule_.setSpeedMotor(0);
-
-    frModule_.setAngMotorVoltage(0);
-    frModule_.setSpeedMotor(0);
-
-    blModule_.setAngMotorVoltage(0);
-    blModule_.setSpeedMotor(0);
-
-    brModule_.setAngMotorVoltage(0);
-    brModule_.setSpeedMotor(0);
-}
-
-/**
- * @param filePath the name of the file to be used for trajectory generation
- * @returns a ramseteCommand shared pointer object that, when executed, will result in the robot following the inputted traj file
- * Using a shared pointer so that the ramsete command can be initialized after construction, and so that the pointer can
- * change owners (from this function to global SwerveDrive class)
-**/
-std::shared_ptr<frc2::RamseteCommand> SwerveDrive::setupRamsete(std::string filePath) {
-    frc::TrajectoryConfig config{SwerveConstants::kMaxSpeed, SwerveConstants::kMaxAccel};
-    config.SetKinematics(kinematics_);
-
-    //get trajectory from pathweaver file
-    fs::path deployDirectory = frc::filesystem::GetDeployDirectory();
-    deployDirectory = deployDirectory / "paths" / filePath;
-    frc::Trajectory trajectory = frc::TrajectoryUtil::FromPathweaverJson(deployDirectory.string());
-
-    updateOdometry(trajectory.InitialPose().Rotation(), trajectory.InitialPose());
-    navx_->SetAngleAdjustment(-trajectory.InitialPose().Rotation().Degrees().value());
-
-    std::shared_ptr<frc2::RamseteCommand> ramseteCommand = make_shared<frc2::RamseteCommand>(
-        frc2::RamseteCommand(
-        trajectory, [this]() { return odometry_->GetPose(); }, //lambda function to get robot's position
-        frc::RamseteController(SwerveConstants::kRamseteB, SwerveConstants::kRamseteZeta), 
-        speedFeedforward_,
-        diffDriveKinematics_, 
-        [this] { return getDifferentialWheelSpeeds(); }, //lambda function to get the robot's current wheel speeds
-        speedPID_, speedPID_,
-        [this] (units::volt_t leftVolts, units::volt_t rightVolts) { differentialDrive(leftVolts, rightVolts); } //lambda function to set wheel volts
-    ));
-    return ramseteCommand;
-}
-
-
-/**
- * @returns the robot's current velocity 
-**/
-frc::ChassisSpeeds SwerveDrive::getRobotSpeeds() {
-  frc::ChassisSpeeds speeds = kinematics_.ToChassisSpeeds(getRealModuleStates());
-  //rest of stuff would be for conversion to field-relative speeds, alone speeds is robot relative
-//   frc::Translation2d t{units::meter_t{speeds.vx.value()}, units::meter_t{speeds.vy.value()}}; //sus units... if we hate it i can write this myself
-//   t.RotateBy(frc::Rotation2d{units::degree_t{m_navx->GetYaw()}});
-//   speeds.vx = units::meters_per_second_t{t.X().value()};
-//   speeds.vy = units::meters_per_second_t{t.Y().value()};
-  return speeds;
-}
-
-/**
- * @returns the distance from the center of the robot to the center of the goal
- * TODO: replace with apriltag equivalent
-**/
-double SwerveDrive::getDistance(double turretAngle)
+void SwerveDrive::drivePose(SwervePose pose)
 {
-    std::pair<double, double> limelightToRobot = camToBot(turretAngle);  //vector from limelight pose to center of bot
-    
-    double limelightToGoalX = odometry_->GetPose().X().value() + limelightToRobot.first;
-    double limelightTtoGoalY = odometry_->GetPose().Y().value() + limelightToRobot.second;
+    double xVel = pose.getXVel();
+    double yVel = pose.getYVel();
 
-    return sqrt(limelightToGoalX * limelightToGoalX + limelightTtoGoalY * limelightTtoGoalY);
+    if (pose.getXVel() != 0 || pose.getYVel() != 0)
+    {
+        yVel += (pose.getX() - robotX_) * SwerveConstants::klP + pose.getXAcc() * SwerveConstants::klA;
+        xVel += (pose.getY() - robotY_) * SwerveConstants::klP + pose.getYAcc() * SwerveConstants::klA;
+    }
+
+    double yawVel = pose.getYawVel();
+
+    if (pose.getXVel() != 0 || pose.getYVel() != 0 || pose.getYawVel() != 0)
+    {
+        yawVel += (pose.getYaw() - (-yaw_)) * SwerveConstants::kaP + pose.getYawAcc() * SwerveConstants::kaA;
+    }
+
+    calcModules(xVel, yVel, yawVel, true);
+
+    topRight_->periodic(trSpeed_, trAngle_, true);
+    topLeft_->periodic(tlSpeed_, tlAngle_, true);
+    bottomRight_->periodic(brSpeed_, brAngle_, true);
+    bottomLeft_->periodic(blSpeed_, blAngle_, true);
 }
 
-/**
- * @return array of SwerveModulePositions
-**/
-wpi::array<frc::SwerveModulePosition, 4> SwerveDrive::getModulePositions() 
+void SwerveDrive::calcModules(double xSpeed, double ySpeed, double turn, bool inVolts)
 {
-    return {flModule_.getPosition(), frModule_.getPosition(), blModule_.getPosition(), brModule_.getPosition()};
+    double angle = yaw_ * (pi / 180);
+
+    double newX = xSpeed * cos(angle) + ySpeed * sin(angle);
+    double newY = ySpeed * cos(angle) + xSpeed * -sin(angle);
+
+    if (inVolts)
+    {
+        turn = (turn * pi / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
+    }
+
+    double turnComponent = sqrt(turn * turn / 2);
+    if (turn < 0)
+    {
+        turnComponent *= -1;
+    }
+
+    double A = newX - (turnComponent);
+    double B = newX + (turnComponent);
+    double C = newY - (turnComponent);
+    double D = newY + (turnComponent);
+
+    trSpeed_ = sqrt(B * B + C * C);
+    tlSpeed_ = sqrt(B * B + D * D);
+    brSpeed_ = sqrt(A * A + C * C);
+    blSpeed_ = sqrt(A * A + D * D);
+
+    if (xSpeed != 0 || ySpeed != 0 || turn != 0)
+    {
+        trAngle_ = -atan2(B, C) * 180 / pi;
+        tlAngle_ = -atan2(B, D) * 180 / pi;
+        brAngle_ = -atan2(A, C) * 180 / pi;
+        blAngle_ = -atan2(A, D) * 180 / pi;
+    }
+
+    double maxSpeed;
+    if (inVolts)
+    {
+        if (trSpeed_ != 0)
+        {
+            trSpeed_ = (trSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+
+        if (tlSpeed_ != 0)
+        {
+            tlSpeed_ = (tlSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+
+        if (brSpeed_ != 0)
+        {
+            brSpeed_ = (brSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+
+        if (blSpeed_ != 0)
+        {
+            blSpeed_ = (blSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+
+        maxSpeed = GeneralConstants::MAX_VOLTAGE;
+    }
+    else
+    {
+        maxSpeed = 1;
+    }
+
+    if (trSpeed_ > maxSpeed || tlSpeed_ > maxSpeed || brSpeed_ > maxSpeed || brSpeed_ > maxSpeed)
+    {
+        double max = trSpeed_;
+
+        max = (tlSpeed_ > max) ? tlSpeed_ : max;
+        max = (brSpeed_ > max) ? brSpeed_ : max;
+        max = (blSpeed_ > max) ? blSpeed_ : max;
+
+        trSpeed_ = (trSpeed_ / max);
+        tlSpeed_ = (tlSpeed_ / max);
+        brSpeed_ = (brSpeed_ / max);
+        blSpeed_ = (blSpeed_ / max);
+
+        if (inVolts)
+        {
+            trSpeed_ *= GeneralConstants::MAX_VOLTAGE;
+            tlSpeed_ *= GeneralConstants::MAX_VOLTAGE;
+            brSpeed_ *= GeneralConstants::MAX_VOLTAGE;
+            blSpeed_ *= GeneralConstants::MAX_VOLTAGE;
+        }
+    }
 }
 
-/**
- * Compute vector from limelight position to center of robot
- * TODO: replace with new camera(s) position
-**/
-std::pair<double, double> SwerveDrive::camToBot(double turretAngle) {
-
-    //normalize turret angle
-    double turretLimelightAngle = turretAngle - 180;
-    frc::InputModulus(turretLimelightAngle, -180.0, 180.0);
-    turretLimelightAngle = turretLimelightAngle * M_PI / 180;
-
-    //get x and y component (robot relative) of vector from center of turret to limelight
-    double turretLimelightX = LimelightConstants::TURRET_CENTER_RADIUS * sin(turretLimelightAngle);
-    double turretLimelightY = LimelightConstants::TURRET_CENTER_RADIUS * cos(turretLimelightAngle);
-
-    //subtract(?) constant distance from center of robot to center of turret
-    turretLimelightY -= LimelightConstants::ROBOT_TURRET_CENTER_DISTANCE;
-
-    //rotate this vector by the robot's angle to make it field relative
-    //navx angle is clockwise positive & this rotation is clockwise negative, so angle can be positive
-    double angle = navx_->GetYaw();
-    double robotLimelightX = turretLimelightX * cos(angle) - turretLimelightY * sin(angle);
-    double robotLimelightY = turretLimelightX * sin(angle) + turretLimelightY * cos(angle);
-
-    return {robotLimelightX, robotLimelightY};    
-}
-
-
-/**
- * Average wheel odometry with limelight calculated position
- * TODO: replace with apriltag equivalent
-**/
-void SwerveDrive::updateLimelightOdom(double turretAngle, bool inAuto)
+void SwerveDrive::calcOdometry()
 {
-    //get limelight pose (so this is the position of the camera)
-    double limelightX_ = lPose_.X().value();
-    double limelightY_ = lPose_.Y().value();
+    double time = timer_.GetFPGATimestamp().value();
+    dT_ = time - prevTime_;
+    prevTime_ = time;
 
-    //adjust to get position of actual robot
-    std::pair<double, double> trans = camToBot(turretAngle);
+    if (!frc::DriverStation::IsEnabled())
+    {
+        reset();
+        return;
+    }
 
-    limelightX_ -= trans.first;
-    limelightY_ -= trans.second;
+    pair<double, double> xyVel = getXYVel();
 
-    units::meter_t averagedX = units::meter_t{0.04*limelightX_ + 0.96*odometry_->GetPose().X().value()};
-    units::meter_t averagedY = units::meter_t{0.04*limelightY_ + 0.96*odometry_->GetPose().Y().value()};
-    frc::Rotation2d rot = frc::Rotation2d{units::degree_t{navx_->GetYaw()}};
+    // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    // {
+    //     robotX_ += rotatedY * dT_; //Changed here on purpose to switch cords cause the field isn't mirrored and I hate it
+    //     robotY_ -= rotatedX * dT_;
+    // }
+    // else
+    // {
+    //     robotX_ -= rotatedY * dT_; //Changed here on purpose to switch cords cause the field isn't mirrored and I hate it
+    //     robotY_ += rotatedX * dT_;
+    // }
 
-    updateOdometry(rot, frc::Pose2d{averagedX, averagedY, rot});
+    robotX_ += xyVel.first * dT_;
+    robotY_ += xyVel.second * dT_;
+
+    frc::SmartDashboard::PutNumber("x", robotX_);
+    frc::SmartDashboard::PutNumber("y", robotY_);
 }
 
-/**
- * @returns robot-relative angle to goal
- * TODO: replace with apriltag equivalent?
-**/
-double SwerveDrive::getRobotGoalAng(double turretAngle)
+void SwerveDrive::reset()
 {
-    return atan2(-getY(), -getX());
+    robotX_ = 0;
+    robotY_ = 0;
+    foundTag_ = false;
 }
-
 
 double SwerveDrive::getX()
 {
-    return odometry_->GetPose().X().value();
+    return robotX_;
 }
 
 double SwerveDrive::getY()
 {
-    return odometry_->GetPose().Y().value();
+    return robotY_;
+}
+
+pair<double, double> SwerveDrive::getXYVel()
+{
+    double frX = -topRight_->getDriveVelocity() * sin(topRight_->getAngle() * pi / 180);
+    double frY = topRight_->getDriveVelocity() * cos(topRight_->getAngle() * pi / 180);
+    double flX = -topLeft_->getDriveVelocity() * sin(topLeft_->getAngle() * pi / 180);
+    double flY = topLeft_->getDriveVelocity() * cos(topLeft_->getAngle() * pi / 180);
+    double brX = -bottomRight_->getDriveVelocity() * sin(bottomRight_->getAngle() * pi / 180);
+    double brY = bottomRight_->getDriveVelocity() * cos(bottomRight_->getAngle() * pi / 180);
+    double blX = -bottomLeft_->getDriveVelocity() * sin(bottomLeft_->getAngle() * pi / 180);
+    double blY = bottomLeft_->getDriveVelocity() * cos(bottomLeft_->getAngle() * pi / 180);
+
+    double avgX = (frX + flX + brX + blX) / 4;
+    double avgY = (frY + flY + brY + blY) / 4;
+
+    double angle = yaw_ * pi / 180;
+
+    double rotatedX = avgX * cos(angle) + avgY * -sin(angle);
+    double rotatedY = avgX * sin(angle) + avgY * cos(angle);
+
+    return {rotatedX, rotatedY};
+}
+
+double SwerveDrive::getYaw()
+{
+    return yaw_;
+}
+
+void SwerveDrive::setPos(pair<double, double> xy)
+{
+    robotX_ = xy.first;
+    robotY_ = xy.second;
+}
+
+void SwerveDrive::updateAprilTagFieldXY()
+{
+    double defaultVal[] = {-1};
+    vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
+
+    if (data.at(0) == -1)
+    {
+        foundTag_ = false;
+        return;
+    }
+
+    double tagX = data.at(2);
+    double tagY = data.at(3);
+    double tagZAng = -data.at(7);
+    int tagID = data.at(1);
+
+    // frc::SmartDashboard::PutNumber("Tag x", tagX);
+    // frc::SmartDashboard::PutNumber("Tag y", tagY);
+    // frc::SmartDashboard::PutNumber("Tag ZAng", tagZAng);
+
+    double orientedTagX = tagX * cos(tagZAng) + tagY * sin(tagZAng);
+    double orientedTagY = tagX * -sin(tagZAng) + tagY * cos(tagZAng);
+
+    // TODO check for bad id
+    if (tagID < 1 || tagID > 8)
+    {
+        return;
+    }
+
+    double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0];
+    double fieldTagY = FieldConstants::TAG_XY[tagID - 1][1];
+
+    // frc::SmartDashboard::PutNumber("GX", fieldTagX);
+    // frc::SmartDashboard::PutNumber("GY", fieldTagY);
+
+    // frc::SmartDashboard::PutNumber("TOX", orientedTagX);
+    // frc::SmartDashboard::PutNumber("TOY", orientedTagY);
+
+    double aprilTagX, aprilTagY;
+    aprilTagY = fieldTagY + orientedTagX;
+    if (tagID == 1 || tagID == 2 || tagID == 3 || tagID == 4)
+    {
+        aprilTagX = fieldTagX - orientedTagY;
+    }
+    else
+    {
+        aprilTagX = fieldTagX + orientedTagY;
+    }
+
+    // frc::SmartDashboard::PutNumber("Field X", aprilTagX);
+    // frc::SmartDashboard::PutNumber("Field y", aprilTagY);
+
+    if (!foundTag_) // TODO check if necessary
+    {
+        robotX_ = aprilTagX;
+        robotY_ = aprilTagY;
+        foundTag_ = true;
+    }
+    else
+    {
+        robotX_ += (-robotX_ + aprilTagX) * 0.05;
+        robotY_ += (-robotY_ + aprilTagY) * 0.05;
+    }
+}
+
+int SwerveDrive::checkScoringPos() // TODO get better values
+{
+    if (!foundTag_)
+    {
+        return -1;
+    }
+
+    if (robotX_ > 2.919857 && robotX_ < 13.621893)
+    {
+        return -1;
+    }
+
+    if (robotX_ < 0 || robotY_ < 0 || robotX_ > 16.54175 || robotY_ > 8.0137)
+    {
+        return -1;
+    }
+
+    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    {
+        if (robotX_ >= 13.621893)
+        {
+            if (robotY_ > 5.487416)
+            {
+                return 10;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            if (robotY_ > 5.487426975)
+            {
+                return -1;
+            }
+            else
+            {
+                int scoringPos = (int)round(robotY_ / 0.54864);
+                if (scoringPos == 10)
+                {
+                    scoringPos = 9; // TODO fix, yeah yeah
+                }
+                return scoringPos;
+            }
+        }
+    }
+    else if (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed)
+    {
+        if (robotX_ <= 2.919857)
+        {
+            if (robotY_ > 5.487416)
+            {
+                return 10;
+            }
+            else
+            {
+                return -1;
+            }
+        }
+        else
+        {
+            if (robotY_ > 5.487426975)
+            {
+                return -1;
+            }
+            else
+            {
+                int scoringPos = (int)round(robotY_ / 0.54864);
+                if (scoringPos == 10)
+                {
+                    scoringPos = 9; // TODO fix, yeah yeah
+                }
+                return scoringPos;
+            }
+        }
+    }
+
+    return -1;
 }

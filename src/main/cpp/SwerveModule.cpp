@@ -1,96 +1,201 @@
 #include "SwerveModule.h"
 
-/**
- * Iniitialize a swerve module. Mostly setting ports, also if the encoder has an offset/motor is inverted
-**/
-SwerveModule::SwerveModule(int angMotorPort, int speedMotorPort, int canCoderPort, double offset, bool inverted) : angleMotor_{angMotorPort, "Drivebase"},
-speedMotor_{speedMotorPort, "Drivebase"}, canCoder_{canCoderPort, "Drivebase"}, offset_{offset}
+SwerveModule::SwerveModule(int turnID, int driveID, int cancoderID, double offset) : turnMotor_(turnID, "drivebase"), driveMotor_(driveID, "drivebase"), cancoder_(cancoderID, "drivebase"), trajectoryCalc_(maxV, maxA, kP, kD, kV, kA, kVI), offset_(offset)
 {
-    speedMotor_.SetInverted(inverted);
+    turnMotor_.SetInverted(TalonFXInvertType::CounterClockwise);
+    driveMotor_.SetInverted(TalonFXInvertType::Clockwise);
 
-    angleMotor_.SetSelectedSensorPosition(0);
-    speedMotor_.SetSelectedSensorPosition(0);
+    turnMotor_.SetNeutralMode(NeutralMode::Brake);
+    driveMotor_.SetNeutralMode(NeutralMode::Brake);
 
-    angleMotor_.SetNeutralMode(NeutralMode::Brake);
-    speedMotor_.SetNeutralMode(NeutralMode::Brake);
+    id_ = to_string(driveID);
+
+    initTrajectory_ = false;
+    cancoder_.ClearStickyFaults(); 
 }
 
-/**
- * Converts the raw encoder speed of the driving swerve motor to its speed in meters per second
- * @returns velocity in mps
-**/
-units::meters_per_second_t SwerveModule::talonVelToMps(double vel)
+void SwerveModule::periodic(double driveSpeed, double angle, bool inVolts)
 {
-    double wheel_radius = 0.05;                      // in meters
-    double meters_per_rev = wheel_radius * 2 * M_PI; // wheel circumberence
-    double ticks_per_rev = SwerveConstants::TICKS_PER_REV;
-    return units::meters_per_second_t{vel / 0.1 * (meters_per_rev / ticks_per_rev)};
+    double time = timer_.GetFPGATimestamp().value();
+    dT_ = time - prevTime_;
+    prevTime_ = time;
+    
+    move(driveSpeed, angle, inVolts);
 }
 
-/**
- * @returns a SwerveModulePosition with distance and angle of the swerve module
-**/
-frc::SwerveModulePosition SwerveModule::getPosition()
+void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
 {
-    double wheel_radius = 0.05;                      // in meters
-    double meters_per_rev = wheel_radius * 2 * M_PI; // wheel circumference
-    double ticks_per_rev = 12650;
-    return {
-        units::meter_t{speedMotor_.GetSelectedSensorPosition()/ticks_per_rev/360*meters_per_rev},
-        units::angle::degree_t{frc::InputModulus(angleMotor_.GetSelectedSensorVelocity() + offset_, -180.0, 180.0)}
-    };
+    //frc::SmartDashboard::PutNumber(id_ + " Wanted speed", driveSpeed);
+    //frc::SmartDashboard::PutNumber(id_ + " Wanted angle", angle);
+
+    /*if(abs(setTrajectoryPos_ - angle) > 0.1 && initTrajectory_) //COULDO get value
+    {
+        setTrajectoryPos_ = angle;
+
+        //double pos = get<2>(trajectoryCalc_.getProfile()) + posOffset_;
+        //posOffset_ = pos;
+        double pos = getAngle();
+        posOffset_ = pos;
+
+        double error = findError(angle, pos);
+
+        //double vel = get<1>(trajectoryCalc_.getProfile());
+        double vel = cancoder_.GetVelocity();
+
+        trajectoryCalc_.generateTrajectory(0, error, vel);
+    }
+    else if(!initTrajectory_)
+    {
+        initTrajectory_ = true;
+        setTrajectoryPos_ = angle;
+        posOffset_ = getAngle();
+
+        double error = findError(angle, getAngle());
+
+        trajectoryCalc_.generateTrajectory(0, error, cancoder_.GetVelocity());
+    }
+    
+    if(initTrajectory_)
+    {
+        double pos = getAngle() - posOffset_;
+        Helpers::normalizeAngle(pos);
+        double vel = cancoder_.GetVelocity();
+
+        units::volt_t swivelVols(trajectoryCalc_.calcPower(pos, vel));
+        turnMotor_.SetVoltage(swivelVols);
+    }*/
+
+    //turnMotor_.SetVoltage(units::volt_t(4));
+
+    // double rawError = angle - getAngle();
+    // if(abs(rawError) > 90)
+    // {
+    //     direction_ = -1;
+    // }
+    // else
+    // {
+    //     direction_ = 1;
+    // }
+
+    //OLD?
+    //1, 3.77, 95.49, 95.49
+    //2, 0.91, 395.60, 197.8
+    //3, 0.55, 654.54, 218.18
+    //4, 0.4, 900, 225
+    //frc::SmartDashboard::PutNumber(id_ + " pos", cancoder_.GetAbsolutePosition());
+    //frc::SmartDashboard::PutNumber(id_ + " speed", driveMotor_.GetSelectedSensorVelocity());
+    //Loadless idk
+    //0.8, 300 for right, 350 for left
+    //1, 900 right, 700 left
+    //1.5, 1806bl,1980
+    //2, 2950
+    //2.5, 3850
+    //3, 4850
+    //3.5, 5775
+    //4, 6700
+    //4.5, 7660
+    //5, 8600
+    //5.5, 9600
+    //6, 10475
+    //6.5, 11450
+    //7, 12400
+
+    units::volt_t turnVolts{calcAngPID(angle)};
+    turnMotor_.SetVoltage(turnVolts);
+
+    if(inVolts)
+    {
+        driveMotor_.SetVoltage(units::volt_t(direction_ * driveSpeed));
+    }
+    else
+    {
+        units::volt_t driveVolts{direction_ * calcDrivePID(driveSpeed)};
+        driveMotor_.SetVoltage(driveVolts);
+    }
 }
 
-/**
- * Gets the drive speed and angle of a swerve module
- * @returns a SwerveModuleState encapsulating that info
-**/
-frc::SwerveModuleState SwerveModule::getState()
+//1, 107
+//2, 400
+//3, 666
+//4, 921
+//5, 1180
+//6, 1440p
+//7, 1700
+//8, 1960
+//9, 2230
+//10, 2500
+//11, 2730
+//12, 2855
+
+double SwerveModule::calcAngPID(double setAngle)
 {
-    frc::SwerveModuleState state;
-    state.speed = talonVelToMps(speedMotor_.GetSelectedSensorVelocity());
-    //converts module's angle (normalized to [-180, 180]) to a Rotation2d object
-    state.angle = frc::Rotation2d{units::angle::degree_t{frc::InputModulus(canCoder_.GetAbsolutePosition() + offset_, -180.0, 180.0)}};
-    return state;
+
+    double error = findError(setAngle, getAngle());
+
+    aIntegralError_ += error * dT_;
+    double deltaError = (error - aPrevError_) / dT_;
+    if(abs(aPrevError_) < 2 && error > 5) //COULDO get value
+    {
+        deltaError = 0;
+        aIntegralError_ = 0;
+    } 
+    aPrevError_ = error;
+
+    double power = (akP_*error) + (akI_*aIntegralError_) + (akD_*deltaError); //COULDO implement integral anti-windup or just don't use kI
+
+    //return 1.5;
+    return clamp(power, -(double)GeneralConstants::MAX_VOLTAGE, (double)GeneralConstants::MAX_VOLTAGE);
 }
 
-/**
- * @returns the "optimized" version of the @param state 
-**/
-frc::SwerveModuleState SwerveModule::getOptState(frc::SwerveModuleState state)
+double SwerveModule::calcDrivePID(double driveSpeed)
 {
-    double yaw = frc::InputModulus(canCoder_.GetAbsolutePosition() + offset_, -180.0, 180.0);
-    frc::SwerveModuleState opt_state = frc::SwerveModuleState::Optimize(state, units::degree_t(yaw));
-    return opt_state;
+    double velocity = (driveSpeed * GeneralConstants::MAX_RPM * GeneralConstants::TICKS_PER_ROTATION) / 600;
+    double error = velocity - driveMotor_.GetSelectedSensorVelocity(); //This is probably wrong
+
+    dIntegralError_ += error * dT_;
+    double deltaError = (error - dPrevError_) / dT_;
+    dPrevError_ = error;
+
+    if(abs(deltaError) < 40 && error > 100) //COULDO get value, also test if needed
+    {
+        deltaError = 0;
+        dIntegralError_ = 0;
+    }
+    double feedForward = GeneralConstants::MAX_VOLTAGE * driveSpeed;
+
+    double power = (dkP_*error) + (dkI_*aIntegralError_) + (dkD_*deltaError) + feedForward;
+
+    return clamp(power, -(double)GeneralConstants::MAX_VOLTAGE, (double)GeneralConstants::MAX_VOLTAGE);
+
 }
 
-
-void SwerveModule::setAngMotorVoltage(double voltage)
+double SwerveModule::findError(double setAngle, double angle)
 {
-    angleMotor_.SetVoltage(units::volt_t{voltage});
+    double rawError = setAngle - angle;
+
+    Helpers::normalizeAngle(rawError);
+
+    if(abs(rawError) > 90)
+    {
+        direction_ = -1;
+    }
+    else
+    {
+        direction_ = 1;
+    }
+    
+    return (abs(rawError) <= 90) ? rawError : (rawError > 0) ? rawError - 180 : rawError + 180;
 }
 
-void SwerveModule::setSpeedMotor(double power)
+double SwerveModule::getDriveVelocity()
 {
-    speedMotor_.Set(ControlMode::PercentOutput, power);
+    return (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * pi * SwerveConstants::TREAD_RADIUS;
 }
 
-void SwerveModule::setSpeedMotorVolts(double voltage) {
-    speedMotor_.SetVoltage(units::volt_t{voltage});
-}
-
-units::meters_per_second_t SwerveModule::getVelocityMPS() {
-    return talonVelToMps(getVelocity());
-}
-
-//note: in raw ticks, not mps
-double SwerveModule::getVelocity()
+double SwerveModule::getAngle()
 {
-    return speedMotor_.GetSelectedSensorVelocity();
-}
+    double angle = cancoder_.GetAbsolutePosition() + offset_;
+    Helpers::normalizeAngle(angle);
 
-//in degrees
-double SwerveModule::getYaw()
-{
-    return canCoder_.GetAbsolutePosition() + offset_;
+    return angle;
 }

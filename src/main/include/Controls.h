@@ -14,36 +14,31 @@ class Controls
         double getXStrafe();
         double getYStrafe();
         double getTurn();
+        bool lJoyTriggerPressed();
+        bool rJoyTriggerPressed();
+        bool resetArmPressed();
+
+        double xboxLJoyX();
+        double xboxLJoyY();
+        double xboxRJoyX();
+        double xboxRJoyY();
+
+        bool aPressed();
+        bool bPressed();
+        bool xPressed();
+        bool yPressed();
+        bool rBumperPressed();
+        bool lBumperPressed();
+        bool rXTriggerPressed();
+        bool lXTriggerPressed();
+        bool dPadUpPressed();
+        bool dPadDownPressed();
+        bool dPadLeftPressed();
+        bool dPadRightPressed();
 
         bool fieldOrient();
 
-        double getClimbPower();
-        bool getPneumatic1Toggle();
-        bool getPneumatic2Toggle();
-        bool autoClimbPressed();
-        bool autoClimbCancelled();
-
-        bool intakePressed();
-        bool outakePressed();
-
-        bool shootPressed();
-        double getTurretManual();
-
-        bool increaseRange();
-        bool decreaseRange();
-
-        bool getClimbMode(){ return climbMode_; }
-        void setClimbMode(bool climbMode){ climbMode_ = climbMode; }
-
-        bool resetUnload();
-        bool manuallyOverrideTurret();
-
-        double getHoodTicks();
-        double getTurretPos();
-
     private:
-        bool climbMode_;
-
         frc::Joystick lJoy_;
         frc::Joystick rJoy_;
         frc::Joystick xbox_;

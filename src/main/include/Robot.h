@@ -1,16 +1,27 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 #pragma once
 
 #include <string>
-#include <AHRS.h>
+#include <sstream>
+#include <iostream>
+
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
-#include "SwerveDrive.h"
-#include "frc/Joystick.h"
+#include <frc/DriverStation.h>
+#include "AHRS.h"
 #include "Constants.h"
-#include <wpi/DataLog.h>
+#include "Controls.h"
+#include "SwerveDrive.h"
+#include "AutoPaths.h"
+#include "TwoJointArm.h"
 
-class Robot : public frc::TimedRobot {
- public:
+class Robot : public frc::TimedRobot
+{
+public:
+    Robot();
     void RobotInit() override;
     void RobotPeriodic() override;
     void AutonomousInit() override;
@@ -21,19 +32,21 @@ class Robot : public frc::TimedRobot {
     void DisabledPeriodic() override;
     void TestInit() override;
     void TestPeriodic() override;
-    void SimulationInit() override;
-    void SimulationPeriodic() override;
 
- private:
-   AHRS * navx_; //can't be initialized by compiler because doesn't have a constructor :(
-   SwerveDrive * swerveDrive_; //pointer because it relies on navx being initialized
+private:
+    frc::SendableChooser<AutoPaths::Path> auto1Chooser_;
+    frc::SendableChooser<AutoPaths::Path> auto2Chooser_;
+    frc::SendableChooser<AutoPaths::Path> auto3Chooser_;
+    frc::SendableChooser<bool> sideChooser_;
 
-   frc::Joystick ljoy{InputConstants::LJOY_PORT};
-   frc::Joystick rjoy{InputConstants::RJOY_PORT};
+    AHRS *navx_;
 
-   double joy_val_to_mps(double val);
-   double joy_rot_to_rps(double rot); 
+    Controls* controls_ = new Controls();
+    SwerveDrive* swerveDrive_ = new SwerveDrive();
+    AutoPaths autoPaths_;
 
-   wpi::log::DoubleLogEntry swerveX;
-   wpi::log::DoubleLogEntry swerveY;
+    double yawOffset_;
+
+    TwoJointArm arm_;
+
 };
