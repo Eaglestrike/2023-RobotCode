@@ -8,7 +8,7 @@
 
 #include <frc/TimedRobot.h>
 #include <frc2/command/CommandPtr.h>
-
+#include <frc/Timer.h>
 #include <ctre/phoenixpro/TalonFX.hpp>
 
 
@@ -29,4 +29,5 @@ class Robot : public frc::TimedRobot {
  private:
   ctre::phoenixpro::hardware::TalonFX m_talon{3};
   units::angular_velocity::turns_per_second_t lastVelocity{0};
+  units::second_t lastTime;
 };

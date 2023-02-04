@@ -46,6 +46,8 @@ void Robot::AutonomousInit() {
 void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
+  frc::SmartDashboard::PutNumber("T", 0.0);
+  lastTime = frc::Timer::GetFPGATimestamp();
 }
 
 /**
@@ -54,24 +56,39 @@ void Robot::TeleopInit() {
 void Robot::TeleopPeriodic() {
   controls::TorqueCurrentFOC motorRequest{0_A};
 
-  double torque = frc::SmartDashboard::GetNumber("T", 0.0);; // TODO
+  double torque = frc::SmartDashboard::GetNumber("T", 0.0); // TODO
+
   double current = torque / MotorConstants::Kt;
 
-  std::cout << "torque: " << torque << " current: " << current << std::endl;
-
   m_talon.SetControl(motorRequest.WithOutput(units::current::ampere_t(current)));
+
+  frc::SmartDashboard::PutNumber("current", current);
+  frc::SmartDashboard::PutNumber("Supply current", m_talon.GetSupplyCurrent().GetValue().value());
+
   auto currentVelocity = m_talon.GetRotorVelocity().GetValue();
-  auto acceleration = ((currentVelocity - lastVelocity) * 2 * M_PI / 0.02).value();
-  auto armAngle = m_talon.GetRotorPosition().GetValue();
-  auto angle = armAngle.value() * 2 * M_PI;
-  auto torque_real = ArmConstants::I * acceleration + ArmConstants::mass * 9.81 * ArmConstants::length / 2 * std::cos(angle);
 
-  std::cout << "torque_real: " << torque_real << std::endl;
-  frc::SmartDashboard::PutNumber("torque_real", torque_real);
-  frc::SmartDashboard::PutNumber("ange", angle);
-  frc::SmartDashboard::PutNumber("acceleration", acceleration);
+  //for acceleration-based torque comparison
+  if (currentVelocity != lastVelocity) {
+    double deltaT = frc::Timer::GetFPGATimestamp().value() - lastTime.value();
+    auto acceleration = ((currentVelocity.value() - lastVelocity.value()) * 2.0 * M_PI / deltaT);
+    auto armAngle = m_talon.GetRotorPosition().GetValue();
+    auto angle = armAngle.value() * 2 * M_PI;
+    //no gravity if arm is balanced
+    auto torque_real = ArmConstants::I * acceleration; // + ArmConstants::mass * 9.81 * ArmConstants::length / 4 * std::cos(angle);
 
-  lastVelocity = currentVelocity;
+    frc::SmartDashboard::PutNumber("currentVelocity", currentVelocity.value() * 2 * M_PI);
+    frc::SmartDashboard::PutNumber("lastVelocity", lastVelocity.value() * 2 * M_PI);
+    frc::SmartDashboard::PutNumber("delta T", deltaT);
+    frc::SmartDashboard::PutNumber("torque_real", torque_real);
+    frc::SmartDashboard::PutNumber("angle", angle);
+    frc::SmartDashboard::PutNumber("acceleration", acceleration);
+    
+    lastVelocity = units::angular_velocity::turns_per_second_t{currentVelocity.value()};
+    lastTime = frc::Timer::GetFPGATimestamp();
+  }
+
+  
+  
 }
 
 /**

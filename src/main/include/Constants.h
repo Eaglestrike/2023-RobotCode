@@ -27,7 +27,7 @@ namespace MotorConstants {
 }
 
 namespace ArmConstants {
-    const double length = 0.93;
-    const double mass = 0.065;
-    const double I = (1/3) * mass * length * length;
+    const double length = 0.5588;
+    const double mass = 0.368;
+    const double I = (1.0/12.0) * mass * length * length;
 }
