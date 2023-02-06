@@ -47,7 +47,10 @@ void Robot::AutonomousPeriodic() {}
 
 void Robot::TeleopInit() {
   frc::SmartDashboard::PutNumber("T", 0.0);
+  frc::SmartDashboard::PutNumber("Torque constant", 0.0);
   lastTime = frc::Timer::GetFPGATimestamp();
+
+  m_talon.SetInverted(true);
 }
 
 /**
@@ -57,6 +60,7 @@ void Robot::TeleopPeriodic() {
   controls::TorqueCurrentFOC motorRequest{0_A};
 
   double torque = frc::SmartDashboard::GetNumber("T", 0.0); // TODO
+  double torqueConstant = frc::SmartDashboard::GetNumber("Torque constant", 0.0);
 
   double current = torque / MotorConstants::Kt;
 
@@ -64,6 +68,10 @@ void Robot::TeleopPeriodic() {
 
   frc::SmartDashboard::PutNumber("current", current);
   frc::SmartDashboard::PutNumber("Supply current", m_talon.GetSupplyCurrent().GetValue().value());
+
+   //Tgrav = mg * r / G
+  double torque_real = 4.53592 * 2 * 9.81 * 0.052 / (84.0 / 9.0); //ArmConstants::I * acceleration; // + ArmConstants::mass * 9.81 * ArmConstants::length / 4 * std::cos(angle);
+  frc::SmartDashboard::PutNumber("torque_real", torque_real);
 
   auto currentVelocity = m_talon.GetRotorVelocity().GetValue();
 
@@ -74,12 +82,10 @@ void Robot::TeleopPeriodic() {
     auto armAngle = m_talon.GetRotorPosition().GetValue();
     auto angle = armAngle.value() * 2 * M_PI;
     //no gravity if arm is balanced
-    auto torque_real = ArmConstants::I * acceleration; // + ArmConstants::mass * 9.81 * ArmConstants::length / 4 * std::cos(angle);
 
     frc::SmartDashboard::PutNumber("currentVelocity", currentVelocity.value() * 2 * M_PI);
     frc::SmartDashboard::PutNumber("lastVelocity", lastVelocity.value() * 2 * M_PI);
     frc::SmartDashboard::PutNumber("delta T", deltaT);
-    frc::SmartDashboard::PutNumber("torque_real", torque_real);
     frc::SmartDashboard::PutNumber("angle", angle);
     frc::SmartDashboard::PutNumber("acceleration", acceleration);
     
