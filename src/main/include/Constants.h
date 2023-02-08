@@ -51,8 +51,8 @@ namespace FieldConstants
     const double BOTTOM_CUBE_Y = 1.072;
     const double TOP_CUBE_Y = 4.424;
 
-    const double BLUE_SCORING_X = 1.823;
-    const double RED_SCORING_X = 14.718;
+    const double BLUE_SCORING_X = 1.923; //1.823
+    const double RED_SCORING_X = 14.617; //14.718
 
     const double AUTO_DOCK_Y = 2.748;
     const double BLUE_AUTO_DOCK_X = 2.412;
@@ -80,7 +80,7 @@ namespace InputConstants
     const int XBOX_PORT = 2;
     const int XBOX_LJOY_X = 0;
     const int XBOX_LJOY_Y = 1;
-    const int XBOX_LTRIGGER = 2; //TODO check values
+    const int XBOX_LTRIGGER = 2;
     const int XBOX_RTRIGGER = 3;
     const int XBOX_RJOY_X = 4;
     const int XBOX_RJOY_Y = 5;
@@ -126,34 +126,34 @@ namespace SwerveConstants
     const int BR_CANCODER_ID = 9; //8, 8
     const int BL_CANCODER_ID = 6; //42, 6
     
-    const double TR_CANCODER_OFFSET = 172.7; //-2.98
-    const double TL_CANCODER_OFFSET = -2.98 + 180; //172.7
-    const double BR_CANCODER_OFFSET = -104.15 + 180; //43.2
-    const double BL_CANCODER_OFFSET = 43.2; //-104.15
+    const double TR_CANCODER_OFFSET = 173.75; //172.7
+    const double TL_CANCODER_OFFSET = 175.8; //177.02
+    const double BR_CANCODER_OFFSET = 74.26; //75.85
+    const double BL_CANCODER_OFFSET = 41.6; //43.2
 
-    const double MAX_LA = 4;//3
-    const double MAX_LV = 5;//4
+    const double MAX_LA = 2;//3
+    const double MAX_LV = 3;//4
     const double MAX_AA = 360;//270
     const double MAX_AV = 540;//450
 
-    const double klV = 0.489016;
-    const double klVI = -0.32683;
-    const double klA = 0;
-    const double klP = 0; //0.1; //0.05
-    const double klD = 0;
+    const double klV = 0.495; //If you increase pd, check auto lineup
+    const double klVI = -0.328;
+    const double klA = 4.11;
+    const double klP = 0.2; //0.05 (0.2, 0.2?)
+    const double klD = 0.2;
 
     const double kaV = 34.2064;
     const double kaVI = -25.4095;
     const double kaA = 0;
-    const double kaP = 0; //0.02; //0.008
+    const double kaP = 0.04; //0.008
     const double kaD = 0;
 
 }
 
 namespace TwoJointArmConstants
 {
-	const double UPPER_ARM_LENGTH = 0.762; //TODO get values 0.635
-	const double FOREARM_LENGTH = 0.762; //0.8636
+	const double UPPER_ARM_LENGTH = 0.635; //TODO get values 0.635
+	const double FOREARM_LENGTH = 0.8636; //0.8636 (0.762 for both, prototype)
     const double EE_LENGTH = 0.2794; //0.2794
     const double MOUNTING_HEIGHT = 0.508; //0.508
 	
@@ -162,38 +162,43 @@ namespace TwoJointArmConstants
 	const double ELBOW_MIN_ANG = 0;
 	const double ELBOW_MAX_ANG = 200;
 
-	const double SHOULDER_ARM_MAX_VEL = 720;
-	const double ELBOW_ARM_MAX_VEL = 720;
-	const double SHOULDER_ARM_MAX_ACC = 360;
-	const double ELBOW_ARM_MAX_ACC = 360;
+	const double SHOULDER_ARM_MAX_VEL = 180;
+	const double ELBOW_ARM_MAX_VEL = 180*5;
+	const double SHOULDER_ARM_MAX_ACC = 180;
+	const double ELBOW_ARM_MAX_ACC = 180*5;
 
-    const int SHOULDER_MASTER_ID = 20; //TODO get ids
-    const int SHOULDER_SLAVE_ID = 1;
-    const int ELBOW_MASTER_ID = 14;
-    const int ELBOW_SLAVE_ID = 3;
+    const int SHOULDER_MASTER_ID = 6;
+    const int SHOULDER_SLAVE_ID = 15;
+    const int ELBOW_MASTER_ID = 8;
+    const int ELBOW_SLAVE_ID = 1;
     const int SHOULDER_BRAKE_ID = 4;
     const int ELBOW_BRAKE_ID = 5;
 
     const double UPPER_ARM_I = 0.19;
     const double FOREARM_I = 0.15;
 
-    const double UPPER_ARM_M = 0.114; //2.53
-    const double FOREARM_M = 0.114; //1.41
+    const double UPPER_ARM_M = 2.53; //2.53, 0.114
+    const double FOREARM_M = 1.41; //1.41, 0.114
 
-    const double UPPER_ARM_COM_DIST = 0.381; //0.304
-    const double FOREARM_COM_DIST = 0.381; //0.26
+    const double UPPER_ARM_COM_DIST = 0.304; //0.304, 0.381
+    const double FOREARM_COM_DIST = 0.26; //0.26, 0.381
 
     const double SHOULDER_I = UPPER_ARM_I + UPPER_ARM_M * UPPER_ARM_COM_DIST * UPPER_ARM_COM_DIST;
     const double ELBOW_I = FOREARM_I + FOREARM_M * FOREARM_COM_DIST * FOREARM_COM_DIST;
 
-    const double SHOULDER_KV = 0;
-    const double SHOULDER_KVI = 0;
-    const double ELBOW_KV = 0;
-    const double ELBOW_KVI = 0;
+    const double SHOULDER_KV = 11.6;
+    const double SHOULDER_KVI = -10;
+    const double ELBOW_KV = 42.352;
+    const double ELBOW_KVI = -30.8963;
 
-    const double SHOULDER_TO_ELBOW_RATIO = 1.0 / 1.0; //30:54
-    const double MOTOR_TO_SHOULDER_RATIO = 1.0 / 100.0; // 1:194.4, 1:100
-    const double MOTOR_TO_ELBOW_RATIO = 1.0 / 50.0; //1:40.5 for motor to shoulder area, 1:72.9 for motor to elbow joint
+    const double skD_ = 0;
+    const double skP_ = 0.0;
+    const double ekD_ = 0;
+    const double ekP_ = 0.0;
+
+    const double SHOULDER_TO_ELBOW_RATIO = 30.0 / 54.0; //30:54
+    const double MOTOR_TO_SHOULDER_RATIO = 1.0 / 243.911; // 1:194.4 (243.911), 1:100
+    const double MOTOR_TO_ELBOW_RATIO = 1.0 / 43.556; //1:40.5 (43.556) for motor to shoulder area, 1:72.9 for motor to elbow joint
 
     const double HIGH_CUBE_OUTAKE_VOLTS = -1;
     const double MID_CUBE_OUTAKE_VOLTS = -1;
@@ -241,7 +246,7 @@ namespace TwoJointArmConstants
 namespace ClawConstants
 {
     const int PNEUMATIC_ID = 0; //TODO get value
-    const int WHEEL_MOTOR_ID = 1;
+    const int WHEEL_MOTOR_ID = 11;
     const double INTAKING_SPEED = 0.5;
     const double OUTAKING_SPEED = -0.1;
 }

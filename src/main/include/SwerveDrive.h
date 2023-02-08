@@ -24,8 +24,9 @@ class SwerveDrive
         void drive(double xSpeed, double ySpeed, double turn);
         //void driveAutoPose(double yaw, SwervePose pose);
         void drivePose(SwervePose pose);
+        void adjustPos(SwervePose pose);
 
-        void calcModules(double xSpeed, double ySpeed, double turn, bool inVolts);
+        void calcModules(double xSpeed, double ySpeed, double xAcc, double yAcc, double turn, double turnAacc, bool inVolts);
 
         void calcOdometry();
         void reset();
@@ -61,6 +62,6 @@ class SwerveDrive
         double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_;
 
         bool trackingTag_, foundTag_;
-        int tagPos_;
+        int tagPos_, prevTag_;
 
 };

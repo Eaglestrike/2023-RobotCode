@@ -39,7 +39,7 @@ class TwoJointArm
         void stop();
         void resetIntaking();
         void switchDirections();
-        void intake(); //TODO functions with claw
+        void intake();
         void placeCone();
         void placeCube();
 
@@ -100,11 +100,6 @@ class TwoJointArm
         double prevShoulderVolts_, prevElbowVolts_;
         double prevElbowPos_, elbowVel_, elbowVelTime_, prevShoulderPos_, shoulderVel_, shoulderVelTime_;
 
-        double skV_ = 0;
-        double skP_ = 0.20;
-        double ekV_ = 0;
-        double ekP_ = 0.20;
-
         double calcShoulderVolts(double wantedVel, double wantedAcc, double wantedPos, double theta, double phi, bool hasCone); 
         double calcElbowVolts(double wantedVel, double wantedAcc, double wantedPos, double theta, double phi, double hasCone);
 
@@ -116,6 +111,9 @@ class TwoJointArm
 
         double calcKT(double volts);
         double calcR(double volts);
+
+        void setShoulderVolts(double volts);
+        void setElbowVolts(double volts);
 
         void followTaskSpaceProfile(double time);//COULDO combine into one function to calculate
         void followJointSpaceProfile();

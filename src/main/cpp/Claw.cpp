@@ -1,6 +1,6 @@
 #include "Claw.h"
 
-Claw::Claw() : clawPneumatic_(frc::PneumaticsModuleType::CTREPCM, ClawConstants::PNEUMATIC_ID), wheelMotor_(ClawConstants::WHEEL_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless)
+Claw::Claw() : clawPneumatic_(frc::PneumaticsModuleType::REVPH, ClawConstants::PNEUMATIC_ID), wheelMotor_(ClawConstants::WHEEL_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless)
 {
     open_ = false;
     wheelState_ = IDLE;

@@ -100,9 +100,33 @@ void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
     //6.5, 11450
     //7, 12400
 
+    //Just drivebase
+    //0.8, 220
+    //1, 610
+    //1.5, 1580
+    //2, 2700
+    //2.5, 3600
+    //3, 4600
+    //3.5, 5550
+    //4, 6600
+    //4.5, 7400
+    //5, 8350
+    //5.5, 9400
+    //6, 
+    //6.5, 
+
     units::volt_t turnVolts{calcAngPID(angle)};
     turnMotor_.SetVoltage(turnVolts);
 
+    // if(abs(driveSpeed) < 0.1)
+    // {
+    //     driveMotor_.SetVoltage(units::volt_t(0));
+    // }
+    // else
+    // {
+    //     driveMotor_.SetVoltage(units::volt_t(direction_ * frc::SmartDashboard::GetNumber("Swerve Volts", 0)));
+    // }
+    
     if(inVolts)
     {
         driveMotor_.SetVoltage(units::volt_t(direction_ * driveSpeed));
@@ -131,6 +155,7 @@ double SwerveModule::calcAngPID(double setAngle)
 {
 
     double error = findError(setAngle, getAngle());
+    //frc::SmartDashboard::PutNumber(id_ + "Error", error);
 
     aIntegralError_ += error * dT_;
     double deltaError = (error - aPrevError_) / dT_;
@@ -189,7 +214,9 @@ double SwerveModule::findError(double setAngle, double angle)
 
 double SwerveModule::getDriveVelocity()
 {
+    // frc::SmartDashboard::PutNumber(id_ + " vel", (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * pi * SwerveConstants::TREAD_RADIUS);
     return (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * pi * SwerveConstants::TREAD_RADIUS;
+
 }
 
 double SwerveModule::getAngle()
@@ -197,5 +224,7 @@ double SwerveModule::getAngle()
     double angle = cancoder_.GetAbsolutePosition() + offset_;
     Helpers::normalizeAngle(angle);
 
+    // frc::SmartDashboard::PutNumber(id_ + " apos", cancoder_.GetAbsolutePosition());
+    // frc::SmartDashboard::PutNumber(id_ + " pos", angle);
     return angle;
 }

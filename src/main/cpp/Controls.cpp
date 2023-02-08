@@ -17,8 +17,8 @@ double Controls::getXStrafe()
         return xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);
     }*/
 
-    //double x = lJoy_.GetRawAxis(InputConstants::LJOY_X);
-    double x = xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);
+    double x = lJoy_.GetRawAxis(InputConstants::LJOY_X);
+    //double x = xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);
     if(abs(x) < 0.05)
     {
         return 0;
@@ -34,8 +34,8 @@ double Controls::getYStrafe()
         return -xbox_.GetRawAxis(InputConstants::XBOX_LJOY_Y);
     }*/
 
-    //double y = -lJoy_.GetRawAxis(InputConstants::LJOY_Y);
-    double y = -xbox_.GetRawAxis(InputConstants::XBOX_LJOY_Y);
+    double y = -lJoy_.GetRawAxis(InputConstants::LJOY_Y);
+    //double y = -xbox_.GetRawAxis(InputConstants::XBOX_LJOY_Y);
     if(abs(y) < 0.05)
     {
         return 0;
@@ -51,8 +51,8 @@ double Controls::getTurn()
         return 0;
     }*/
 
-    //double turn = rJoy_.GetRawAxis(InputConstants::RJOY_X);
-    double turn = xbox_.GetRawAxis(InputConstants::XBOX_RJOY_X);
+    double turn = rJoy_.GetRawAxis(InputConstants::RJOY_X);
+    //double turn = xbox_.GetRawAxis(InputConstants::XBOX_RJOY_X);
     if(abs(turn) < 0.05)
     {
         return 0;

@@ -8,6 +8,7 @@ SwerveDrive::SwerveDrive()
     foundTag_ = false;
     tagPos_ = -1;
     tagFollowingStartTime_ = 0;
+    prevTag_ = -1;
 
     // aprilTagX_ = 0;
     // aprilTagY_ = 0;
@@ -23,21 +24,33 @@ void SwerveDrive::periodic(double yaw, Controls *controls)
     frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
 
     setYaw(yaw);
-    //updateAprilTagFieldXY(); TODO here
+    updateAprilTagFieldXY();
     calcOdometry();
 
     if (frc::DriverStation::IsTeleop())
     {
-        if (controls->lXTriggerPressed()) // TODO lJoyTriggerPressed
+        if (controls->lJoyTriggerPressed())
         {
             if (!trackingTag_)
             {
                 tagPos_ = checkScoringPos();
+                frc::SmartDashboard::PutNumber("Tag Pos", tagPos_);
 
                 double wantedX, wantedY, wantedYaw;
                 if (tagPos_ < 0 || tagPos_ > 10)
                 {
-                    drive(controls->getXStrafe(), controls->getYStrafe(), controls->getTurn());
+                    double xStrafe, yStrafe;
+                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    {
+                        xStrafe = controls->getYStrafe();
+                        yStrafe = -controls->getXStrafe();
+                    }
+                    else
+                    {
+                        xStrafe = -controls->getYStrafe();
+                        yStrafe = controls->getXStrafe();
+                    }
+                    drive(xStrafe, yStrafe, controls->getTurn());
                     return;
                 }
                 else if (tagPos_ != 10)
@@ -60,7 +73,7 @@ void SwerveDrive::periodic(double yaw, Controls *controls)
                     trackingTag_ = true;
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                     {
-                        wantedYaw = -90;
+                        wantedYaw = 90;
                         wantedX = 16.178784 - 0.5;
                         wantedY = 6.749796;
                     }
@@ -71,25 +84,54 @@ void SwerveDrive::periodic(double yaw, Controls *controls)
                         wantedY = 6.749796;
                     }
                 }
-                SwervePose currPose(robotX_, robotY_, yaw_, 0, 0, 0, 0, 0, 0);        // TODO vel and acc, use odometry to start?
-                SwervePose wantedPose(wantedX, wantedY, wantedYaw, 0, 0, 0, 0, 0, 0); // TODO vel and acc, figure out yaw somehow (arm or closest)
+                // SwervePose currPose(robotX_, robotY_, yaw_, 0);        // TODO vel and acc, use odometry to start?
+                // SwervePose wantedPose(wantedX, wantedY, wantedYaw, 0); // TODO vel and acc, figure out yaw somehow (arm or closest)
 
-                tagPath_.reset();
-                tagPath_.addPoint(currPose);
-                tagPath_.addPoint(wantedPose);
-                tagPath_.generateTrajectory(false);
-                tagFollowingStartTime_ = timer_.GetFPGATimestamp().value();
+                // tagPath_.reset();
+                // tagPath_.addPoint(currPose);
+                // tagPath_.addPoint(wantedPose);
+                // tagPath_.generateTrajectory(false);
+                // tagFollowingStartTime_ = timer_.GetFPGATimestamp().value();
 
-                // TEST BELOW
+                // TEST BELOW FOR WHILE MOVING
+
+                xTagTraj_.generateTrajectory(robotX_, wantedX, (getXYVel().first));
+                yTagTraj_.generateTrajectory(robotY_, wantedY, (getXYVel().second));
+                yawTagTraj_.generateTrajectory(yaw_, wantedYaw, 0);
+
+                frc::SmartDashboard::PutNumber("STARTX", robotX_);
+                frc::SmartDashboard::PutNumber("STARTY", robotY_);
             }
 
-            bool end = false;
-            double time = timer_.GetFPGATimestamp().value() - tagFollowingStartTime_;
-            SwervePose *wantedPose = tagPath_.getPose(time, end);
-            if (!end)
-            {
-                // drivePose(*wantedPose);
-            }
+            // bool end = false;
+            // double time = timer_.GetFPGATimestamp().value() - tagFollowingStartTime_;
+            // frc::SmartDashboard::PutNumber("T", time);
+            // SwervePose *wantedPose = tagPath_.getPose(time, end);
+            // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
+            // frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
+            // frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
+
+            // if (!end)
+            // {
+            //     frc::SmartDashboard::PutBoolean("Driving", true);
+            //     drivePose(*wantedPose);
+            // }
+            // else
+            // {
+            //     frc::SmartDashboard::PutBoolean("Driving", false);
+            //     adjustPos(SwervePose(wantedPose->getX(), wantedPose->getY(), wantedPose->getYaw(), 0, 0, 0, 0, 0, 0));
+            // }
+            // delete wantedPose;
+
+            tuple<double, double, double> xProfile = xTagTraj_.getProfile();
+            tuple<double, double, double> yProfile = yTagTraj_.getProfile();
+            tuple<double, double, double> yawProfile = yawTagTraj_.getProfile();
+
+            SwervePose *wantedPose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
+            frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
+            frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
+            frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
+            drivePose(*wantedPose);
             delete wantedPose;
         }
         else
@@ -113,7 +155,7 @@ void SwerveDrive::periodic(double yaw, Controls *controls)
 
 void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
 {
-    calcModules(xSpeed, ySpeed, turn, false);
+    calcModules(xSpeed, ySpeed, 0, 0, turn, 0, false);
 
     // double volts = frc::SmartDashboard::GetNumber("Swerve Volts", 0.0);
 
@@ -205,21 +247,79 @@ void SwerveDrive::drivePose(SwervePose pose)
 {
     double xVel = pose.getXVel();
     double yVel = pose.getYVel();
-
-    if (pose.getXVel() != 0 || pose.getYVel() != 0)
-    {
-        yVel += (pose.getX() - robotX_) * SwerveConstants::klP + pose.getXAcc() * SwerveConstants::klA;
-        xVel += (pose.getY() - robotY_) * SwerveConstants::klP + pose.getYAcc() * SwerveConstants::klA;
-    }
-
     double yawVel = pose.getYawVel();
 
-    if (pose.getXVel() != 0 || pose.getYVel() != 0 || pose.getYawVel() != 0)
+    if (/*pose.getXVel() != 0 || pose.getYVel() != 0 || pose.getYawVel() != 0*/ true)
     {
-        yawVel += (pose.getYaw() - (-yaw_)) * SwerveConstants::kaP + pose.getYawAcc() * SwerveConstants::kaA;
+        if (pose.getXVel() == 0 && pose.getXAcc() == 0)
+        {
+            // adjust x because x path done
+            double xError = (pose.getX() - robotX_);
+            if (abs(xError) < 0.03)
+            {
+                xVel = 0;
+            }
+            else
+            {
+                xVel = (pose.getX() - robotX_) * SwerveConstants::klP * 6;
+            }
+        }
+        else
+        {
+            // normal x stuff and path still going
+            xVel += (pose.getX() - robotX_) * SwerveConstants::klP + (pose.getXVel() - getXYVel().first) * SwerveConstants::klD;
+        }
+
+        if (pose.getYVel() == 0 && pose.getYAcc() == 0)
+        {
+            // adjust y because y path done
+            double yError = (pose.getY() - robotY_);
+            if (abs(yError) < 0.03)
+            {
+                yVel = 0;
+            }
+            else
+            {
+                yVel = (pose.getY() - robotY_) * SwerveConstants::klP * 6;
+            }
+        }
+        else
+        {
+            // normal y stuff and path still going
+            yVel += (pose.getY() - robotY_) * SwerveConstants::klP + (pose.getYVel() - getXYVel().second) * SwerveConstants::klD;
+        }
+
+        if (pose.getYawVel() == 0 && pose.getYawAcc() == 0)
+        {
+            // adjust yaw because yaw path done
+            double yawVel;
+            double yawError = (pose.getYaw() - yaw_);
+            if (abs(yawError) < 1)
+            {
+                yawVel = 0;
+            }
+            else
+            {
+                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 8;
+            }
+        }
+        else
+        {
+            // normal yaw stuff and path still going
+            yawVel += (pose.getYaw() - (yaw_)) * SwerveConstants::kaP;
+        }
     }
 
-    calcModules(xVel, yVel, yawVel, true);
+    // frc::SmartDashboard::PutNumber("XE", pose.getX() - robotX_);
+    // frc::SmartDashboard::PutNumber("YE", pose.getY() - robotY_);
+    // frc::SmartDashboard::PutNumber("XVE", pose.getXVel() - getXYVel().first);
+    // frc::SmartDashboard::PutNumber("YVE", pose.getYVel() - getXYVel().second);
+
+    // frc::SmartDashboard::PutNumber("XVel", xVel);
+    // frc::SmartDashboard::PutNumber("YVel", yVel);
+    // frc::SmartDashboard::PutNumber("YawVel", -yawVel);
+    calcModules(xVel, yVel, pose.getXAcc(), pose.getYAcc(), -yawVel, -pose.getYawAcc(), true);
+    // calcModules(xVel, yVel, 0, 0, -yawVel, 0, true);
 
     topRight_->periodic(trSpeed_, trAngle_, true);
     topLeft_->periodic(tlSpeed_, tlAngle_, true);
@@ -227,22 +327,75 @@ void SwerveDrive::drivePose(SwervePose pose)
     bottomLeft_->periodic(blSpeed_, blAngle_, true);
 }
 
-void SwerveDrive::calcModules(double xSpeed, double ySpeed, double turn, bool inVolts)
+void SwerveDrive::adjustPos(SwervePose pose)
+{
+    double xVel;
+    double xError = (pose.getX() - robotX_);
+    if (abs(xError) < 0.03)
+    {
+        xVel = 0;
+    }
+    else
+    {
+        xVel = (pose.getX() - robotX_) * SwerveConstants::klP * 6;
+    }
+
+    double yVel;
+    double yError = (pose.getY() - robotY_);
+    if (abs(yError) < 0.03)
+    {
+        yVel = 0;
+    }
+    else
+    {
+        yVel = (pose.getY() - robotY_) * SwerveConstants::klP * 6;
+    }
+
+    double yawVel;
+    double yawError = (pose.getYaw() - yaw_);
+    if (abs(yawError) < 1)
+    {
+        yawVel = 0;
+    }
+    else
+    {
+        yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 8;
+    }
+
+    // calcModules(xVel, yVel, pose.getXAcc(), pose.getYAcc(), -yawVel, -pose.getYawAcc(), true);
+    calcModules(xVel, yVel, 0, 0, -yawVel, 0, true);
+
+    topRight_->periodic(trSpeed_, trAngle_, true);
+    topLeft_->periodic(tlSpeed_, tlAngle_, true);
+    bottomRight_->periodic(brSpeed_, brAngle_, true);
+    bottomLeft_->periodic(blSpeed_, blAngle_, true);
+}
+
+void SwerveDrive::calcModules(double xSpeed, double ySpeed, double xAcc, double yAcc, double turn, double turnAcc, bool inVolts)
 {
     double angle = yaw_ * (pi / 180);
 
     double newX = xSpeed * cos(angle) + ySpeed * sin(angle);
     double newY = ySpeed * cos(angle) + xSpeed * -sin(angle);
 
+    double newXAcc = xAcc * cos(angle) + yAcc * sin(angle);
+    double newYAcc = yAcc * cos(angle) + xAcc * -sin(angle);
+
     if (inVolts)
     {
         turn = (turn * pi / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
+        turnAcc = (turnAcc * pi / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
     }
 
     double turnComponent = sqrt(turn * turn / 2);
+    double turnAccComponent = sqrt(turnAcc * turnAcc / 2);
     if (turn < 0)
     {
         turnComponent *= -1;
+    }
+    if (turnAcc < 0)
+    {
+        turnAccComponent *= -1;
     }
 
     double A = newX - (turnComponent);
@@ -250,14 +403,24 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, double turn, bool in
     double C = newY - (turnComponent);
     double D = newY + (turnComponent);
 
-    trSpeed_ = sqrt(B * B + C * C);
-    tlSpeed_ = sqrt(B * B + D * D);
-    brSpeed_ = sqrt(A * A + C * C);
-    blSpeed_ = sqrt(A * A + D * D);
+    double trVel = sqrt(B * B + C * C);
+    double tlVel = sqrt(B * B + D * D);
+    double brVel = sqrt(A * A + C * C);
+    double blVel = sqrt(A * A + D * D);
+
+    double AA = newXAcc - (turnAccComponent);
+    double BA = newXAcc + (turnAccComponent);
+    double CA = newYAcc - (turnAccComponent);
+    double DA = newYAcc + (turnAccComponent);
+
+    double trAcc = sqrt(BA * BA + CA * CA);
+    double tlAcc = sqrt(BA * BA + DA * DA);
+    double brAcc = sqrt(AA * AA + CA * CA);
+    double blAcc = sqrt(AA * AA + DA * DA);
 
     if (xSpeed != 0 || ySpeed != 0 || turn != 0)
     {
-        trAngle_ = -atan2(B, C) * 180 / pi;
+        trAngle_ = -atan2(B, C) * 180 / pi; // TODO check B + BA
         tlAngle_ = -atan2(B, D) * 180 / pi;
         brAngle_ = -atan2(A, C) * 180 / pi;
         blAngle_ = -atan2(A, D) * 180 / pi;
@@ -266,30 +429,50 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, double turn, bool in
     double maxSpeed;
     if (inVolts)
     {
-        if (trSpeed_ != 0)
+        if (trVel != 0)
         {
-            trSpeed_ = (trSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+            trSpeed_ = /*(trAcc / SwerveConstants::klA) + */ (trVel - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+        else
+        {
+            trSpeed_ = 0;
         }
 
-        if (tlSpeed_ != 0)
+        if (tlVel != 0)
         {
-            tlSpeed_ = (tlSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+            tlSpeed_ = /*(tlAcc / SwerveConstants::klA) + */ (tlVel - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+        else
+        {
+            tlSpeed_ = 0;
         }
 
-        if (brSpeed_ != 0)
+        if (brVel != 0)
         {
-            brSpeed_ = (brSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+            brSpeed_ = /*(brAcc / SwerveConstants::klA) + */ (brVel - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+        else
+        {
+            brSpeed_ = 0;
         }
 
-        if (blSpeed_ != 0)
+        if (blVel != 0)
         {
-            blSpeed_ = (blSpeed_ - SwerveConstants::klVI) / SwerveConstants::klV;
+            blSpeed_ = /*(blAcc / SwerveConstants::klA) + */ (blVel - SwerveConstants::klVI) / SwerveConstants::klV;
+        }
+        else
+        {
+            blSpeed_ = 0;
         }
 
         maxSpeed = GeneralConstants::MAX_VOLTAGE;
     }
     else
     {
+        trSpeed_ = trVel;
+        tlSpeed_ = tlVel;
+        brSpeed_ = brVel;
+        blSpeed_ = blVel;
         maxSpeed = 1;
     }
 
@@ -379,6 +562,8 @@ pair<double, double> SwerveDrive::getXYVel()
     double avgX = (frX + flX + brX + blX) / 4;
     double avgY = (frY + flY + brY + blY) / 4;
 
+    // cout << timer_.GetFPGATimestamp().value() << ", " << sqrt(avgX * avgX + avgY * avgY) << endl;
+
     double angle = yaw_ * pi / 180;
 
     double rotatedX = avgX * cos(angle) + avgY * -sin(angle);
@@ -421,11 +606,25 @@ void SwerveDrive::updateAprilTagFieldXY()
     double orientedTagX = tagX * cos(tagZAng) + tagY * sin(tagZAng);
     double orientedTagY = tagX * -sin(tagZAng) + tagY * cos(tagZAng);
 
-    // TODO check for bad id
+    if (tagID == -1)
+    {
+        if(robotX_ > 3.919857 && robotX_ < 12.621893)
+        {
+            foundTag_ = false;
+        }
+        return;
+    }
     if (tagID < 1 || tagID > 8)
     {
         return;
     }
+
+    if (tagID != prevTag_)
+    {
+        prevTag_ = tagID;
+        return;
+    }
+    prevTag_ = tagID;
 
     double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0];
     double fieldTagY = FieldConstants::TAG_XY[tagID - 1][1];
@@ -458,8 +657,11 @@ void SwerveDrive::updateAprilTagFieldXY()
     }
     else
     {
-        robotX_ += (-robotX_ + aprilTagX) * 0.05;
-        robotY_ += (-robotY_ + aprilTagY) * 0.05;
+        if (abs(robotX_ - aprilTagX) < 1 && abs(robotY_ - aprilTagY) < 1) // TODO watch out here
+        {
+            robotX_ += (-robotX_ + aprilTagX) * 0.05;
+            robotY_ += (-robotY_ + aprilTagY) * 0.05;
+        }
     }
 }
 
@@ -470,21 +672,21 @@ int SwerveDrive::checkScoringPos() // TODO get better values
         return -1;
     }
 
-    if (robotX_ > 2.919857 && robotX_ < 13.621893)
+    if (robotX_ > 3.919857 && robotX_ < 12.621893)
     {
         return -1;
     }
 
-    if (robotX_ < 0 || robotY_ < 0 || robotX_ > 16.54175 || robotY_ > 8.0137)
+    if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH)
     {
         return -1;
     }
 
     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
     {
-        if (robotX_ >= 13.621893)
+        if (robotX_ >= FieldConstants::TAG_XY[0][0]) //TODO make parameters better for all TAG_XY, probably make it check y first
         {
-            if (robotY_ > 5.487416)
+            if (robotY_ > FieldConstants::TAG_XY[2][1])
             {
                 return 10;
             }
@@ -495,13 +697,18 @@ int SwerveDrive::checkScoringPos() // TODO get better values
         }
         else
         {
-            if (robotY_ > 5.487426975)
+            if (robotY_ > FieldConstants::TAG_XY[2][1])
+            {
+                return -1;
+            }
+            else if(robotX_ > 3.919857)
             {
                 return -1;
             }
             else
             {
-                int scoringPos = (int)round(robotY_ / 0.54864);
+                //int scoringPos = (int)round(robotY_ / 0.5588);
+                int scoringPos = (int)round((robotY_ - (0.5*FieldConstants::TAG_XY[0][1])) / 0.5588);
                 if (scoringPos == 10)
                 {
                     scoringPos = 9; // TODO fix, yeah yeah
@@ -512,9 +719,9 @@ int SwerveDrive::checkScoringPos() // TODO get better values
     }
     else if (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed)
     {
-        if (robotX_ <= 2.919857)
+        if (robotX_ <= FieldConstants::TAG_XY[5][0]) //TODO make parameters beter for all TAG_XY, probably make it check y first
         {
-            if (robotY_ > 5.487416)
+            if (robotY_ > FieldConstants::TAG_XY[2][1])
             {
                 return 10;
             }
@@ -525,13 +732,17 @@ int SwerveDrive::checkScoringPos() // TODO get better values
         }
         else
         {
-            if (robotY_ > 5.487426975)
+            if (robotY_ > FieldConstants::TAG_XY[2][1])
+            {
+                return -1;
+            }
+            else if(robotX_ < 12.621893)
             {
                 return -1;
             }
             else
             {
-                int scoringPos = (int)round(robotY_ / 0.54864);
+                int scoringPos = (int)round(robotY_ / 0.5588);
                 if (scoringPos == 10)
                 {
                     scoringPos = 9; // TODO fix, yeah yeah

@@ -11,12 +11,14 @@
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
 #include <frc/DriverStation.h>
+#include <frc/Compressor.h>
 #include "AHRS.h"
 #include "Constants.h"
 #include "Controls.h"
 #include "SwerveDrive.h"
 #include "AutoPaths.h"
 #include "TwoJointArm.h"
+#include <frc/PneumaticHub.h>
 
 class Robot : public frc::TimedRobot
 {
@@ -40,6 +42,8 @@ private:
     frc::SendableChooser<bool> sideChooser_;
 
     AHRS *navx_;
+    // frc::PneumaticHub pneumaticHub_{1};
+    frc::Compressor PCM{0, frc::PneumaticsModuleType::CTREPCM};
 
     Controls* controls_ = new Controls();
     SwerveDrive* swerveDrive_ = new SwerveDrive();

@@ -91,8 +91,8 @@ void AutoPaths::setPath(Path path)
             }
         }
 
-        swervePoints_.push_back(SwervePose(x1, y1, yaw1, 0));
-        swervePoints_.push_back(SwervePose(x2, y2, yaw2, 0));
+        swervePoints_.push_back(SwervePose(x1, y1, yaw1, 0.1));
+        swervePoints_.push_back(SwervePose(x2, y2, yaw2, 1.5)); //~5.2 is dist
         break;
     }
     case FIRST_CUBE:
@@ -133,7 +133,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::RED_PIECE_X + 3; //HERE
             x2 = FieldConstants::RED_SCORING_X;
             yaw1 = 90;
             yaw2 = 90;
@@ -149,13 +149,12 @@ void AutoPaths::setPath(Path path)
             }
         }
 
-        swervePoints_.push_back(SwervePose(x1, y1, yaw1, 0));
-        swervePoints_.push_back(SwervePose(x2, y2, yaw2, 0));
+        swervePoints_.push_back(SwervePose(x1, y1, yaw1, 0.1));
+        swervePoints_.push_back(SwervePose(x2, y2, yaw2, 1.5)); //~5.2 is dist
         break;
     }
     case SECOND_CONE:
     {
-        // // TODO curves woo
         // double deltaX = 0.4064;
         // if (mirrored_)
         // {
@@ -248,13 +247,13 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::RED_PIECE_X + 3; //HERE
             x2 = FieldConstants::RED_SCORING_X;
             yaw1 = 90;
             yaw2 = 90;
             if (!mirrored_)
             {
-                y1 = FieldConstants::TOP_MID_PIECE_Y;
+                y1 = FieldConstants::TOP_MID_PIECE_Y+0.3; //HERE
                 y2 = FieldConstants::TOP_CONE_Y;
             }
             else
@@ -271,7 +270,6 @@ void AutoPaths::setPath(Path path)
     }
     case SECOND_CUBE:
     {
-        // // TODO curves woo
         // double deltaX = 0.4064;
         // if (mirrored_)
         // {
@@ -405,7 +403,7 @@ void AutoPaths::setPath(Path path)
             x = FieldConstants::RED_AUTO_DOCK_X;
             yaw = 90;
         }
-        swervePoints_.push_back(SwervePose(x, y, yaw, 0));
+        swervePoints_.push_back(SwervePose(x, y, yaw, 0.5));
         break;
     }
     case NOTHING:
@@ -527,7 +525,6 @@ void AutoPaths::periodic(SwerveDrive *swerveDrive)
                             double setYaw = swervePoints_[i].getYaw();
                             yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); //TODO yaw vel
                             yawStageGenerated_ = true;
-
                         }
                     }
                     
@@ -538,7 +535,7 @@ void AutoPaths::periodic(SwerveDrive *swerveDrive)
                         curveSecondStageGenerated_ = true;
                     }
 
-                    if(curveSecondStageGenerated_ && !yawStageGenerated_) //TODO for pointNum == 1, after y is finished
+                    if(curveSecondStageGenerated_ && !yawStageGenerated_ && pointNum_ == 1)
                     {
                         tuple<double, double, double> yProfile = yTraj_.getProfile();
                         if(get<0>(yProfile) == 0 && get<1>(yProfile) == 0)
@@ -569,10 +566,10 @@ void AutoPaths::periodic(SwerveDrive *swerveDrive)
                 if(curveSecondStageGenerated_)
                 {
                     yProfile = yTraj_.getProfile();
-                    frc::SmartDashboard::PutNumber("WY", get<2>(yProfile));
-                    frc::SmartDashboard::PutNumber("WYV", get<1>(yProfile));
-                    frc::SmartDashboard::PutNumber("WYA", get<0>(yProfile));
-                    frc::SmartDashboard::PutNumber("YVel", swerveDrive_->getXYVel().second);
+                    // frc::SmartDashboard::PutNumber("WY", get<2>(yProfile));
+                    // frc::SmartDashboard::PutNumber("WYV", get<1>(yProfile));
+                    // frc::SmartDashboard::PutNumber("WYA", get<0>(yProfile));
+                    // frc::SmartDashboard::PutNumber("YVel", swerveDrive_->getXYVel().second);
                 }
                 if(yawStageGenerated_)
                 {

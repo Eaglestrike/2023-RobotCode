@@ -16,6 +16,7 @@ Robot::Robot() : autoPaths_(swerveDrive_)
         {
             double yaw = navx_->GetYaw() - yawOffset_;
             Helpers::normalizeAngle(yaw);
+            frc::SmartDashboard::PutNumber("yaw", yaw);
 
             if (frc::DriverStation::IsAutonomous() && frc::DriverStation::IsEnabled())
             {
@@ -75,7 +76,7 @@ void Robot::RobotInit()
     
     try
     {
-        navx_ = new AHRS(frc::SPI::Port::kMXP);
+        navx_ = new AHRS(frc::SerialPort::kUSB);
     }
     catch (const exception &e)
     {
@@ -137,10 +138,13 @@ void Robot::AutonomousPeriodic()
 
 void Robot::TeleopInit()
 {
-    //frc::SmartDashboard::PutNumber("Test Volts", 0);
-    //frc::SmartDashboard::PutNumber("Set Theta", 0);
-    //frc::SmartDashboard::PutNumber("Set Phi", 0);
+    frc::SmartDashboard::PutNumber("Test Volts", 0);
+    frc::SmartDashboard::PutNumber("Set Theta", 0);
+    frc::SmartDashboard::PutNumber("Set Phi", 0);
     //frc::SmartDashboard::PutNumber("Swerve Volts", 0);
+
+    // pneumaticHub_.EnableCompressorDigital();
+    PCM.EnableDigital();
 
     arm_.stop();
     arm_.resetIntaking();
@@ -149,7 +153,6 @@ void Robot::TeleopInit()
 void Robot::TeleopPeriodic()
 {
     controls_->periodic();
-    frc::SmartDashboard::PutNumber("yaw", navx_->GetYaw() - yawOffset_);
 
     if (controls_->fieldOrient())
     {
@@ -176,20 +179,20 @@ void Robot::TeleopPeriodic()
     }
     else
     {
-        /*if(controls_->aPressed())
-        {
-            arm_.goToPos(frc::SmartDashboard::GetNumber("Set Theta", 0), frc::SmartDashboard::GetNumber("Set Phi", 0));
-        }
-        else
-        {
-            arm_.manualControl(0, 0);
-        } //HERE
-        if(arm_.getState() == TwoJointArm::MANUAL)
-        {
-            arm_.stop();
-        }*/
+        // if(controls_->aPressed())
+        // {
+        //     arm_.goToPos(frc::SmartDashboard::GetNumber("Set Theta", 0), frc::SmartDashboard::GetNumber("Set Phi", 0));
+        // }
+        // else
+        // {
+        //     //arm_.stop();
+        // }
 
-        // TODO use right trigger for auto stuff
+        // if(arm_.getState() == TwoJointArm::MANUAL)
+        // {
+        //     arm_.stop();
+        // }
+
         if (controls_->aPressed())
         {
             arm_.setPosTo(TwoJointArmProfiles::PLAYER_STATION);
@@ -238,6 +241,8 @@ void Robot::TeleopPeriodic()
 
     frc::SmartDashboard::PutNumber("Theta", arm_.getTheta());
     frc::SmartDashboard::PutNumber("Phi", arm_.getPhi());
+    frc::SmartDashboard::PutNumber("Theta vel", arm_.getThetaVel());
+    frc::SmartDashboard::PutNumber("Phi vel", arm_.getPhiVel());
     // frc::SmartDashboard::PutNumber("Theta Volts", arm_.getThetaVolts());
     // frc::SmartDashboard::PutNumber("Phi Volts", arm_.getPhiVolts());
 }
@@ -247,6 +252,8 @@ void Robot::DisabledInit()
     arm_.stop();
     autoPaths_.setActionsSet(false);
     autoPaths_.setPathSet(false);
+    PCM.Disable();
+    // pneumaticHub_.DisableCompressor();
 }
 
 void Robot::DisabledPeriodic()
