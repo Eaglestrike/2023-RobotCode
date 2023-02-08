@@ -26,16 +26,16 @@ namespace Helpers{
 /**
  * 
 */
-    static double getAbsAng(WPI_TalonFX& motor){//Radians
-        double ticks = motor.GetSelectedSensorPosition();
+    static double getAbsAng(WPI_TalonFX& motor, double ratio){//Radians
+        double ticks = motor.GetSelectedSensorPosition()/ratio;
         return ticks/GeneralConstants::TICKS_PER_RADIAN;
     }
 
     /**
      * 
     */
-    static double getAng(WPI_TalonFX& motor){//Returns in range [0, 2*pi]
-        double ang = getAbsAng(motor);
+    static double getAng(WPI_TalonFX& motor, double ratio){//Returns in range [0, 2*pi]
+        double ang = getAbsAng(motor, ratio);
         return getPrincipalAng(ang);
     }
 

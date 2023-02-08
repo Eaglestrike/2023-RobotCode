@@ -15,7 +15,7 @@ using namespace std;
 #define M_PI 3.14159265358979323846 //for simulation
 
 namespace GeneralConstants{
-    const double TICKS_PER_ROTATION = 4096.0;
+    const double TICKS_PER_ROTATION = 2048.0;
     const double TICKS_PER_RADIAN = TICKS_PER_ROTATION/(2*M_PI);
 }
 
@@ -38,6 +38,9 @@ namespace ArmConstants{
     const int BASE_BRAKE_ID = 4;
     const int TOP_BRAKE_ID = 5;
 
+    const double BASE_GEAR_RATIO = 243.911;
+    const double TOP_GEAR_RATIO = 43.556*30.0/54.0;
+    
     const double BASE_MIN_ANG = -2.0943951;
 	const double BASE_MAX_ANG = 2.0943951;
 

@@ -28,7 +28,8 @@ void Arm::init(){
 
     m_baseMotor.SetNeutralMode(NeutralMode::Brake);
     m_baseMotor2.SetNeutralMode(NeutralMode::Brake);
-    m_baseMotor2.Follow(m_baseMotor);
+    //m_baseMotor2.SetInverted(InvertType::FollowMaster);
+    //m_baseMotor2.Follow(m_baseMotor);
 
     m_topMotor.SetNeutralMode(NeutralMode::Brake);
     m_topMotor2.SetNeutralMode(NeutralMode::Brake);
@@ -53,8 +54,8 @@ void Arm::Periodic(){
     ReadSmartDashboard();
 
     setBrakes(false, false);
-    baseReading = getAng(m_baseMotor) + m_angOffsetBase;
-    topReading = getAng(m_topMotor) + m_angOffsetTop;
+    baseReading = getAng(m_baseMotor, ArmConstants::BASE_GEAR_RATIO) + m_angOffsetBase;
+    topReading = getAng(m_topMotor, ArmConstants::TOP_GEAR_RATIO) + m_angOffsetTop;
 
     if(debug){
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
@@ -196,8 +197,8 @@ void Arm::TeleopPeriodic() {
 
 // Turns the motors off
 void Arm::DisabledInit() {
-    m_baseMotor.SetNeutralMode(NeutralMode::Coast);
-    m_topMotor.SetNeutralMode(NeutralMode::Coast);
+    m_baseMotor.SetNeutralMode(NeutralMode::Brake);
+    m_topMotor.SetNeutralMode(NeutralMode::Brake);
     m_baseMotor.SetVoltage(units::volt_t{0});
     m_topMotor.SetVoltage(units::volt_t{0});
 }
@@ -218,6 +219,7 @@ void Arm::TestPeriodic(double vBase, double vTop){
     }
 
     m_baseMotor.SetVoltage(units::volt_t{vBase});
+    m_baseMotor2.SetVoltage(units::volt_t{vBase});
     m_topMotor.SetVoltage(units::volt_t{vTop});
 
     if(debug){
