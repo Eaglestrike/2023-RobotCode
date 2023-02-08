@@ -17,6 +17,12 @@ void Robot::RobotInit() {
 }
 
 void Robot::RobotPeriodic() {
+  arm.moveTarget(moveMetersPerSecond*controller.getXStrafe()*0.02,
+                moveMetersPerSecond*controller.getYStrafe()*0.02);
+  if (controller.A_IsPressed()) {
+    arm.resetTarget();
+  }
+  arm.Periodic();
 }
 
 void Robot::AutonomousInit() {
@@ -39,12 +45,7 @@ void Robot::TeleopPeriodic() {
     frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   }
   */
-  arm.moveTarget(moveInchesPerSecond*controller.getXStrafe()*0.02,
-                moveInchesPerSecond*controller.getYStrafe()*0.02);
-  if (controller.A_IsPressed()) {
-    arm.resetTarget();
-  }
-  arm.Periodic();
+  arm.TeleopPeriodic();
 }
 
 void Robot::DisabledInit() {
@@ -60,15 +61,19 @@ void Robot::DisabledPeriodic() {
     frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   }
   */
-  arm.moveTarget(moveInchesPerSecond*controller.getXStrafe()*0.02,
-                 moveInchesPerSecond*controller.getYStrafe()*0.02);
   arm.DisabledPeriodic();
 }
 
 void Robot::TestInit() {}
 
 void Robot::TestPeriodic() {
-  arm.init();
+  arm.TestPeriodic(maxVolts*controller.getX2Strafe(),
+                  maxVolts*moveRadiansPerSecond*controller.getY2Strafe()
+                  );
+  if (controller.A_IsPressed()) {
+    arm.resetEncoder();
+    arm.resetOffsets();
+  }
 }
 
 void Robot::SimulationInit() {}

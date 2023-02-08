@@ -25,5 +25,7 @@ class Robot : public frc::TimedRobot {
  private:
    Arm arm;
    Controls controller;
-   double moveInchesPerSecond = 3.0;
+   double moveMetersPerSecond = 0.1;
+   double moveRadiansPerSecond = 0.3;
+   double maxVolts = 2.0;
 };

@@ -30,20 +30,34 @@ namespace InputConstants{
 }
 
 namespace ArmConstants{
-    const int BASE_MOTOR_ID = 20;
-    const int TOP_MOTOR_ID = 14;
+    const int BASE_MOTOR_ID = 6;
+    const int BASE_MOTOR_ID2 = 15;
+    const int TOP_MOTOR_ID = 8;
+    const int TOP_MOTOR_ID2 = 1;
 
-    const double BASE_ARM_LENGTH = 31.0;
-    const double TOP_ARM_LENGTH = 31.0;
-    const double PIVOT_HEIGHT = 32.0;
+    const int BASE_BRAKE_ID = 4;
+    const int TOP_BRAKE_ID = 5;
+
+    const double BASE_MIN_ANG = -2.0943951;
+	const double BASE_MAX_ANG = 2.0943951;
+
+    const double TOP_MIN_ANG = 0.0;
+	const double TOP_MAX_ANG = 3.4906585;
+
+    const double BASE_ARM_LENGTH = 0.762;
+    const double TOP_ARM_LENGTH = 0.762;
+    const double PIVOT_HEIGHT = 0.508;
 
     const double BASE_OFFSET = 0.0; //Radians
     const double TOP_OFFSET = 0.0; //Radians
 
-    const double BASE_PID[3] = {20.0, 0.0, 0.0}; //Error in radians
-    const double BASE_KGRAVITY = 3.0;
-    const double TOP_PID[3] = {15.0, 0.0, 0.0}; //Error in radians
-    const double TOP_KGRAVITY = 2.0;
+    const double BASE_PID[3] = {0.0, 0.0, 0.0}; //Error in radians
+    const double BASE_KGRAVITY = 0;
+    const double TOP_PID[3] = {0.0, 0.0, 0.0}; //Error in radians
+    const double TOP_KGRAVITY = 0.0;
+
+    const double BOT_ARM_SLACK = 1.2217302;
+    const double TOP_ARM_SLACK = -1.2217302;
 
     const double MAX_VOLTS = 5;
 }

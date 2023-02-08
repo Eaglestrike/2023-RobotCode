@@ -11,6 +11,8 @@ class Controls
         Controls();
         double getXStrafe();
         double getYStrafe();
+        double getX2Strafe();
+        double getY2Strafe();
         bool A_IsPressed();
 
     private:

@@ -46,6 +46,31 @@ namespace Helpers{
         return getPrincipalAng2(ang2 - ang1);
     }
 
+    /*
+    @param angMid angle tested in between 1 and 2
+    https://www.desmos.com/calculator/bo2iuiuukb
+    */
+    static bool angInBetween(double angMid, double ang1, double ang2){
+        double angDiff12 = getAngDiff(ang1, ang2);
+        double angDiff1Mid = getAngDiff(ang1, angMid);
+        if(angDiff12 > 0){
+            if(angDiff1Mid > 0 && angDiff1Mid < angDiff12){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+        else{
+            if(angDiff1Mid < 0 && angDiff1Mid > angDiff12){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+    }
+
     static double getAbsAngDiff(double ang1, double ang2){//Just subtract lmao
         return ang2 - ang1;
     }
