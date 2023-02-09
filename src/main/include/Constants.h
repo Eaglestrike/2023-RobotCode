@@ -39,7 +39,7 @@ namespace ArmConstants{
     const int TOP_BRAKE_ID = 5;
 
     const double BASE_GEAR_RATIO = 243.911;
-    const double TOP_GEAR_RATIO = 43.556*30.0/54.0;
+    const double TOP_GEAR_RATIO = 78.4;
     
     const double BASE_MIN_ANG = -2.0943951;
 	const double BASE_MAX_ANG = 2.0943951;

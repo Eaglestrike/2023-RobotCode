@@ -41,6 +41,9 @@ void Arm::init(){
 
     m_pidBase.SetIntegratorRange(-m_maxVolts, m_maxVolts);
     m_pidTop.SetIntegratorRange(-m_maxVolts, m_maxVolts);
+
+    frc::SmartDashboard::PutNumber("Target X", m_targetX);
+    frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
 }
 
 void Arm::resetEncoder(){
@@ -62,8 +65,8 @@ void Arm::Periodic(){
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }
     if(debug){
-        frc::SmartDashboard::PutNumber("Target X", m_targetX);
-        frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
+        // frc::SmartDashboard::PutNumber("Target X", m_targetX);
+        // frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
     }
 }
 
@@ -89,6 +92,8 @@ void Arm::TeleopPeriodic() {
     // if(topReading > 0){
     //     topReading += m_topArmSlack;
     // }
+
+    setTarget(0.7112, 1.143);
 
     // If target is under floor
     if (m_targetZ < 0.0) {
@@ -182,14 +187,14 @@ void Arm::TeleopPeriodic() {
         m_angOffsetTop = frc::SmartDashboard::GetNumber("Top Ang Offset", m_angOffsetTop);
     }
     if (debug) {
-        frc::SmartDashboard::PutNumber("Target X", m_targetX);
-        frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
+        // frc::SmartDashboard::PutNumber("Target X", m_targetX);
+        // frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
         frc::SmartDashboard::PutNumber("Target Ang Base", ang1);
         frc::SmartDashboard::PutNumber("Target Ang Top", ang2);
-        frc::SmartDashboard::PutNumber("Ang Diff Base", dAngBase);
-        frc::SmartDashboard::PutNumber("Ang Diff Top", dAngTop);
+        frc::SmartDashboard::PutNumber("Ang Error (Diff) Base", dAngBase);
+        frc::SmartDashboard::PutNumber("Ang Error (Diff) Top", dAngTop);
         frc::SmartDashboard::PutNumber("Base Voltage", baseVoltage);
         frc::SmartDashboard::PutNumber("Top Voltage", topVoltage);
     }

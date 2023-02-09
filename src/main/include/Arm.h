@@ -8,6 +8,7 @@
 #include <math.h>
 #include <iostream>
 #include <frc/Solenoid.h>
+#include <frc/DutyCycleEncoder.h>
 
 class Arm {
     public:
@@ -32,6 +33,8 @@ class Arm {
         WPI_TalonFX m_topMotor = WPI_TalonFX(ArmConstants::TOP_MOTOR_ID);
         WPI_TalonFX m_baseMotor2 = WPI_TalonFX(ArmConstants::BASE_MOTOR_ID2);
         WPI_TalonFX m_topMotor2 = WPI_TalonFX(ArmConstants::TOP_MOTOR_ID2);
+
+        frc::DutyCycleEncoder baseEncoder{2};
         
         frc::Solenoid m_baseBrake = frc::Solenoid(frc::PneumaticsModuleType::CTREPCM, ArmConstants::BASE_BRAKE_ID);
         frc::Solenoid m_topBrake = frc::Solenoid(frc::PneumaticsModuleType::CTREPCM, ArmConstants::TOP_BRAKE_ID);
