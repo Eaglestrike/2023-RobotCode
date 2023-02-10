@@ -58,15 +58,15 @@ void Arm::Periodic(){
 
     setBrakes(false, false);
     baseReading = getAng(m_baseMotor, ArmConstants::BASE_GEAR_RATIO) + m_angOffsetBase;
-    topReading = getAng(m_topMotor, ArmConstants::TOP_GEAR_RATIO) + m_angOffsetTop;
+    topReading = getAng(m_topMotor, ArmConstants::TOP_GEAR_RATIO) + m_angOffsetTop + 30.0/54.0*baseReading;
 
     if(debug){
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }
     if(debug){
-        // frc::SmartDashboard::PutNumber("Target X", m_targetX);
-        // frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
+        frc::SmartDashboard::PutNumber("Target X", m_targetX);
+        frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
     }
 }
 
@@ -93,7 +93,7 @@ void Arm::TeleopPeriodic() {
     //     topReading += m_topArmSlack;
     // }
 
-    setTarget(0.7112, 1.143);
+    //setTarget(0.7112, 1.143);
 
     // If target is under floor
     if (m_targetZ < 0.0) {
@@ -133,10 +133,10 @@ void Arm::TeleopPeriodic() {
     // Including the case where the elbow bend is facing down, like ^
     if (m_targetX > 0) {
         ang1 = angle - baseArmAng;
-        ang2 = M_PI - topArmAng + ang1;
+        ang2 = M_PI - topArmAng + ang1 - 30.0/54.0*ang1;
     } else {
         ang1 = angle + baseArmAng;
-        ang2 = topArmAng - M_PI + ang1;
+        ang2 = topArmAng - M_PI + ang1 - 30.0/54.0*ang1;
     }
     ang1 = getPrincipalAng2(ang1);
     ang2 = getPrincipalAng2(ang2);
@@ -146,7 +146,19 @@ void Arm::TeleopPeriodic() {
     //ang1 = frc::SmartDashboard::GetNumber("Target Ang Base", baseReading);
     //ang2 = frc::SmartDashboard::GetNumber("Target Ang Top", topReading);
 
-    if(angInBetween(ang1, ArmConstants::BASE_MIN_ANG, ArmConstants::BASE_MAX_ANG)){
+    double dAngBase = getAngDiff(ang1, baseReading);
+    double dAngTop = getAngDiff(ang2, topReading);
+
+    if(debug){
+        frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
+        frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
+        frc::SmartDashboard::PutNumber("Target Ang Base", ang1);
+        frc::SmartDashboard::PutNumber("Target Ang Top", ang2);
+        frc::SmartDashboard::PutNumber("Ang Error (Diff) Base", dAngBase);
+        frc::SmartDashboard::PutNumber("Ang Error (Diff) Top", dAngTop);
+    }
+
+    if(!angInBetween(ang1, ArmConstants::BASE_MIN_ANG, ArmConstants::BASE_MAX_ANG)){
         TargetFail();
         std::cout<<"Base Can't Reach"<<std::endl;
         return;
@@ -158,16 +170,15 @@ void Arm::TeleopPeriodic() {
         return;
     }
 
-    double dAngBase = getAngDiff(ang1, baseReading);
-    double dAngTop = getAngDiff(ang2, topReading);
-
     if(angInBetween(ArmConstants::BASE_MIN_ANG, baseReading, ang1)){
-        dAngBase = 2*M_PI - dAngBase;
+        dAngBase = -2*M_PI + dAngBase;
     }
 
+   // std::cout<< "Top Min Ang:" <<ArmConstants::TOP_MIN_ANG << ", top reading:" << topReading << ", ang reading:" <<ang2 << std::endl;
     if(angInBetween(ArmConstants::TOP_MIN_ANG, topReading, ang2)){
-        dAngTop = 2*M_PI - dAngTop;
-    }
+        dAngTop = -2*M_PI + dAngTop;
+        std::cout << "IN BETWEEN\n";
+    } else { std::cout << "NOT\n";}
 
     dAngBase = scaleError(2.1, 0.07, dAngBase);
     dAngTop = scaleError(2.1, 0.07, dAngTop);
@@ -175,6 +186,7 @@ void Arm::TeleopPeriodic() {
     double pidBaseOutput = m_pidBase.Calculate(dAngBase) - m_kGravityBot*sin(baseReading);
     double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
     m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
+    m_baseMotor2.SetVoltage(units::volt_t{baseVoltage});
 
     double pidTopOutput = m_pidTop.Calculate(dAngTop) - m_kGravityTop*sin(topReading);
     double topVoltage = std::clamp(pidTopOutput, -m_maxVolts, m_maxVolts);
@@ -189,12 +201,6 @@ void Arm::TeleopPeriodic() {
     if (debug) {
         // frc::SmartDashboard::PutNumber("Target X", m_targetX);
         // frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
-        frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
-        frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
-        frc::SmartDashboard::PutNumber("Target Ang Base", ang1);
-        frc::SmartDashboard::PutNumber("Target Ang Top", ang2);
-        frc::SmartDashboard::PutNumber("Ang Error (Diff) Base", dAngBase);
-        frc::SmartDashboard::PutNumber("Ang Error (Diff) Top", dAngTop);
         frc::SmartDashboard::PutNumber("Base Voltage", baseVoltage);
         frc::SmartDashboard::PutNumber("Top Voltage", topVoltage);
     }

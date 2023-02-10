@@ -28,5 +28,5 @@ class Robot : public frc::TimedRobot {
    double moveMetersPerSecond = 0.1;
    double moveRadiansPerSecond = 0.3;
    double maxVoltsBase = 5.0;
-   double maxVoltsTop = 2.0;
+   double maxVoltsTop = 4.0;
 };

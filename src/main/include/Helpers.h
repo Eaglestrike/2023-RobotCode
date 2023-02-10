@@ -1,6 +1,7 @@
 #include <ctre/Phoenix.h>
 #include "Constants.h"
 #include <cmath>
+#include <iostream>
 
 namespace Helpers{
     /**
@@ -53,6 +54,7 @@ namespace Helpers{
     static bool angInBetween(double angMid, double ang1, double ang2){
         double angDiff12 = getAngDiff(ang1, ang2);
         double angDiff1Mid = getAngDiff(ang1, angMid);
+       // std::cout<< "ang diffl2:" <<angDiff<< ", top reading:" << topReading << ", ang reading:" <<ang2 << std::endl;
         if(angDiff12 > 0){
             if(angDiff1Mid > 0 && angDiff1Mid < angDiff12){
                 return true;

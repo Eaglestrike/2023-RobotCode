@@ -41,22 +41,22 @@ namespace ArmConstants{
     const double BASE_GEAR_RATIO = 243.911;
     const double TOP_GEAR_RATIO = 78.4;
     
-    const double BASE_MIN_ANG = -2.0943951;
-	const double BASE_MAX_ANG = 2.0943951;
+    const double BASE_MIN_ANG = -1.3590;
+	const double BASE_MAX_ANG = 1.3590;
 
     const double TOP_MIN_ANG = 0.0;
-	const double TOP_MAX_ANG = 3.4906585;
+	const double TOP_MAX_ANG = -5.9;
 
-    const double BASE_ARM_LENGTH = 0.762;
-    const double TOP_ARM_LENGTH = 0.762;
+    const double BASE_ARM_LENGTH = 0.635;
+    const double TOP_ARM_LENGTH = 0.7112;
     const double PIVOT_HEIGHT = 0.508;
 
     const double BASE_OFFSET = 0.0; //Radians
     const double TOP_OFFSET = 0.0; //Radians
 
-    const double BASE_PID[3] = {0.0, 0.0, 0.0}; //Error in radians
+    const double BASE_PID[3] = {23.0, 0.0, 0.0}; //Error in radians
     const double BASE_KGRAVITY = 0;
-    const double TOP_PID[3] = {0.0, 0.0, 0.0}; //Error in radians
+    const double TOP_PID[3] = {12.0, 0.0, 0.0}; //Error in radians
     const double TOP_KGRAVITY = 0.0;
 
     const double BOT_ARM_SLACK = 1.2217302;
