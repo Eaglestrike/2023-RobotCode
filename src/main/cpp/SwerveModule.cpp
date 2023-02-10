@@ -212,13 +212,20 @@ double SwerveModule::findError(double setAngle, double angle)
     return (abs(rawError) <= 90) ? rawError : (rawError > 0) ? rawError - 180 : rawError + 180;
 }
 
+/**
+ * Returns driving/forward velocity of the wheels
+*/
 double SwerveModule::getDriveVelocity()
 {
     // frc::SmartDashboard::PutNumber(id_ + " vel", (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * pi * SwerveConstants::TREAD_RADIUS);
+    //Heavy ratio to degrees
     return (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * pi * SwerveConstants::TREAD_RADIUS;
 
 }
 
+/**
+ * Return angle of swerve module, robot-oriented, in degrees
+*/
 double SwerveModule::getAngle()
 {
     double angle = cancoder_.GetAbsolutePosition() + offset_;

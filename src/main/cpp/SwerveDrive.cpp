@@ -1,5 +1,8 @@
 #include "SwerveDrive.h"
 
+/*
+* Constructor
+*/
 SwerveDrive::SwerveDrive()
 {
     // autoX_ = 0;
@@ -14,11 +17,21 @@ SwerveDrive::SwerveDrive()
     // aprilTagY_ = 0;
 }
 
+/*
+* Setter for yaw, i.e. the angle of the robot
+*
+* @param yaw yaw to set
+*/
 void SwerveDrive::setYaw(double yaw)
 {
     yaw_ = yaw;
 }
 
+/*
+* Periodic function called, setting new yaw from navX and controller pointer
+* @param yaw yaw from navX
+* @param controls controls pointer
+*/
 void SwerveDrive::periodic(double yaw, Controls *controls)
 {
     frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
@@ -27,7 +40,7 @@ void SwerveDrive::periodic(double yaw, Controls *controls)
     updateAprilTagFieldXY();
     calcOdometry();
 
-    if (frc::DriverStation::IsTeleop())
+    if (frc::DriverStation::IsTeleop()) // If teleop (might be better in a separate TeleopPeriodic function)
     {
         if (controls->lJoyTriggerPressed())
         {
@@ -153,6 +166,9 @@ void SwerveDrive::periodic(double yaw, Controls *controls)
     }
 }
 
+/*
+* Drives the robot at the speed and angle
+*/
 void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
 {
     calcModules(xSpeed, ySpeed, 0, 0, turn, 0, false);
@@ -371,22 +387,34 @@ void SwerveDrive::adjustPos(SwervePose pose)
     bottomLeft_->periodic(blSpeed_, blAngle_, true);
 }
 
+
+/*
+* Calculates the module's orientation and power output
+*/
 void SwerveDrive::calcModules(double xSpeed, double ySpeed, double xAcc, double yAcc, double turn, double turnAcc, bool inVolts)
 {
+    //https://www.first1684.com/uploads/2/0/1/6/20161347/chimiswerve_whitepaper__2_.pdf
+    //https://www.desmos.com/calculator/bxk1qdap5l incomplete desmos
+    //Robot's angle in radians
     double angle = yaw_ * (pi / 180);
 
+    //Rotate the velocities by the robot's rotation (Robot-Orient the velocity) i.e. decompose vectors 
     double newX = xSpeed * cos(angle) + ySpeed * sin(angle);
     double newY = ySpeed * cos(angle) + xSpeed * -sin(angle);
 
+    //Rotate acceleration (Robot-Orient)
     double newXAcc = xAcc * cos(angle) + yAcc * sin(angle);
     double newYAcc = yAcc * cos(angle) + xAcc * -sin(angle);
 
+    //Calculate the turning if the turn and turnaccel is in degrees
     if (inVolts)
     {
+        //Convert to radians, then multiply by the radius to get tangential speed & accelerations
         turn = (turn * pi / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
         turnAcc = (turnAcc * pi / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
     }
 
+    //Scale the velocity and acceleration
     double turnComponent = sqrt(turn * turn / 2);
     double turnAccComponent = sqrt(turnAcc * turnAcc / 2);
     if (turn < 0)
@@ -398,6 +426,7 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, double xAcc, double 
         turnAccComponent *= -1;
     }
 
+    //Math
     double A = newX - (turnComponent);
     double B = newX + (turnComponent);
     double C = newY - (turnComponent);
@@ -499,13 +528,17 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, double xAcc, double 
     }
 }
 
+/**
+ * Updates odometry based off wheel readings
+*/
 void SwerveDrive::calcOdometry()
 {
+    //Find difference in time between frames
     double time = timer_.GetFPGATimestamp().value();
     dT_ = time - prevTime_;
     prevTime_ = time;
 
-    if (!frc::DriverStation::IsEnabled())
+    if (!frc::DriverStation::IsEnabled())//Do not calc odomotry if the robot is not moving; reset it
     {
         reset();
         return;
@@ -524,6 +557,7 @@ void SwerveDrive::calcOdometry()
     //     robotY_ += rotatedX * dT_;
     // }
 
+    //Euler's integration
     robotX_ += xyVel.first * dT_;
     robotY_ += xyVel.second * dT_;
 
@@ -531,6 +565,9 @@ void SwerveDrive::calcOdometry()
     frc::SmartDashboard::PutNumber("y", robotY_);
 }
 
+/**
+ * Resets robot position and information
+*/
 void SwerveDrive::reset()
 {
     robotX_ = 0;
@@ -548,8 +585,13 @@ double SwerveDrive::getY()
     return robotY_;
 }
 
+/**
+ * Returns pair of xy velocities
+*/
 pair<double, double> SwerveDrive::getXYVel()
 {
+    //TODO don't call the same method twice four times
+    //Get robot oriented x,y velocities of each swerve module
     double frX = -topRight_->getDriveVelocity() * sin(topRight_->getAngle() * pi / 180);
     double frY = topRight_->getDriveVelocity() * cos(topRight_->getAngle() * pi / 180);
     double flX = -topLeft_->getDriveVelocity() * sin(topLeft_->getAngle() * pi / 180);
@@ -559,41 +601,59 @@ pair<double, double> SwerveDrive::getXYVel()
     double blX = -bottomLeft_->getDriveVelocity() * sin(bottomLeft_->getAngle() * pi / 180);
     double blY = bottomLeft_->getDriveVelocity() * cos(bottomLeft_->getAngle() * pi / 180);
 
+    //Average robot-oriented velocties
     double avgX = (frX + flX + brX + blX) / 4;
     double avgY = (frY + flY + brY + blY) / 4;
 
     // cout << timer_.GetFPGATimestamp().value() << ", " << sqrt(avgX * avgX + avgY * avgY) << endl;
 
+    //Angle in radians
     double angle = yaw_ * pi / 180;
 
+    //Unrotate the velocties to field-oriented
     double rotatedX = avgX * cos(angle) + avgY * -sin(angle);
     double rotatedY = avgX * sin(angle) + avgY * cos(angle);
 
     return {rotatedX, rotatedY};
 }
 
+
+/**
+ * Getter for yaw
+ * @returns rotation of the robot
+*/
 double SwerveDrive::getYaw()
 {
     return yaw_;
 }
 
+/*
+* Setter for position
+* @param xy
+*/
 void SwerveDrive::setPos(pair<double, double> xy)
 {
     robotX_ = xy.first;
     robotY_ = xy.second;
 }
 
+/**
+ * Using april tags to update field odometry
+*/
 void SwerveDrive::updateAprilTagFieldXY()
 {
+    //-1 is no april tag
     double defaultVal[] = {-1};
+    //Get data from SmartDashboard/Networktables
     vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
 
-    if (data.at(0) == -1)
+    if (data.at(0) == -1)//No april tag data
     {
         foundTag_ = false;
         return;
     }
-
+    //Format of 
+    //[ apriltag or nah , id , x , y , _ , _ , _ , zang]
     double tagX = data.at(2);
     double tagY = data.at(3);
     double tagZAng = -data.at(7);
@@ -603,30 +663,32 @@ void SwerveDrive::updateAprilTagFieldXY()
     // frc::SmartDashboard::PutNumber("Tag y", tagY);
     // frc::SmartDashboard::PutNumber("Tag ZAng", tagZAng);
 
+    //Rotate the tag by the seen angle to orient displacement to field orient
     double orientedTagX = tagX * cos(tagZAng) + tagY * sin(tagZAng);
     double orientedTagY = tagX * -sin(tagZAng) + tagY * cos(tagZAng);
 
-    if (tagID == -1)
+    if (tagID == -1)//Wrong tag id
     {
-        if(robotX_ > 3.919857 && robotX_ < 12.621893)
+        if(robotX_ > 3.919857 && robotX_ < 12.621893) //If robot is not near community nor loading station
         {
             foundTag_ = false;
         }
         return;
     }
-    if (tagID < 1 || tagID > 8)
+    if (tagID < 1 || tagID > 8) //Ignore for now
     {
         return;
     }
 
-    if (tagID != prevTag_)
+    if (tagID != prevTag_) //If tag changes
     {
-        prevTag_ = tagID;
+        prevTag_ = tagID; //Set to change, do nothing (skip a frame)
         return;
     }
-    prevTag_ = tagID;
+    prevTag_ = tagID; //Set the past known tag to be this tag
 
-    double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0];
+    //Get xy of field tag position
+    double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0]; 
     double fieldTagY = FieldConstants::TAG_XY[tagID - 1][1];
 
     // frc::SmartDashboard::PutNumber("GX", fieldTagX);
@@ -635,13 +697,16 @@ void SwerveDrive::updateAprilTagFieldXY()
     // frc::SmartDashboard::PutNumber("TOX", orientedTagX);
     // frc::SmartDashboard::PutNumber("TOY", orientedTagY);
 
+
     double aprilTagX, aprilTagY;
+    //Really just field-oriented coordinates (idk why called apriltagY) - call SeenPositionX or smthg
+    //Adding the displacement from tag to robot + apriltag position
     aprilTagY = fieldTagY + orientedTagX;
-    if (tagID == 1 || tagID == 2 || tagID == 3 || tagID == 4)
+    if (tagID == 1 || tagID == 2 || tagID == 3 || tagID == 4)//Left side of field
     {
         aprilTagX = fieldTagX - orientedTagY;
     }
-    else
+    else//Right side of field
     {
         aprilTagX = fieldTagX + orientedTagY;
     }
@@ -649,6 +714,7 @@ void SwerveDrive::updateAprilTagFieldXY()
     // frc::SmartDashboard::PutNumber("Field X", aprilTagX);
     // frc::SmartDashboard::PutNumber("Field y", aprilTagY);
 
+    //1st check = set it regardless
     if (!foundTag_) // TODO check if necessary
     {
         robotX_ = aprilTagX;
@@ -657,6 +723,8 @@ void SwerveDrive::updateAprilTagFieldXY()
     }
     else
     {
+        //Update by moving the position to the calculated position if the position is close
+        //Increment it proportionally by the error
         if (abs(robotX_ - aprilTagX) < 1 && abs(robotY_ - aprilTagY) < 1) // TODO watch out here
         {
             robotX_ += (-robotX_ + aprilTagX) * 0.05;
@@ -665,24 +733,28 @@ void SwerveDrive::updateAprilTagFieldXY()
     }
 }
 
+/**
+ * Checks if the position is scorable
+ * @returns tag id idk help? -1 is no position
+*/
 int SwerveDrive::checkScoringPos() // TODO get better values
 {
-    if (!foundTag_)
+    if (!foundTag_) // If tag not found
     {
         return -1;
     }
 
-    if (robotX_ > 3.919857 && robotX_ < 12.621893)
+    if (robotX_ > 3.919857 && robotX_ < 12.621893) //If robot is not near community nor loading station
     {
         return -1;
     }
 
-    if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH)
+    if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH) //If rbot is out of bounds
     {
         return -1;
     }
 
-    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)//Blue alliance bum boom bum bum boom
     {
         if (robotX_ >= FieldConstants::TAG_XY[0][0]) //TODO make parameters better for all TAG_XY, probably make it check y first
         {
