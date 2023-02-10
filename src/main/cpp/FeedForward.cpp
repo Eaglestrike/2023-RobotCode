@@ -50,8 +50,8 @@ std::array<double, 2> FeedForward::getffu(ArmTrajectoryPoint trajPoint) {
  */
 std::array<Eigen::Matrix<double, 2, 2>, 4> FeedForward::MatricesForState(Eigen::Matrix<double, 4, 1> X) {
     auto matrices = NormalizedMatricesForState(X);
-    matrices.at(2)(1, 0) *= X(1, 0);
-    matrices.at(2)(0, 1) *= X(3, 0);
+    matrices.at(1)(1, 0) *= X(1, 0);
+    matrices.at(1)(0, 1) *= X(3, 0);
     return matrices;
 }
 
