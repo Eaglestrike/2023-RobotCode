@@ -206,8 +206,9 @@ void Arm::DisabledPeriodic(){
         m_kGravityTop = frc::SmartDashboard::GetNumber("Top Gravity Constant", m_kGravityTop);
     }
     if(debug){
-        frc::SmartDashboard::GetNumber("Target X", m_targetX);
-        frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
+        m_targetX = frc::SmartDashboard::GetNumber("Target X", m_targetX);
+        m_targetZ = frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
+        //std::cout << m_targetX << ", " << m_targetZ << "\n";
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }

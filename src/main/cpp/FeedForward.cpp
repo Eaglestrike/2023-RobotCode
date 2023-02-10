@@ -29,6 +29,8 @@ std::array<Eigen::Matrix<double, 2, 2>, 4> FeedForward::NormalizedMatricesForSta
         {-s * m_beta, 0.0}
     };
 
+    std::cout << "K3" << m_K3 << std::endl;
+
     return {K1, K2, m_K3, m_K4};
 }
 
@@ -95,7 +97,7 @@ Eigen::Matrix<double, 2, 1> FeedForward::ff_u(Eigen::Matrix<double, 4, 1> X, Eig
  */
 std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, double omegaArm1, double omegaArm2, double alphaArm1, double alphaArm2) {
     // get values from smartdashboard
-    m_l1 = frc::SmartDashboard::GetNumber("l1", m_l1);
+    /*m_l1 = frc::SmartDashboard::GetNumber("l1", m_l1);
     m_l2 = frc::SmartDashboard::GetNumber("l2", m_l2);
     m_m1 = frc::SmartDashboard::GetNumber("m1", m_m1);
     m_m2 = frc::SmartDashboard::GetNumber("m2", m_m2);
@@ -113,7 +115,7 @@ std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, do
     m_kG2 = frc::SmartDashboard::GetNumber("kG2", m_kG2);
     m_arm_1_trajectory_time_multiplier = frc::SmartDashboard::GetNumber("arm_1_trajectory_multiplier", m_arm_1_trajectory_time_multiplier);
     m_arm_2_trajectory_time_multiplier = frc::SmartDashboard::GetNumber("arm_2_trajectory_multiplier", m_arm_2_trajectory_time_multiplier);
-    m_zeroOmegaAlpha = frc::SmartDashboard::GetBoolean("feedforward zero omega alpha", m_zeroOmegaAlpha);
+    m_zeroOmegaAlpha = frc::SmartDashboard::GetBoolean("feedforward zero omega alpha", m_zeroOmegaAlpha);*/
 
     
 
@@ -171,7 +173,7 @@ std::array<double, 2> FeedForward::getffu(double thetaArm1, double thetaArm2, do
 
 void FeedForward::putValuesToSmartDashboard() {
     // put vals to smartdashboard
-    frc::SmartDashboard::PutNumber("l1", m_l1);
+    /*frc::SmartDashboard::PutNumber("l1", m_l1);
     frc::SmartDashboard::PutNumber("l2", m_l2);
     frc::SmartDashboard::PutNumber("m1", m_m1);
     frc::SmartDashboard::PutNumber("m2", m_m2);
@@ -189,5 +191,5 @@ void FeedForward::putValuesToSmartDashboard() {
     frc::SmartDashboard::PutNumber("kGOtherArm", m_kGOtherArm);
     frc::SmartDashboard::PutNumber("arm_1_trajectory_multiplier", m_arm_1_trajectory_time_multiplier);
     frc::SmartDashboard::PutNumber("arm_2_trajectory_multiplier", m_arm_2_trajectory_time_multiplier);
-    frc::SmartDashboard::PutNumber("feedforward zero omega alpha", m_zeroOmegaAlpha);
+    frc::SmartDashboard::PutNumber("feedforward zero omega alpha", m_zeroOmegaAlpha);*/
 }

@@ -75,8 +75,8 @@ namespace FFUConstants {
     const double I1 = r1 * r1 * m1;
     const double I2 = r2 * r2 * m2;
 
-    const double G1 = 1;
-    const double G2 = 1;
+    const double G1 = 100.0;
+    const double G2 = 50.0;
 
     const double stall_torque = 4.69;
     const double free_speed = (6380.0 / 60.0) * 2 * M_PI;

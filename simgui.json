@@ -1,8 +1,23 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "Talon FX[14]": {
+        "name": "top motor"
+      },
+      "Talon FX[20]": {
+        "header": {
+          "open": true
+        },
+        "name": "baes motor"
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
+      "/LiveWindow/Ungrouped/Talon FX [14]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX [20]": "Motor Controller",
       "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro"
     }
   },

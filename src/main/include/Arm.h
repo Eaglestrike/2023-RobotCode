@@ -38,7 +38,7 @@ class Arm{
         double m_targetX = 0.0;
         double m_targetZ = m_baseArmLength + m_topArmLength + m_pivotHeight;
 
-        const bool configPID = true;
+        const bool configPID = false;
         frc2::PIDController m_pidBase{ 
                                         ArmConstants::BASE_PID[0],
                                         ArmConstants::BASE_PID[1], 
