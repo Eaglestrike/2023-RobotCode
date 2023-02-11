@@ -67,8 +67,8 @@ void Robot::DisabledPeriodic() {
 void Robot::TestInit() {}
 
 void Robot::TestPeriodic() {
-  arm.TestPeriodic(maxVoltsBase*controller.getX2Strafe(),
-                  maxVoltsTop*controller.getY2Strafe()
+  arm.TestPeriodic(maxAmpsBase*controller.getX2Strafe(),
+                  maxAmpsTop*controller.getY2Strafe()
                   );
   if (controller.A_IsPressed()) {
     arm.resetEncoder();

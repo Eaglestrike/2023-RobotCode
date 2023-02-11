@@ -62,5 +62,5 @@ namespace ArmConstants{
     const double BOT_ARM_SLACK = 1.2217302;
     const double TOP_ARM_SLACK = -1.2217302;
 
-    const double MAX_VOLTS = 5;
+    const double MAX_AMPS = 5;
 }

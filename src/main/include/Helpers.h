@@ -1,4 +1,4 @@
-#include <ctre/Phoenix.h>
+#include <ctre/phoenixpro/TalonFX.hpp>
 #include "Constants.h"
 #include <cmath>
 #include <iostream>
@@ -27,15 +27,16 @@ namespace Helpers{
 /**
  * 
 */
-    static double getAbsAng(WPI_TalonFX& motor, double ratio){//Radians
-        double ticks = motor.GetSelectedSensorPosition()/ratio;
+    static double getAbsAng(ctre::phoenixpro::hardware::TalonFX& motor, double ratio){//Radians
+        double pos = motor.GetRotorPosition().GetValue().value();
+        double ticks = pos/ratio;
         return ticks/GeneralConstants::TICKS_PER_RADIAN;
     }
 
     /**
      * 
     */
-    static double getAng(WPI_TalonFX& motor, double ratio){//Returns in range [0, 2*pi]
+    static double getAng(ctre::phoenixpro::hardware::TalonFX& motor, double ratio){//Returns in range [0, 2*pi]
         double ang = getAbsAng(motor, ratio);
         return getPrincipalAng(ang);
     }

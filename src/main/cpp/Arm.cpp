@@ -1,6 +1,8 @@
 #include "Arm.h"
 using namespace Helpers;
 
+using namespace ctre::phoenixpro;
+
 // Sets up SmartDashboard, zeroes motor readings.
 void Arm::init(){
     if (configDimensions) {
@@ -11,7 +13,7 @@ void Arm::init(){
     if (configPID) {
         frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
         frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
-        frc::SmartDashboard::PutNumber("Max Volts", m_maxVolts);
+        frc::SmartDashboard::PutNumber("Max Amps", m_maxAmps);
         frc::SmartDashboard::PutNumber("Base P", m_pidBase.GetP());
         frc::SmartDashboard::PutNumber("Base I", m_pidBase.GetI());
         frc::SmartDashboard::PutNumber("Base D", m_pidBase.GetD());
@@ -26,29 +28,35 @@ void Arm::init(){
     //frc::SmartDashboard::PutNumber("Target Ang Base", 0);
     //frc::SmartDashboard::PutNumber("Target Ang Top", 0);
 
-    m_baseMotor.SetNeutralMode(NeutralMode::Brake);
-    m_baseMotor2.SetNeutralMode(NeutralMode::Brake);
+    //TODO: figure out neutral mode
+    //m_baseMotor.SetNeutralMode(NeutralMode::Brake);
+    //m_baseMotor2.SetNeutralMode(NeutralMode::Brake);
+
     //m_baseMotor2.SetInverted(InvertType::FollowMaster);
     //m_baseMotor2.Follow(m_baseMotor);
+    m_baseMotor2.SetControl(controls::Follower(m_baseMotor.GetDeviceID(), false));
 
-    m_topMotor.SetNeutralMode(NeutralMode::Brake);
-    m_topMotor2.SetNeutralMode(NeutralMode::Brake);
-    m_topMotor2.Follow(m_topMotor);
+    //TODO: figue out neutral mode
+    //m_topMotor.SetNeutralMode(NeutralMode::Brake);
+    //m_topMotor2.SetNeutralMode(NeutralMode::Brake);
+
+    //m_topMotor2.Follow(m_topMotor);
+    m_topMotor2.SetControl(controls::Follower(m_topMotor.GetDeviceID(), false));
 
     resetEncoder();
 
     setBrakes(false, false);
 
-    m_pidBase.SetIntegratorRange(-m_maxVolts, m_maxVolts);
-    m_pidTop.SetIntegratorRange(-m_maxVolts, m_maxVolts);
+    m_pidBase.SetIntegratorRange(-m_maxAmps, m_maxAmps);
+    m_pidTop.SetIntegratorRange(-m_maxAmps, m_maxAmps);
 
     frc::SmartDashboard::PutNumber("Target X", m_targetX);
     frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
 }
 
 void Arm::resetEncoder(){
-    m_baseMotor.SetSelectedSensorPosition(0);
-    m_topMotor.SetSelectedSensorPosition(0);
+    m_baseMotor.SetRotorPosition(0_deg);
+    m_topMotor.SetRotorPosition(0_deg);
     m_pidBase.Reset();
     m_pidTop.Reset();
 }
@@ -184,13 +192,15 @@ void Arm::TeleopPeriodic() {
     dAngTop = scaleError(2.1, 0.07, dAngTop);
 
     double pidBaseOutput = m_pidBase.Calculate(dAngBase) - m_kGravityBot*sin(baseReading);
-    double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
-    m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
-    m_baseMotor2.SetVoltage(units::volt_t{baseVoltage});
+    double baseCurrent = std::clamp(pidBaseOutput, -m_maxAmps, m_maxAmps);
+    //m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
+    //m_baseMotor2.SetVoltage(units::volt_t{baseVoltage});
+    m_baseMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{baseCurrent}});
 
     double pidTopOutput = m_pidTop.Calculate(dAngTop) - m_kGravityTop*sin(topReading);
-    double topVoltage = std::clamp(pidTopOutput, -m_maxVolts, m_maxVolts);
-    m_topMotor.SetVoltage(units::volt_t{topVoltage});
+    double topCurrent = std::clamp(pidTopOutput, -m_maxAmps, m_maxAmps);
+    //m_topMotor.SetVoltage(units::volt_t{topVoltage});
+    m_topMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{topCurrent}});
 
     frc::SmartDashboard::PutBoolean("Target", true);
     frc::SmartDashboard::PutNumber("Target Distance", distance);
@@ -201,17 +211,18 @@ void Arm::TeleopPeriodic() {
     if (debug) {
         // frc::SmartDashboard::PutNumber("Target X", m_targetX);
         // frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
-        frc::SmartDashboard::PutNumber("Base Voltage", baseVoltage);
-        frc::SmartDashboard::PutNumber("Top Voltage", topVoltage);
+        frc::SmartDashboard::PutNumber("Base Current", baseCurrent);
+        frc::SmartDashboard::PutNumber("Top Current", topCurrent);
     }
 }
 
 // Turns the motors off
 void Arm::DisabledInit() {
-    m_baseMotor.SetNeutralMode(NeutralMode::Brake);
-    m_topMotor.SetNeutralMode(NeutralMode::Brake);
-    m_baseMotor.SetVoltage(units::volt_t{0});
-    m_topMotor.SetVoltage(units::volt_t{0});
+    //TODO: figure out how to set neutral mode
+    //m_baseMotor.SetNeutralMode(NeutralMode::Brake);
+    //m_topMotor.SetNeutralMode(NeutralMode::Brake);
+    m_topMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{0}});
+    m_baseMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{0}});
 }
 
 void Arm::DisabledPeriodic(){
@@ -223,19 +234,18 @@ void Arm::DisabledPeriodic(){
     //frc::SmartDashboard::PutNumber("Ticks Top", m_topMotor.GetSelectedSensorPosition());
 }
 
-void Arm::TestPeriodic(double vBase, double vTop){
+void Arm::TestPeriodic(double ampBase, double ampTop){
     if(configPID){
         frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
         frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
     }
 
-    m_baseMotor.SetVoltage(units::volt_t{vBase});
-    m_baseMotor2.SetVoltage(units::volt_t{vBase});
-    m_topMotor.SetVoltage(units::volt_t{vTop});
+    m_baseMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{ampBase}});
+    m_topMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{ampTop}});
 
     if(debug){
-        frc::SmartDashboard::PutNumber("Base Voltage", vBase);
-        frc::SmartDashboard::PutNumber("Top Voltage", vTop);
+        frc::SmartDashboard::PutNumber("Base Amps", ampBase);
+        frc::SmartDashboard::PutNumber("Top Amps", ampTop);
         frc::SmartDashboard::PutNumber("Target X", m_targetX);
         frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
     }
@@ -248,7 +258,7 @@ void Arm::ReadSmartDashboard(){
         m_pivotHeight = frc::SmartDashboard::GetNumber("Pivot Height", m_pivotHeight);
     }
     if(configPID){
-        m_maxVolts = frc::SmartDashboard::GetNumber("Max Volts", m_maxVolts);
+        m_maxAmps = frc::SmartDashboard::GetNumber("Max Amps", m_maxAmps);
         m_pidBase.SetP(frc::SmartDashboard::GetNumber("Base P", m_pidBase.GetP()));
         m_pidBase.SetI(frc::SmartDashboard::GetNumber("Base I", m_pidBase.GetI()));
         m_pidBase.SetD(frc::SmartDashboard::GetNumber("Base D", m_pidBase.GetD()));

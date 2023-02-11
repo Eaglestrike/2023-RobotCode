@@ -2,7 +2,7 @@
 
 #include "Constants.h"
 #include "Helpers.h"
-#include <ctre/Phoenix.h>
+#include <ctre/phoenixpro/TalonFX.hpp>
 #include <frc/controller/PIDController.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <math.h>
@@ -29,10 +29,10 @@ class Arm {
     private:
         void ReadSmartDashboard();
 
-        WPI_TalonFX m_baseMotor = WPI_TalonFX(ArmConstants::BASE_MOTOR_ID);
-        WPI_TalonFX m_topMotor = WPI_TalonFX(ArmConstants::TOP_MOTOR_ID);
-        WPI_TalonFX m_baseMotor2 = WPI_TalonFX(ArmConstants::BASE_MOTOR_ID2);
-        WPI_TalonFX m_topMotor2 = WPI_TalonFX(ArmConstants::TOP_MOTOR_ID2);
+        ctre::phoenixpro::hardware::TalonFX m_baseMotor{ArmConstants::BASE_MOTOR_ID};
+        ctre::phoenixpro::hardware::TalonFX m_topMotor{ArmConstants::TOP_MOTOR_ID};
+        ctre::phoenixpro::hardware::TalonFX m_baseMotor2{ArmConstants::BASE_MOTOR_ID2};
+        ctre::phoenixpro::hardware::TalonFX m_topMotor2{ArmConstants::TOP_MOTOR_ID2};
 
         frc::DutyCycleEncoder baseEncoder{2};
         
@@ -72,7 +72,7 @@ class Arm {
         double m_topArmSlack = ArmConstants::TOP_ARM_SLACK;//Radians
                         
         double m_kGravityTop = ArmConstants::TOP_KGRAVITY;
-        double m_maxVolts = ArmConstants::MAX_VOLTS;
+        double m_maxAmps = ArmConstants::MAX_AMPS;
 
         //Updates in periodic
         double baseReading = 0.0;
