@@ -51,6 +51,20 @@ namespace ArmConstants{
     const double TOP_ARM_LENGTH = 0.7112;
     const double PIVOT_HEIGHT = 0.508;
 
+    const double FALCON_500_KT = 5.84 / 384;
+
+    const double BASE_ARM_MASS = 10 / 2.205;
+    const double TOP_ARM_MASS = 10 / 2.205;
+
+    const double BASE_ARM_L = 32.27 * 0.0254;
+    const double TOP_ARM_L = 29.0 * 0.0254;
+
+    const double BASE_ARM_R = 32.27 / 2 * 0.0254;
+    const double TOP_ARM_R = 29.0 / 2 * 0.0254;
+
+    const double BASE_ARM_I = (1/12) * BASE_ARM_MASS * BASE_ARM_L * BASE_ARM_L + BASE_ARM_MASS * BASE_ARM_R * BASE_ARM_R;
+    const double TOP_ARM_I = (1/12) * TOP_ARM_MASS * TOP_ARM_L * TOP_ARM_L + TOP_ARM_MASS * TOP_ARM_R * TOP_ARM_R;
+
     const double BASE_OFFSET = 0.0; //Radians
     const double TOP_OFFSET = 0.0; //Radians
 

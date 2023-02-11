@@ -8,6 +8,7 @@
 #include <math.h>
 #include <iostream>
 #include <frc/Solenoid.h>
+#include <frc/trajectory/TrapezoidProfile.h>
 #include <frc/DutyCycleEncoder.h>
 
 class Arm {
@@ -25,6 +26,8 @@ class Arm {
         void resetTarget();
         void resetEncoder();
         void resetOffsets();
+
+        bool firstRun = true;
 
     private:
         void ReadSmartDashboard();
@@ -78,4 +81,19 @@ class Arm {
         double baseReading = 0.0;
         double topReading = 0.0;
 
+        double m_base_Kt = ArmConstants::FALCON_500_KT / ArmConstants::BASE_GEAR_RATIO;
+        double m_top_Kt = ArmConstants::FALCON_500_KT / ArmConstants::TOP_GEAR_RATIO;
+
+        double m_base_m = ArmConstants::BASE_ARM_MASS; // base arm mass
+        double m_base_r = ArmConstants::BASE_ARM_R; // base arm distance to center of mass from pivot
+        double m_base_I = ArmConstants::BASE_ARM_I; // base arm moment of inertia
+
+        double m_top_m = ArmConstants::TOP_ARM_MASS; // top arm mass
+        double m_top_r = ArmConstants::TOP_ARM_R; // top arm distance to center of mass from pivot
+        double m_top_I = ArmConstants::TOP_ARM_I; // top arm moment of inertia
+
+        frc::TrapezoidProfile<units::angle::radian_t> baseArmProfile;
+        double baseArmLastVel = 0;
+        frc::TrapezoidProfile<units::angle::radian_t> topArmProfile;
+        double topArmLastVel = 0;
 };

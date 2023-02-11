@@ -33,6 +33,7 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
+  arm.firstRun = true;
 }
 
 void Robot::TeleopPeriodic() {

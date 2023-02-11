@@ -1,6 +1,8 @@
 #include "Arm.h"
-using namespace Helpers;
+#include <frc/trajectory/TrapezoidProfile.h>
 
+
+using namespace Helpers;
 using namespace ctre::phoenixpro;
 
 // Sets up SmartDashboard, zeroes motor readings.
@@ -191,14 +193,50 @@ void Arm::TeleopPeriodic() {
     dAngBase = scaleError(2.1, 0.07, dAngBase);
     dAngTop = scaleError(2.1, 0.07, dAngTop);
 
-    double pidBaseOutput = m_pidBase.Calculate(dAngBase) - m_kGravityBot*sin(baseReading);
-    double baseCurrent = std::clamp(pidBaseOutput, -m_maxAmps, m_maxAmps);
+    double baseTarget = dAngBase + baseReading;
+    double topTarget = dAngTop + topReading;
+    if (firstRun) {
+        baseArmProfile = frc::TrapezoidProfile<units::radian_t>(
+            frc::TrapezoidProfile<units::angle::radian_t>::Constraints{1_rad_per_s, 0.5_rad_per_s_sq},
+            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(baseTarget), 0_rad_per_s},
+            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(baseReading), 0_rad_per_s}
+        );
+        topArmProfile = frc::TrapezoidProfile<units::radian_t>(
+            frc::TrapezoidProfile<units::angle::radian_t>::Constraints{1_rad_per_s, 0.5_rad_per_s_sq},
+            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(topTarget), 0_rad_per_s},
+            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(topReading), 0_rad_per_s}
+        );
+        firstRun = false;
+    }
+
+    auto state = baseArmProfile.Calculate(frc::Timer::GetFPGATimestamp());
+    double baseArmPos = baseArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).position.to<double>();
+    double baseArmVel = baseArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).velocity.to<double>();
+    double baseArmAccel = (baseArmVel - baseArmLastVel) / 0.02;
+    baseArmLastVel = baseArmVel;
+
+    state = topArmProfile.Calculate(frc::Timer::GetFPGATimestamp());
+    double topArmPos = topArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).position.to<double>();
+    double topArmVel = topArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).velocity.to<double>();
+    double topArmAccel = (topArmVel - topArmLastVel) / 0.02;
+    topArmLastVel = topArmVel;
+
+    // feed forward base arm
+    double baseArmTorque = sin(baseReading) * m_base_r * m_base_m * 9.81 + baseArmAccel * m_base_I;
+    double feedForwardBase = baseArmTorque / m_base_Kt;
+
+    // feed forward top arm
+    double topArmTorque = sin(topReading) * m_top_r * m_top_m * 9.81 + topArmAccel * m_top_I;
+    double feedForwardTop = topArmTorque / m_top_Kt;
+
+    double pidBaseOutput = m_pidBase.Calculate(dAngBase);
+    double baseCurrent = std::clamp(pidBaseOutput+feedForwardBase, -m_maxAmps, m_maxAmps);
     //m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
     //m_baseMotor2.SetVoltage(units::volt_t{baseVoltage});
     m_baseMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{baseCurrent}});
 
-    double pidTopOutput = m_pidTop.Calculate(dAngTop) - m_kGravityTop*sin(topReading);
-    double topCurrent = std::clamp(pidTopOutput, -m_maxAmps, m_maxAmps);
+    double pidTopOutput = m_pidTop.Calculate(dAngTop);
+    double topCurrent = std::clamp(pidTopOutput+feedForwardTop, -m_maxAmps, m_maxAmps);
     //m_topMotor.SetVoltage(units::volt_t{topVoltage});
     m_topMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{topCurrent}});
 
