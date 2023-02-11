@@ -36,6 +36,10 @@ namespace FieldConstants
     // const double MIDDLE_TAG_X = 2.72923; //107.45 in
     // const double RIGHT_TAG_X = 4.40563; //173.45;
 
+    /**
+     * Tag Positions in the form of 
+     * TAG_XY[TagID -1] = {x, y}
+    */
     const double TAG_XY[8][2] = {
     {15.513558, 1.071626}, 
     {15.513558, 2.748026}, 
