@@ -15,6 +15,8 @@
 #include "ArmKinematics.h"
 #include "Claw.h"
 #include "TalonFXSim.h"
+#include <frc/Encoder.h>
+#include <frc/DutyCycleEncoder.h>
 
 class TwoJointArm
 {
@@ -30,6 +32,7 @@ class TwoJointArm
             MANUAL
         };
         State getState();
+        TwoJointArmProfiles::Positions getPosition();
 
         void periodic();
         void zeroArms();
@@ -52,6 +55,7 @@ class TwoJointArm
         bool shoulderBrakeEngaged();
         bool elbowBrakeEngaged();
         bool isForward();
+        bool intaking();
 
         void checkPos();
 
@@ -59,8 +63,11 @@ class TwoJointArm
         string getPosString();
 
         void goToPos(double thetaPos, double phiPos); //HERE
-        double getThetaVolts();
-        double getPhiVolts();
+        // double getThetaVolts();
+        // double getPhiVolts();
+
+        void toggleClaw();
+        void setClawWheels(double speed);
 
     private:
         // WPI_TalonFX shoulderMaster_;
@@ -78,6 +85,8 @@ class TwoJointArm
         
         frc::Solenoid shoulderBrake_;
         frc::Solenoid elbowBrake_;
+
+        frc::DutyCycleEncoder shoulderEncoder_;
 
         Claw claw_;
 

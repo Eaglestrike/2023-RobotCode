@@ -1,6 +1,6 @@
 #include "Controls.h"
 
-Controls::Controls() : lJoy_{InputConstants::LJOY_PORT}, rJoy_{InputConstants::RJOY_PORT}, xbox_{InputConstants::XBOX_PORT}
+Controls::Controls() : lJoy_{InputConstants::LJOY_PORT}, rJoy_{InputConstants::RJOY_PORT}, xbox_{InputConstants::XBOX_PORT}, buttonBoard_{InputConstants::BUTTON_BOARD_PORT}
 {
     //idk
 }
@@ -69,7 +69,7 @@ bool Controls::lJoyTriggerPressed()
 
 bool Controls::rJoyTriggerPressed()
 {
-    return rJoy_.GetTrigger();
+    return rJoy_.GetTriggerPressed();
 }
 
 bool Controls::aPressed()
@@ -94,7 +94,7 @@ bool Controls::yPressed()
 
 bool Controls::rBumperPressed()
 {
-    return xbox_.GetRawButton(InputConstants::R_BUMPER);
+    return xbox_.GetRawButtonPressed(InputConstants::R_BUMPER);
 }
 
 bool Controls::lBumperPressed()
@@ -117,9 +117,14 @@ bool Controls::lXTriggerPressed()
     return xbox_.GetRawAxis(InputConstants::XBOX_LTRIGGER) > 0.75;
 }
 
-bool Controls::resetArmPressed()
+bool Controls::outakePressed()
 {
     return rJoy_.GetRawButton(InputConstants::OUTAKE_BUTTON);
+}
+
+bool Controls::intakePressed()
+{
+    return rJoy_.GetRawButton(InputConstants::INTAKE_BUTTON);
 }
 
 double Controls::xboxLJoyX()
@@ -153,4 +158,48 @@ bool Controls::dPadLeftPressed()
 }
 bool Controls::dPadRightPressed(){
     return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
+}
+
+int Controls::checkScoringButtons()
+{
+    if(buttonBoard_.GetRawButton(InputConstants::B1))
+    {
+        return 1;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B2))
+    {
+        return 2;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B3))
+    {
+        return 3;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B4))
+    {
+        return 4;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B5))
+    {
+        return 5;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B6))
+    {
+        return 6;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B7))
+    {
+        return 7;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B8))
+    {
+        return 8;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::B9))
+    {
+        return 9;
+    }
+    else
+    {
+        return -1;
+    }
 }

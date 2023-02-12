@@ -19,19 +19,20 @@ class Claw
         rev::CANSparkMax wheelMotor_;
 
     public:
-        enum WheelState
-        {
-            INTAKING,
-            OUTAKING,
-            IDLE
-        };
-        WheelState wheelState_;
+        // enum WheelState
+        // {
+        //     INTAKING,
+        //     OUTAKING,
+        //     IDLE
+        // };
+        // WheelState wheelState_;
         Claw();
         void periodic();
 
         bool isOpen();
-        WheelState getWheelState();
+        // WheelState getWheelState();
 
         void setOpen(bool open);
-        void setWheelState(WheelState wheelState);
+        // void setWheelState(WheelState wheelState);
+        void setWheelSpeed(double speed);
 };

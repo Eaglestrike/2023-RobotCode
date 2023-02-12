@@ -90,6 +90,7 @@ namespace InputConstants
     const int XBOX_RJOY_Y = 5;
 
     const int OUTAKE_BUTTON = 3;
+    const int INTAKE_BUTTON = 4;
     
     const int A_BUTTON = 1;
     const int B_BUTTON = 2;
@@ -99,6 +100,17 @@ namespace InputConstants
     const int R_BUMPER = 6; 
     const int CLIMB_MODE_TOGGLE_BUTTON = 7;
     const int FIELD_ORIENT_BUTTON = 8;
+
+    const int BUTTON_BOARD_PORT = 3;
+    const int B1 = 1;
+    const int B2 = 2;
+    const int B3 = 3;
+    const int B4 = 4;
+    const int B5 = 5;
+    const int B6 = 6;
+    const int B7 = 7;
+    const int B8 = 8;
+    const int B9 = 9;
 
 }
 
@@ -149,22 +161,22 @@ namespace SwerveConstants
     const double kaV = 34.2064;
     const double kaVI = -25.4095;
     const double kaA = 0;
-    const double kaP = 0.04; //0.008
+    const double kaP = 0.06; //0.008
     const double kaD = 0;
 
 }
 
 namespace TwoJointArmConstants
 {
-	const double UPPER_ARM_LENGTH = 0.635; //TODO get values 0.635
-	const double FOREARM_LENGTH = 0.8636; //0.8636 (0.762 for both, prototype)
-    const double EE_LENGTH = 0.2794; //0.2794
-    const double MOUNTING_HEIGHT = 0.508; //0.508
+	const double UPPER_ARM_LENGTH = 0.7239; //0.635 for prototype, 0.7239 for real
+	const double FOREARM_LENGTH = 0.6985; //0.7112 for prototype, 0.6985 for real
+    const double EE_LENGTH = 0.3683;
+    const double MOUNTING_HEIGHT = 0.4318;
 	
-	const double SHOULDER_MIN_ANG = -120;
-	const double SHOULDER_MAX_ANG = 120;
+	const double SHOULDER_MIN_ANG = -90;
+	const double SHOULDER_MAX_ANG = 90;
 	const double ELBOW_MIN_ANG = 0;
-	const double ELBOW_MAX_ANG = 200;
+	const double ELBOW_MAX_ANG = 360;
 
 	const double SHOULDER_ARM_MAX_VEL = 180;
 	const double ELBOW_ARM_MAX_VEL = 180*5;
@@ -177,6 +189,8 @@ namespace TwoJointArmConstants
     const int ELBOW_SLAVE_ID = 1;
     const int SHOULDER_BRAKE_ID = 4;
     const int ELBOW_BRAKE_ID = 5;
+    const int SHOULDER_ENCODER_ID = 0;
+    const double SHOULDER_ENCODER_OFFSET = 0;
 
     const double UPPER_ARM_I = 0.19;
     const double FOREARM_I = 0.15;
@@ -190,15 +204,15 @@ namespace TwoJointArmConstants
     const double SHOULDER_I = UPPER_ARM_I + UPPER_ARM_M * UPPER_ARM_COM_DIST * UPPER_ARM_COM_DIST;
     const double ELBOW_I = FOREARM_I + FOREARM_M * FOREARM_COM_DIST * FOREARM_COM_DIST;
 
-    const double SHOULDER_KV = 11.6;
-    const double SHOULDER_KVI = -10;
+    const double SHOULDER_KV = 13.0357;
+    const double SHOULDER_KVI = -13.1786;
     const double ELBOW_KV = 42.352;
     const double ELBOW_KVI = -30.8963;
 
-    const double skD_ = 0;
-    const double skP_ = 0.0;
+    const double skD_ = 0.05;
+    const double skP_ = 0.05;
     const double ekD_ = 0;
-    const double ekP_ = 0.0;
+    const double ekP_ = 0.15;
 
     const double SHOULDER_TO_ELBOW_RATIO = 30.0 / 54.0; //30:54
     const double MOTOR_TO_SHOULDER_RATIO = 1.0 / 243.911; // 1:194.4 (243.911), 1:100
@@ -207,41 +221,74 @@ namespace TwoJointArmConstants
     const double HIGH_CUBE_OUTAKE_VOLTS = -1;
     const double MID_CUBE_OUTAKE_VOLTS = -1;
 
-    //Stowed
-	const double sX = 0.355439218;
-	const double sY = -0.184396634;
-	const double sTheta = 6.42;
-	const double sPhi = 154.35;
+    // //stowed
+	// const double sX = 0.17136;
+	// const double sY = -0.33516;
+	// const double sTheta = 8.22;
+	// const double sPhi = 167.95;
 
-	//Ground intake
-	const double giX = 0.40564;
-	const double giY = -0.53042;
-	const double giTheta = 59.59;
-	const double giPhi = 129.87;
+	// //cube intake
+	// const double ciX = 0.531859;
+	// const double ciY = -0.330244;
+	// const double ciTheta = 19.73;
+	// const double ciPhi = 144;
 
-	//player station
-	const double psX = 0.54164;
-	const double psY = 0.43525;
-	const double psTheta = -29.64;
-	const double psPhi = 127.4;
+	// //player station
+	// const double psX = 0.58348;
+	// const double psY = 0.391336;
+	// const double psTheta = -38.74;
+	// const double psPhi = 137.76;
 
-	//mid
-	const double mX = 1.02512;
-	const double mY = 0.29191;
-	const double mTheta = 20;
-	const double mPhi = 90;
+	// //mid
+	// const double mX = 1.17477;
+	// const double mY = 0.3640;
+	// const double mTheta = 15.05;
+	// const double mPhi = 93.01;
 
-	//high
-	const double hX = 1.38078;
-	const double hY = 0.54399;
-	const double hTheta = 59.18;
-	const double hPhi = 16.16;
+	// //high
+	// const double hX = 1.5710;
+	// const double hY = 0.73798;
+	// const double hTheta = 55.2;
+	// const double hPhi = 16.2;
 
-	//intake
-	const double iX = 0.33037399;
-	const double iY = -0.537556202;
-	const double iTheta = 62.4;
-	const double iPhi = 133.21;
+    // //cube mid
+	// const double cmX = 0.8245;
+	// const double cmY = 0.27752;
+	// const double cmTheta = -10.32;
+	// const double cmPhi = 124.24;
+
+	// //cube high
+	// const double chX = 1.2543;
+	// const double chY = 0.53706;
+	// const double chTheta = 18.2;
+	// const double chPhi = 79.44;
+
+	// //cone intake
+	// const double iX = 0.531859;
+	// const double iY = -0.330244;
+	// const double iTheta = 19.73;
+	// const double iPhi = 144;
+
+    const double ARM_POSITIONS[8][4] = 
+    {
+        {0.181286, -0.35166, 9.72, 167.11}, //stowed
+        {0.52316, -0.31130, 14.72, 146.74}, //cube intake
+        {0.74178, 0.32868, -21.74, 130.54}, //player station
+        {1.15245, 0.3682, 11.3, 97.38}, //mid
+        {1.6045, 0.7533, 54.93, 16.63}, //high
+        {0.82036, 0.2747, -12.35, 126.27}, //cube mid
+        {1.26966, 0.5426368, 17.14, 80.9}, //cube high
+        {0.52316, -0.31130, 14.72, 146.74} //cone intake
+    };
+
+    const int STOWED_NUM = 0;
+    const int CUBE_INTAKE_NUM = 1;
+    const int PLAYER_STATION_NUM = 2;
+    const int MID_NUM = 3;
+    const int HIGH_NUM = 4;
+    const int CUBE_MID_NUM = 5;
+    const int CUBE_HIGH_NUM = 6;
+    const int CONE_INTAKE_NUM = 7;
 
     const double ANGLE_ERROR_THRESHOLD = 5; //TODO check value
 

@@ -22,7 +22,7 @@ Robot::Robot() : autoPaths_(swerveDrive_)
             {
                 autoPaths_.periodic(swerveDrive_);
             }
-            swerveDrive_->periodic(yaw, controls_);
+            swerveDrive_->periodic(yaw, controls_, arm_.isForward());
 
             if (frc::DriverStation::IsEnabled())
             {
@@ -73,7 +73,7 @@ void Robot::RobotInit()
     sideChooser_.SetDefaultOption("Right", false);
     sideChooser_.AddOption("Left", true);
     frc::SmartDashboard::PutData("Auto Side", &sideChooser_);
-    
+
     try
     {
         navx_ = new AHRS(frc::SerialPort::kUSB);
@@ -83,7 +83,6 @@ void Robot::RobotInit()
         cout << e.what() << endl;
     }
     navx_->ZeroYaw();
-
 }
 
 /**
@@ -96,7 +95,6 @@ void Robot::RobotInit()
  */
 void Robot::RobotPeriodic()
 {
-    
 }
 
 /**
@@ -116,7 +114,7 @@ void Robot::AutonomousInit()
     AutoPaths::Path action2 = auto2Chooser_.GetSelected();
     AutoPaths::Path action3 = auto3Chooser_.GetSelected();
     autoPaths_.setMirrored(sideChooser_.GetSelected());
-    
+
     // m_autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameDefault);
     // fmt::print("Auto selected: {}\n", m_autoSelected);
     autoPaths_.setActions(action1, action2, action3);
@@ -138,10 +136,10 @@ void Robot::AutonomousPeriodic()
 
 void Robot::TeleopInit()
 {
-    frc::SmartDashboard::PutNumber("Test Volts", 0);
-    frc::SmartDashboard::PutNumber("Set Theta", 0);
-    frc::SmartDashboard::PutNumber("Set Phi", 0);
-    //frc::SmartDashboard::PutNumber("Swerve Volts", 0);
+    frc::SmartDashboard::PutNumber("Test Volts", 3);
+    // frc::SmartDashboard::PutNumber("Set Theta", 0);
+    // frc::SmartDashboard::PutNumber("Set Phi", 0);
+    // frc::SmartDashboard::PutNumber("Swerve Volts", 0);
 
     // pneumaticHub_.EnableCompressorDigital();
     PCM.EnableDigital();
@@ -153,11 +151,12 @@ void Robot::TeleopInit()
 void Robot::TeleopPeriodic()
 {
     controls_->periodic();
+    swerveDrive_->setScoringPos(controls_->checkScoringButtons());
 
     if (controls_->fieldOrient())
     {
         navx_->ZeroYaw();
-        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
             yawOffset_ = 90;
         }
@@ -165,10 +164,9 @@ void Robot::TeleopPeriodic()
         {
             yawOffset_ = -90;
         }
-        
     }
 
-    if (controls_->dPadLeftPressed()) // HERE remove in teleop, resetArmPressed()
+    if (controls_->dPadLeftPressed()) // HERE remove in teleop
     {
         arm_.zeroArms();
     }
@@ -188,40 +186,90 @@ void Robot::TeleopPeriodic()
         //     //arm_.stop();
         // }
 
-        // if(arm_.getState() == TwoJointArm::MANUAL)
-        // {
-        //     arm_.stop();
-        // }
+        if (arm_.getState() == TwoJointArm::MANUAL)
+        {
+            arm_.stop();
+        }
 
-        if (controls_->aPressed())
+        if (controls_->xPressed())
         {
             arm_.setPosTo(TwoJointArmProfiles::PLAYER_STATION);
         }
         else if (controls_->bPressed())
         {
-            arm_.setPosTo(TwoJointArmProfiles::STOWED);
+            int scoringPos = swerveDrive_->getScoringPos();
+            if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
+            {
+                arm_.setPosTo(TwoJointArmProfiles::CUBE_MID);
+            }
+            else
+            {
+                arm_.setPosTo(TwoJointArmProfiles::MID);
+            }
         }
-        else if (controls_->xPressed())
+        else if (controls_->aPressed())
         {
-            arm_.setPosTo(TwoJointArmProfiles::MID);
+            arm_.setPosTo(TwoJointArmProfiles::STOWED);
         }
         else if (controls_->yPressed())
         {
-            arm_.setPosTo(TwoJointArmProfiles::HIGH);
+            int scoringPos = swerveDrive_->getScoringPos();
+            if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
+            {
+                arm_.setPosTo(TwoJointArmProfiles::CUBE_HIGH);
+            }
+            else
+            {
+                arm_.setPosTo(TwoJointArmProfiles::HIGH);
+            }
         }
-        else if (controls_->rBumperPressed())
-        {
-            arm_.setPosTo(TwoJointArmProfiles::GROUND_INTAKE);
-        }
+        // else if (controls_->rBumperPressed())
+        // {
+        //     if(arm_.isForward())
+        //     {
+        //         arm_.setPosTo(TwoJointArmProfiles::CONE_INTAKE);
+        //     }
+        //     else
+        //     {
+        //         arm_.setPosTo(TwoJointArmProfiles::CUBE_INTAKE);
+        //     }
+        // }
+
+        // if (controls_->dPadRightPressed())
+        // {
+        //     int scoringPos = swerveDrive_->getScoringPos();
+        //     if(scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
+        //     {
+        //         arm_.placeCube();
+        //     }
+        //     else
+        //     {
+        //         arm_.placeCone();
+        //     }
+        // }
 
         if (controls_->dPadDownPressed())
         {
-            arm_.intake();
+            if (arm_.isForward())
+            {
+                arm_.intake();
+            }
+            else
+            {
+                if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && arm_.getState() == TwoJointArm::HOLDING_POS)
+                {
+                    arm_.setPosTo(TwoJointArmProfiles::STOWED);
+                }
+                else
+                {
+                    arm_.setPosTo(TwoJointArmProfiles::CUBE_INTAKE);
+                }
+            }
         }
 
         if (controls_->dPadUpPressed())
         {
-            arm_.toggleForward(); // COULDO technically spams it when down. Maybe polish
+            arm_.toggleForward();
         }
     }
 
@@ -229,6 +277,27 @@ void Robot::TeleopPeriodic()
     {
         arm_.stop();
         arm_.resetIntaking();
+    }
+
+    if (controls_->rJoyTriggerPressed())
+    {
+        if (!arm_.intaking())
+        {
+            arm_.toggleClaw();
+        }
+    }
+
+    if(controls_->intakePressed())
+    {
+        arm_.setClawWheels(ClawConstants::INTAKING_SPEED);
+    }
+    else if(controls_->outakePressed())
+    {
+        arm_.setClawWheels(ClawConstants::OUTAKING_SPEED);
+    }
+    else
+    {
+        arm_.setClawWheels(0);
     }
 
     frc::SmartDashboard::PutBoolean("Shoulder Brake", arm_.shoulderBrakeEngaged());
@@ -242,9 +311,9 @@ void Robot::TeleopPeriodic()
     frc::SmartDashboard::PutNumber("Theta", arm_.getTheta());
     frc::SmartDashboard::PutNumber("Phi", arm_.getPhi());
     frc::SmartDashboard::PutNumber("Theta vel", arm_.getThetaVel());
-    frc::SmartDashboard::PutNumber("Phi vel", arm_.getPhiVel());
-    // frc::SmartDashboard::PutNumber("Theta Volts", arm_.getThetaVolts());
-    // frc::SmartDashboard::PutNumber("Phi Volts", arm_.getPhiVolts());
+    // frc::SmartDashboard::PutNumber("Phi vel", arm_.getPhiVel());
+    //  frc::SmartDashboard::PutNumber("Theta Volts", arm_.getThetaVolts());
+    //  frc::SmartDashboard::PutNumber("Phi Volts", arm_.getPhiVolts());
 }
 
 void Robot::DisabledInit()

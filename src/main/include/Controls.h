@@ -16,7 +16,8 @@ class Controls
         double getTurn();
         bool lJoyTriggerPressed();
         bool rJoyTriggerPressed();
-        bool resetArmPressed();
+        bool outakePressed();
+        bool intakePressed();
 
         double xboxLJoyX();
         double xboxLJoyY();
@@ -38,8 +39,11 @@ class Controls
 
         bool fieldOrient();
 
+        int checkScoringButtons();
+
     private:
         frc::Joystick lJoy_;
         frc::Joystick rJoy_;
         frc::Joystick xbox_;
+        frc::Joystick buttonBoard_;
 };

@@ -20,9 +20,8 @@ class SwerveDrive
         SwerveDrive();
         void setYaw(double yaw);
         
-        void periodic(double yaw, Controls* controls);
+        void periodic(double yaw, Controls* controls, bool forward);
         void drive(double xSpeed, double ySpeed, double turn);
-        //void driveAutoPose(double yaw, SwervePose pose);
         void drivePose(SwervePose pose);
         void adjustPos(SwervePose pose);
 
@@ -38,7 +37,9 @@ class SwerveDrive
         void setPos(pair<double, double> xy);
 
         void updateAprilTagFieldXY();
-        int checkScoringPos();
+        pair<double, double> checkScoringPos();
+        void setScoringPos(int scoringPos);
+        int getScoringPos();
         
     private:
         SwerveModule* topRight_ = new SwerveModule(SwerveConstants::TR_TURN_ID, SwerveConstants::TR_DRIVE_ID, SwerveConstants::TR_CANCODER_ID, SwerveConstants::TR_CANCODER_OFFSET);
@@ -51,7 +52,7 @@ class SwerveDrive
         double robotX_, robotY_, yaw_;
         TrajectoryCalc xTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
-        TrajectoryCalc yawTagTraj_{SwerveConstants::MAX_AV * 0.1, SwerveConstants::MAX_AA * 0.1, 0, 0, 0, 0};
+        TrajectoryCalc yawTagTraj_{SwerveConstants::MAX_AV * 0.7, SwerveConstants::MAX_AA * 0.7, 0, 0, 0, 0};
         //double aprilTagX_, aprilTagY_;
 
         double prevTime_, dT_;
@@ -62,6 +63,6 @@ class SwerveDrive
         double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_;
 
         bool trackingTag_, foundTag_;
-        int tagPos_, prevTag_;
+        int setTagPos_, prevTag_;
 
 };
