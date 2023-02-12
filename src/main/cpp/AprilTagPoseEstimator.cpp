@@ -35,7 +35,7 @@ Pose2d AprilTagPoseEstimator::getPose(Pose3d aprilTagPosReading, int aprilTagNum
     // add april tag location coordinates to get robot position
     units::meter_t robotX = translatedX + aprilTagPos.X();
     units::meter_t robotY = translatedY + aprilTagPos.Y();
-    units::radian_t robotRot = aprilTagRot + gamma;
+    units::radian_t robotRot = aprilTagRot + gamma - Rotation2d(180_deg).Radians();
 
     return Pose2d{robotX, robotY, robotRot};
 }
