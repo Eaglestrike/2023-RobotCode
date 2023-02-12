@@ -1,9 +1,9 @@
 #pragma once
 
-#include <math.h>
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include "string"
 #include "frc/Filesystem.h"
-#include "rev/ColorSensorV3.h"
 
 using namespace std;
 
@@ -254,3 +254,23 @@ namespace ClawConstants
     const double INTAKING_SPEED = 0.5;
     const double OUTAKING_SPEED = -0.1;
 }
+
+namespace CubeIntakeConstants {
+    const int DEPLOYER_MOTOR_ID = 0; // TODO get value
+    const int ROLLER_MOTOR_ID = 0; // TODO get value
+
+    const double ENCODER_DEPLOYED_TARGET = 512;
+
+    const double DEPLOYER_MAX_VOLTAGE = 0;    // TODO measure capped voltage for deployer
+    const double ROLLER_MAX_VOLTAGE = 0;      // TODO measure voltage for cube to actually pass through
+
+    const double kP = 0; // TODO tune
+    const double kI = 0; // TODO tune
+    const double kD = 0; // TODO tune
+
+    const double MAX_VELOCITY = M_PI / 2;   // TODO tune - radians per second
+    const double MAX_ACCELERATION = M_PI;   // TODO tune - radians per second squared
+
+    const double POS_ERR_TOLERANCE = 0.01;  // TODO tune - error tolerance, in radians
+    const double VEL_ERR_TOLERANCE = 0.1;   // TODO tune - error tolerance, in radians/s
+} // namespace CubeIntakeConstants
