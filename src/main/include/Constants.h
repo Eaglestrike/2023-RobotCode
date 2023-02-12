@@ -259,13 +259,17 @@ namespace CubeIntakeConstants {
     const int DEPLOYER_MOTOR_ID = 0; // TODO get value
     const int ROLLER_MOTOR_ID = 0; // TODO get value
 
-    const double INTAKE_ENCODER_DISTANCE = 0; // TODO measure distance/angle from stowed to deployed in terms of FX encoder value
+    const double INTAKE_ENCODER_DISTANCE = 512;
+
     const double ROLLER_MAX_VOLTAGE = 0;      // TODO measure voltage for cube to actually pass through
 
-    const double kP = 0;
-    const double kI = 0;
-    const double kD = 0;
+    const double kP = 0; // TODO tune
+    const double kI = 0; // TODO tune
+    const double kD = 0; // TODO tune
 
-    const double MAX_VELOCITY = M_PI / 2;   // radians per second
-    const double MAX_ACCELERATION = M_PI;   // radians per second squared
+    const double MAX_VELOCITY = M_PI / 2;   // TODO tune - radians per second
+    const double MAX_ACCELERATION = M_PI;   // TODO tune - radians per second squared
+
+    const double POS_ERR_TOLERANCE = 0.01;  // TODO tune - error tolerance, in radians
+    const double VEL_ERR_TOLERANCE = 0.1;   // TODO tune - error tolerance, in radians/s
 }

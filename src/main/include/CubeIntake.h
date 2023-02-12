@@ -5,6 +5,8 @@
 #ifndef CUBE_INTAKE_H
 #define CUBE_INTAKE_H
 
+#define _USE_MATH_DEFINES
+#include <cmath>
 #include <ctre/Phoenix.h>
 #include <frc/controller/ProfiledPIDController.h>
 #include <frc/fmt/Units.h>
@@ -18,11 +20,10 @@
 
 class CubeIntake {
 public:
-  CubeIntake() = default;
+  CubeIntake();
 
   void RobotInit();
-  void AutonomousPeriodic();
-  void TeleopPeriodic();
+  void Periodic();
 
   void Deploy();
   void Stow();
@@ -33,6 +34,7 @@ public:
   void Reset();
   void ResetEncoderPosition();
   void ResetPID();
+  void ResetAcceleration();
 private:
   // state machine
   enum State {
@@ -56,10 +58,11 @@ private:
       units::angle::radian_t{CubeIntakeConstants::MAX_ACCELERATION}
     }
   };
+  units::radians_per_second_t m_lastSpeed{units::radians_per_second_t{0}};
+  units::second_t m_lastTime{frc::Timer::GetFPGATimestamp()};
 
-  // below code gives errors
-  // units::radians_per_second_t m_lastSpeed = units::radians_per_second_t{0};
-  // units::second_t m_lastTime = frc2::Timer::GetFPGATimestamp();
+  units::radian_t m_convertStepsToRadians(double val);
+  units::radian_t m_getEncoderRadians();
 };
 
 #endif
