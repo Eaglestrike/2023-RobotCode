@@ -273,4 +273,4 @@ namespace CubeIntakeConstants {
 
     const double POS_ERR_TOLERANCE = 0.01;  // TODO tune - error tolerance, in radians
     const double VEL_ERR_TOLERANCE = 0.1;   // TODO tune - error tolerance, in radians/s
-}
+} // namespace CubeIntakeConstants

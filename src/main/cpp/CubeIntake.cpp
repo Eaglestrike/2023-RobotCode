@@ -91,7 +91,7 @@ void CubeIntake::Periodic() {
     case DEPLOYING:
     {
       double pidVal = m_pid.Calculate(m_getEncoderRadians(), 
-        m_convertStepsToRadians(CubeIntakeConstants::ENCODER_DEPLOYED_TARGET)); 
+        Helpers::convertStepsToRadians(CubeIntakeConstants::ENCODER_DEPLOYED_TARGET, 2048)); 
       double voltage = std::clamp(pidVal, -CubeIntakeConstants::DEPLOYER_MAX_VOLTAGE, CubeIntakeConstants::DEPLOYER_MAX_VOLTAGE);
 
       m_deployer.SetVoltage(units::volt_t{pidVal});
@@ -118,12 +118,7 @@ void CubeIntake::Periodic() {
   }
 }
 
-units::radian_t CubeIntake::m_convertStepsToRadians(double val) {
-  double valRad = val * (2 * M_PI / 2048);
-  return units::radian_t{valRad};
-}
-
 units::radian_t CubeIntake::m_getEncoderRadians() {
   double pos = m_deployer.GetSelectedSensorPosition();
-  return m_convertStepsToRadians(pos);
+  return Helpers::convertStepsToRadians(pos, 2048);
 }

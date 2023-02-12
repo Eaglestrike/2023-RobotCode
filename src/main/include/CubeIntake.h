@@ -20,6 +20,7 @@
 #include <units/time.h>
 
 #include "Constants.h"
+#include "Helpers.h"
 
 class CubeIntake {
 public:
@@ -63,7 +64,6 @@ private:
   units::radians_per_second_t m_lastSpeed{units::radians_per_second_t{0}};
   units::second_t m_lastTime{frc::Timer::GetFPGATimestamp()};
 
-  units::radian_t m_convertStepsToRadians(double val);
   units::radian_t m_getEncoderRadians();
 };
 
