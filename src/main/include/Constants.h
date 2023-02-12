@@ -259,8 +259,9 @@ namespace CubeIntakeConstants {
     const int DEPLOYER_MOTOR_ID = 0; // TODO get value
     const int ROLLER_MOTOR_ID = 0; // TODO get value
 
-    const double INTAKE_ENCODER_DISTANCE = 512;
+    const double ENCODER_DEPLOYED_TARGET = 512;
 
+    const double DEPLOYER_MAX_VOLTAGE = 0;    // TODO measure capped voltage for deployer
     const double ROLLER_MAX_VOLTAGE = 0;      // TODO measure voltage for cube to actually pass through
 
     const double kP = 0; // TODO tune

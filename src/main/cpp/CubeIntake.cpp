@@ -2,7 +2,7 @@
 
 CubeIntake::CubeIntake() {
   m_pid.SetTolerance(units::radian_t{CubeIntakeConstants::POS_ERR_TOLERANCE},
-    units::radian_t{CubeIntakeConstants::VEL_ERR_TOLERANCE});
+    units::radians_per_second_t{CubeIntakeConstants::VEL_ERR_TOLERANCE});
 }
 
 /**
@@ -24,12 +24,8 @@ void CubeIntake::Stow() {
   ResetAcceleration();
 }
 
-bool CubeIntake::isDeployed() {
-  return m_state == DEPLOYED;
-}
-
-bool CubeIntake::isStowed() {
-  return m_state == STOWED;
+CubeIntake::State CubeIntake::getState() {
+  return m_state;
 }
 
 void CubeIntake::ResetEncoderPosition() {
@@ -62,7 +58,8 @@ void CubeIntake::ResetPID() {
 }
 
 /**
- * Resets acceleration calculations
+ * Resets acceleration calculations (currently unused; may use in the future
+ * in case we need feedforward calculations)
 */
 void CubeIntake::ResetAcceleration() {
   m_lastTime = frc::Timer::GetFPGATimestamp();
@@ -84,36 +81,40 @@ void CubeIntake::Periodic() {
     case STOWED:
       m_deployer.SetVoltage(units::volt_t{0});
       m_roller.SetVoltage(units::volt_t{0});
+
+      break;
     case DEPLOYED:
       m_deployer.SetVoltage(units::volt_t{0});
       m_roller.SetVoltage(units::volt_t{CubeIntakeConstants::ROLLER_MAX_VOLTAGE});
+
+      break;
     case DEPLOYING:
+    {
       double pidVal = m_pid.Calculate(m_getEncoderRadians(), 
-        m_convertStepsToRadians(CubeIntakeConstants::INTAKE_ENCODER_DISTANCE));
-      auto acceleration = (m_pid.GetSetpoint().velocity - m_lastSpeed) /
-        (frc::Timer::GetFPGATimestamp() - m_lastTime);
-      
+        m_convertStepsToRadians(CubeIntakeConstants::ENCODER_DEPLOYED_TARGET)); 
+      double voltage = std::clamp(pidVal, -CubeIntakeConstants::DEPLOYER_MAX_VOLTAGE, CubeIntakeConstants::DEPLOYER_MAX_VOLTAGE);
+
       m_deployer.SetVoltage(units::volt_t{pidVal});
 
       if (m_pid.AtGoal()) {
         m_state = DEPLOYED;
       }
 
-      m_lastSpeed = m_pid.GetSetpoint().velocity;
-      m_lastTime = frc::Timer::GetFPGATimestamp();
+      break;
+    }
     case STOWING:
-      double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{0});
-      auto acceleration = (m_pid.GetSetpoint().velocity - m_lastSpeed) /
-        (frc::Timer::GetFPGATimestamp() - m_lastTime);
-      
+    {
+      double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{0}); 
+      double voltage = std::clamp(pidVal, -CubeIntakeConstants::DEPLOYER_MAX_VOLTAGE, CubeIntakeConstants::DEPLOYER_MAX_VOLTAGE);
+
       m_deployer.SetVoltage(units::volt_t{pidVal});
 
       if (m_pid.AtGoal()) {
         m_state = STOWED;
       }
 
-      m_lastSpeed = m_pid.GetSetpoint().velocity;
-      m_lastTime = frc::Timer::GetFPGATimestamp();
+      break;
+    }
   }
 }
 
