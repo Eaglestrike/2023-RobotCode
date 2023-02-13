@@ -14,9 +14,9 @@ using namespace frc;
 Pose2d AprilTagPoseEstimator::getPose(Pose3d aprilTagPosReading, int aprilTagNum) {
     // reverse signs, because we want to get the robot position relative to the
     // apriltag, NOT the apriltag position relative to the robot
-    units::meter_t x = -aprilTagPosReading.X();
-    units::meter_t y = -aprilTagPosReading.Y();
-    units::radian_t gamma = -aprilTagPosReading.Rotation().Z();
+    units::meter_t x = aprilTagPosReading.X();
+    units::meter_t y = aprilTagPosReading.Y();
+    units::radian_t gamma = aprilTagPosReading.Rotation().Z();
 
     Pose3d aprilTagPos = aprilTagFieldLayout.GetTagPose(aprilTagNum).value();
 
