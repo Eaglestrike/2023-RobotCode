@@ -1,9 +1,9 @@
 /**
- * Cube Intake
+ * Motor-deployed intake, opposed to pneumatics-deployed
 */
 
-#ifndef CUBE_INTAKE_H
-#define CUBE_INTAKE_H
+#ifndef MOTOR_INTAKE_H
+#define MOTOR_INTAKE_H
 
 #define _USE_MATH_DEFINES
 #include <algorithm>
@@ -22,7 +22,12 @@
 #include "Constants.h"
 #include "Helpers.h"
 
-class CubeIntake {
+/**
+ * Intake that is deployed by a motor (rather than pneumatics)
+ * 
+ * Potentially used with the cone intake 
+*/
+class MotorIntake {
 public:
   // state machine
   enum State {
@@ -32,7 +37,7 @@ public:
     DEPLOYING, // if currently deploying
   };
 
-  CubeIntake();
+  MotorIntake();
 
   void RobotInit();
   void Periodic();
@@ -49,16 +54,16 @@ public:
 private:
   State m_state{STOWED};
 
-  WPI_TalonFX m_deployer{CubeIntakeConstants::DEPLOYER_MOTOR_ID}; // for deploying the intake
-  WPI_TalonFX m_roller{CubeIntakeConstants::ROLLER_MOTOR_ID};  // for spinning the rollers
+  WPI_TalonFX m_deployer{MotorIntakeConstants::DEPLOYER_MOTOR_ID}; // for deploying the intake
+  WPI_TalonFX m_roller{MotorIntakeConstants::ROLLER_MOTOR_ID};  // for spinning the rollers
 
   frc::ProfiledPIDController<units::radians> m_pid{
-    CubeIntakeConstants::kP,
-    CubeIntakeConstants::kI,
-    CubeIntakeConstants::kD,
+    MotorIntakeConstants::kP,
+    MotorIntakeConstants::kI,
+    MotorIntakeConstants::kD,
     frc::TrapezoidProfile<units::radians>::Constraints{
-      units::radians_per_second_t{CubeIntakeConstants::MAX_VELOCITY},
-      units::radians_per_second_squared_t{CubeIntakeConstants::MAX_ACCELERATION}
+      units::radians_per_second_t{MotorIntakeConstants::MAX_VELOCITY},
+      units::radians_per_second_squared_t{MotorIntakeConstants::MAX_ACCELERATION}
     }
   };
   units::radians_per_second_t m_lastSpeed{units::radians_per_second_t{0}};
