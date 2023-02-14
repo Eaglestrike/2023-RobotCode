@@ -46,6 +46,7 @@ void Robot::TeleopPeriodic() {
   }
   */
   arm.TeleopPeriodic();
+  
 }
 
 void Robot::DisabledInit() {
@@ -67,8 +68,8 @@ void Robot::DisabledPeriodic() {
 void Robot::TestInit() {}
 
 void Robot::TestPeriodic() {
-  arm.TestPeriodic(maxVoltsBase*controller.getX2Strafe(),
-                  maxVoltsTop*controller.getY2Strafe()
+  arm.TestPeriodic(maxVoltsBase*controller.getXboxX2Strafe(),
+                  maxVoltsTop*controller.getXboxY2Strafe()
                   );
   if (controller.A_IsPressed()) {
     arm.resetEncoder();
