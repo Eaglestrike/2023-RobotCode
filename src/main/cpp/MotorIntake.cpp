@@ -38,6 +38,8 @@ void MotorIntake::ResetEncoderPosition() {
  * - resetting the encoder position
  * - resetting the state so that the robot thinks the arm is stowed
  * 
+ * Note that this does not move any motor positions.
+ * 
  * This should be called when enabled.
 */
 void MotorIntake::Reset() {
