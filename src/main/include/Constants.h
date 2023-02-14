@@ -44,8 +44,8 @@ namespace ArmConstants{
     const double BASE_MIN_ANG = -1.3590;
 	const double BASE_MAX_ANG = 1.3590;
 
-    const double TOP_MIN_ANG = 0.0;
-	const double TOP_MAX_ANG = -5.9;
+    const double TOP_MIN_ANG = -0.001;
+	const double TOP_MAX_ANG = 5.9;
 
     const double BASE_ARM_LENGTH = 0.635;
     const double TOP_ARM_LENGTH = 0.7112;
@@ -62,5 +62,6 @@ namespace ArmConstants{
     const double BOT_ARM_SLACK = 1.2217302;
     const double TOP_ARM_SLACK = -1.2217302;
 
-    const double MAX_VOLTS = 5;
+    const double MAX_VOLTS_BOTTOM = 3.0;
+    const double MAX_VOLTS_TOP = 2.0;
 }

@@ -67,12 +67,14 @@ class Arm {
                                         ArmConstants::TOP_PID[1],
                                         ArmConstants::TOP_PID[2]
                                     };
+                        
+        double m_kGravityTop = ArmConstants::TOP_KGRAVITY;
 
         double m_botArmSlack = ArmConstants::BOT_ARM_SLACK;//Radians
         double m_topArmSlack = ArmConstants::TOP_ARM_SLACK;//Radians
-                        
-        double m_kGravityTop = ArmConstants::TOP_KGRAVITY;
-        double m_maxVolts = ArmConstants::MAX_VOLTS;
+
+        double m_maxVoltsBot = ArmConstants::MAX_VOLTS_BOTTOM;
+        double m_maxVoltsTop = ArmConstants::MAX_VOLTS_TOP;
 
         //Updates in periodic
         double baseReading = 0.0;

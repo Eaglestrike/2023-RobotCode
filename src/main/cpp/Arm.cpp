@@ -11,7 +11,8 @@ void Arm::init(){
     if (configPID) {
         frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
         frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
-        frc::SmartDashboard::PutNumber("Max Volts", m_maxVolts);
+        frc::SmartDashboard::PutNumber("Max Volts Bot", m_maxVoltsBot);
+        frc::SmartDashboard::PutNumber("Max Volts Top", m_maxVoltsTop);
         frc::SmartDashboard::PutNumber("Base P", m_pidBase.GetP());
         frc::SmartDashboard::PutNumber("Base I", m_pidBase.GetI());
         frc::SmartDashboard::PutNumber("Base D", m_pidBase.GetD());
@@ -39,8 +40,8 @@ void Arm::init(){
 
     setBrakes(false, false);
 
-    m_pidBase.SetIntegratorRange(-m_maxVolts, m_maxVolts);
-    m_pidTop.SetIntegratorRange(-m_maxVolts, m_maxVolts);
+    m_pidBase.SetIntegratorRange(-m_maxVoltsBot, m_maxVoltsBot);
+    m_pidTop.SetIntegratorRange(-m_maxVoltsTop, m_maxVoltsTop);
 
     frc::SmartDashboard::PutNumber("Target X", m_targetX);
     frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
@@ -123,9 +124,19 @@ void Arm::TeleopPeriodic() {
     double a = m_baseArmLength;
     double b = m_topArmLength;
     double c = distance;
-    double topArmAng = acos(((a*a)+(b*b)-(c*c))/(2*a*b)); //Angle between 2 arms
+    double topArmAng = ((a*a)+(b*b)-(c*c))/(2*a*b); //Angle between 2 arms
+    if(topArmAng > 1.0){
+        topArmAng = 0;
+    }
+    else if(topArmAng < -1.0){
+        topArmAng = M_PI;
+    }
+    else{
+        topArmAng = acos(topArmAng);
+    }
     //https://www.google.com/search?q=law+of+sines
     double baseArmAng = M_PI - asin((sin(topArmAng)/c) * a) - topArmAng; //Angle of base arm relative to target
+    
     double ang1;
     double ang2;
 
@@ -133,14 +144,16 @@ void Arm::TeleopPeriodic() {
     // Including the case where the elbow bend is facing down, like ^
     if (m_targetX > 0) {
         ang1 = angle - baseArmAng;
-        ang2 = M_PI - topArmAng + ang1 - 30.0/54.0*ang1;
+        ang2 = M_PI - topArmAng + ang1;
     } else {
         ang1 = angle + baseArmAng;
-        ang2 = topArmAng - M_PI + ang1 - 30.0/54.0*ang1;
+        ang2 = topArmAng - M_PI + ang1;
     }
+    
     ang1 = getPrincipalAng2(ang1);
     ang2 = getPrincipalAng2(ang2);
-
+    
+    //std::cout<< "baseArmAng: " << baseArmAng << ", ang1: " << ang1 << ", ang2: " << ang2 << std::endl;
     //Difference of angles (dAng) ~ error
 
     //ang1 = frc::SmartDashboard::GetNumber("Target Ang Base", baseReading);
@@ -171,12 +184,22 @@ void Arm::TeleopPeriodic() {
     }
 
     if(angInBetween(ArmConstants::BASE_MIN_ANG, baseReading, ang1)){
-        dAngBase = -2*M_PI + dAngBase;
+        if(dAngBase > 0){
+            dAngBase = -2*M_PI + dAngBase;
+        }
+        else{
+            dAngBase = 2*M_PI + dAngBase;
+        }
     }
 
    // std::cout<< "Top Min Ang:" <<ArmConstants::TOP_MIN_ANG << ", top reading:" << topReading << ", ang reading:" <<ang2 << std::endl;
     if(angInBetween(ArmConstants::TOP_MIN_ANG, topReading, ang2)){
-        dAngTop = -2*M_PI + dAngTop;
+        if(dAngTop > 0){
+            dAngTop = -2*M_PI + dAngTop;
+        }
+        else{
+            dAngTop = 2*M_PI + dAngTop;
+        }
         std::cout << "IN BETWEEN\n";
     } else { std::cout << "NOT\n";}
 
@@ -184,12 +207,12 @@ void Arm::TeleopPeriodic() {
     dAngTop = scaleError(2.1, 0.07, dAngTop);
 
     double pidBaseOutput = m_pidBase.Calculate(dAngBase) - m_kGravityBot*sin(baseReading);
-    double baseVoltage = std::clamp(pidBaseOutput, -m_maxVolts, m_maxVolts);
+    double baseVoltage = std::clamp(pidBaseOutput, -m_maxVoltsBot, m_maxVoltsBot);
     m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
     m_baseMotor2.SetVoltage(units::volt_t{baseVoltage});
 
     double pidTopOutput = m_pidTop.Calculate(dAngTop) - m_kGravityTop*sin(topReading);
-    double topVoltage = std::clamp(pidTopOutput, -m_maxVolts, m_maxVolts);
+    double topVoltage = std::clamp(pidTopOutput, -m_maxVoltsTop, m_maxVoltsTop);
     m_topMotor.SetVoltage(units::volt_t{topVoltage});
 
     frc::SmartDashboard::PutBoolean("Target", true);
@@ -248,7 +271,8 @@ void Arm::ReadSmartDashboard(){
         m_pivotHeight = frc::SmartDashboard::GetNumber("Pivot Height", m_pivotHeight);
     }
     if(configPID){
-        m_maxVolts = frc::SmartDashboard::GetNumber("Max Volts", m_maxVolts);
+        m_maxVoltsTop = frc::SmartDashboard::GetNumber("Max Volts Top", m_maxVoltsTop);
+        m_maxVoltsBot = frc::SmartDashboard::GetNumber("Max Volts Bot", m_maxVoltsBot);
         m_pidBase.SetP(frc::SmartDashboard::GetNumber("Base P", m_pidBase.GetP()));
         m_pidBase.SetI(frc::SmartDashboard::GetNumber("Base I", m_pidBase.GetI()));
         m_pidBase.SetD(frc::SmartDashboard::GetNumber("Base D", m_pidBase.GetD()));
