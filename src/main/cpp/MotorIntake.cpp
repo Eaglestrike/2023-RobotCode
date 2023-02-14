@@ -74,7 +74,7 @@ void MotorIntake::RobotInit() {
 }
 
 /**
- * Code to continuously run during teleop
+ * Code to continuously run during auto/teleop
 */
 void MotorIntake::Periodic() {
   switch (m_state) {
