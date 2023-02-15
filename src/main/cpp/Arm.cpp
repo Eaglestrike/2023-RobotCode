@@ -65,10 +65,8 @@ void Arm::Periodic(){
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }
-    if(debug){
-        frc::SmartDashboard::PutNumber("Target X", m_targetX);
-        frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
-    }
+    m_targetX = frc::SmartDashboard::GetNumber("Target X", m_targetX);
+    m_targetZ = frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
 }
 
 void Arm::setBrakes(bool base, bool top){
@@ -200,8 +198,7 @@ void Arm::TeleopPeriodic() {
         else{
             dAngTop = 2*M_PI + dAngTop;
         }
-        std::cout << "IN BETWEEN\n";
-    } else { std::cout << "NOT\n";}
+    }
 
     dAngBase = scaleError(2.1, 0.07, dAngBase);
     dAngTop = scaleError(2.1, 0.07, dAngTop);
@@ -259,8 +256,6 @@ void Arm::TestPeriodic(double vBase, double vTop){
     if(debug){
         frc::SmartDashboard::PutNumber("Base Voltage", vBase);
         frc::SmartDashboard::PutNumber("Top Voltage", vTop);
-        frc::SmartDashboard::PutNumber("Target X", m_targetX);
-        frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
     }
 }
 
@@ -297,6 +292,8 @@ void Arm::setTarget(double targetX, double targetZ) {
     m_targetZ = targetZ;
     m_pidBase.Reset();
     m_pidTop.Reset();
+    frc::SmartDashboard::PutNumber("Target X", m_targetX);
+    frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
 }
 
 /**
@@ -310,6 +307,9 @@ void Arm::moveTarget(double dx, double dz) {
     m_targetZ += dz;
     m_pidBase.Reset();
     m_pidTop.Reset();
+    frc::SmartDashboard::PutNumber("Target X", m_targetX);
+    frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
+    
 }
 
 /**
@@ -320,6 +320,8 @@ void Arm::resetTarget() {
     m_targetZ = m_baseArmLength + m_topArmLength + m_pivotHeight;
     m_pidBase.Reset();
     m_pidTop.Reset();
+    frc::SmartDashboard::PutNumber("Target X", m_targetX);
+    frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
 }
 
 void Arm::changeOffsetBase(double da) {

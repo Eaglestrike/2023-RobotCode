@@ -41,5 +41,17 @@ double Controls::getY2Strafe()
 }
 
 bool Controls::A_IsPressed(){
-    return xbox_.GetRawButtonPressed(1);
+    return xbox_.GetRawButtonPressed(InputConstants::A_BUTTON);
+}
+
+bool Controls::B_IsPressed(){
+    return xbox_.GetRawButtonPressed(InputConstants::B_BUTTON);
+}
+
+bool Controls::X_IsPressed(){
+    return xbox_.GetRawButtonPressed(InputConstants::X_BUTTON);
+}
+
+bool Controls::Y_IsPressed(){
+    return xbox_.GetRawButtonPressed(InputConstants::Y_BUTTON);
 }
