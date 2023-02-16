@@ -9,6 +9,8 @@
 #include <iostream>
 #include <frc/Solenoid.h>
 #include <frc/DutyCycleEncoder.h>
+#include "TwoJointArmProfiles.h"
+#include "frc/Timer.h"
 
 class Arm {
     public:
@@ -26,7 +28,21 @@ class Arm {
         void resetEncoder();
         void resetOffsets();
 
+        void setTraj(TwoJointArmProfiles::Positions start, TwoJointArmProfiles::Positions end);
+
+        bool followingTraj = false; //todo make a state with state machine
+
     private:
+        TwoJointArmProfiles armProfiles;
+        double trajStartTime = 0;
+        std::pair<TwoJointArmProfiles::Positions, TwoJointArmProfiles::Positions> currTraj;
+
+        bool checkTarget();
+        std::pair<double, double> getGoalAngles();
+
+        void trajUpdateGoal();
+
+
         void ReadSmartDashboard();
 
         WPI_TalonFX m_baseMotor = WPI_TalonFX(ArmConstants::BASE_MOTOR_ID);

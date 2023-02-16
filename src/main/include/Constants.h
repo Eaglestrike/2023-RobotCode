@@ -25,8 +25,8 @@ namespace InputConstants{
     const int XBOX_LJOY_Y = 1;
     const int XBOX_LTRIGGER = 2;
     const int XBOX_RTRIGGER = 3;
-    const int XBOX_RJOY_X = 4;
-    const int XBOX_RJOY_Y = 5;
+    const int XBOX_RJOY_X = 3;
+    const int XBOX_RJOY_Y = 4;
 
     const int A_BUTTON = 1;
     const int B_BUTTON = 2;

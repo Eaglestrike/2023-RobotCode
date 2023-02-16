@@ -34,6 +34,7 @@ void Robot::AutonomousPeriodic() {
 }
 
 void Robot::TeleopInit() {
+  arm.followingTraj = false;
 }
 
 void Robot::TeleopPeriodic() {
@@ -46,16 +47,27 @@ void Robot::TeleopPeriodic() {
     frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   }
   */
+  // if (controller.X_IsPressed()) {
+  //   arm.setTarget(-1.27, 0.995);
+  // }
+  // if (controller.Y_IsPressed()) {
+  //   arm.setTarget(-1.27, 1.1);
+  // }
+  // if (controller.B_IsPressed()) {
+  //   arm.setTarget(-0.2, 1.1);
+  // }
+  // arm.TeleopPeriodic();
+
   if (controller.X_IsPressed()) {
-    arm.setTarget(-1.27, 0.995);
+    arm.setTraj(TwoJointArmProfiles::STOWED, TwoJointArmProfiles::MID);
   }
   if (controller.Y_IsPressed()) {
-    arm.setTarget(-1.27, 1.1);
+    arm.setTraj(TwoJointArmProfiles::MID, TwoJointArmProfiles::STOWED);
   }
-  if (controller.B_IsPressed()) {
-    arm.setTarget(-0.2, 1.1);
-  }
+ 
   arm.TeleopPeriodic();
+
+  //stowed = 0, mid = 3
   
 }
 

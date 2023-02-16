@@ -6,6 +6,7 @@
 #include "Arm.h"
 #include "Constants.h"
 #include "Controls.h"
+#include "TwoJointArmProfiles.h"
 
 class Robot : public frc::TimedRobot {
  public:

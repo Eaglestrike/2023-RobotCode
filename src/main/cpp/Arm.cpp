@@ -45,6 +45,9 @@ void Arm::init(){
 
     frc::SmartDashboard::PutNumber("Target X", m_targetX);
     frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
+
+    followingTraj = false;
+    armProfiles.readProfiles();
 }
 
 void Arm::resetEncoder(){
@@ -84,74 +87,25 @@ void Arm::TargetFail(){
 void Arm::TeleopPeriodic() {
     // Very basic joint space implementation
 
-    //Counter Slack
-    // if(baseReading < 0){
-    //     baseReading += m_botArmSlack;
-    // }
-    // if(topReading > 0){
-    //     topReading += m_topArmSlack;
-    // }
+    double ang1 = 0; double ang2 = 0;
 
-    //setTarget(0.7112, 1.143);
+    frc::SmartDashboard::PutBoolean("following traj", followingTraj);
 
-    // If target is under floor
-    if (m_targetZ < 0.0) {
-        std::cout << "Under the floor" << std::endl;
-        TargetFail();
-        return;
-    }
-    double targetdz = m_targetZ - m_pivotHeight;
-    double distance = sqrt((m_targetX*m_targetX) + (targetdz*targetdz));
-    
-    // Target distance is too far, signal that to driver and cancel movement
-    if(distance > m_baseArmLength + m_topArmLength){
-        std::cout << "Too Far" << std::endl;
-        TargetFail();
-        return;
-    }
-
-    // Target distance too close, signal to driver and cancel movement
-    if(distance < abs(m_baseArmLength - m_topArmLength)){
-        TargetFail();
-        std::cout<<"Too Close"<<std::endl;
-        return;
-    }
-    double angle = atan2(m_targetX, targetdz);//Angle to target (0 is upwards)
-    //Finding ideal angles
-    //https://www.google.com/search?q=law+of+cosine
-    double a = m_baseArmLength;
-    double b = m_topArmLength;
-    double c = distance;
-    double topArmAng = ((a*a)+(b*b)-(c*c))/(2*a*b); //Angle between 2 arms
-    if(topArmAng > 1.0){
-        topArmAng = 0;
-    }
-    else if(topArmAng < -1.0){
-        topArmAng = M_PI;
-    }
-    else{
-        topArmAng = acos(topArmAng);
-    }
-    //https://www.google.com/search?q=law+of+sines
-    double baseArmAng = M_PI - asin((sin(topArmAng)/c) * a) - topArmAng; //Angle of base arm relative to target
-    
-    double ang1;
-    double ang2;
-
-    // Handling cases when the target is front of or behind the arm
-    // Including the case where the elbow bend is facing down, like ^
-    if (m_targetX > 0) {
-        ang1 = angle - baseArmAng;
-        ang2 = M_PI - topArmAng + ang1;
+    if (followingTraj) {
+        double time = frc::Timer::GetFPGATimestamp().value() - trajStartTime;
+        ang1 = get<0>(armProfiles.getThetaProfile(currTraj, time)) * M_PI / 180.0;
+        ang2 = get<0>(armProfiles.getPhiProfile(currTraj, time)) * M_PI / 180.0 + ang1;
     } else {
-        ang1 = angle + baseArmAng;
-        ang2 = topArmAng - M_PI + ang1;
+        if (!checkTarget()) {
+            m_topMotor.SetVoltage(0_V);
+            m_baseMotor.SetVoltage(0_V);
+            m_baseMotor2.SetVoltage(0_V);
+            return;
+        }
+        // std::pair<double, double> angles = getGoalAngles();
+        // ang1 = angles.first; ang2 = angles.second;
     }
-    
-    ang1 = getPrincipalAng2(ang1);
-    ang2 = getPrincipalAng2(ang2);
-    
-    //std::cout<< "baseArmAng: " << baseArmAng << ", ang1: " << ang1 << ", ang2: " << ang2 << std::endl;
+
     //Difference of angles (dAng) ~ error
 
     //ang1 = frc::SmartDashboard::GetNumber("Target Ang Base", baseReading);
@@ -213,7 +167,6 @@ void Arm::TeleopPeriodic() {
     m_topMotor.SetVoltage(units::volt_t{topVoltage});
 
     frc::SmartDashboard::PutBoolean("Target", true);
-    frc::SmartDashboard::PutNumber("Target Distance", distance);
     if(configPID){
         m_angOffsetBase = frc::SmartDashboard::GetNumber("Base Ang Offset", m_angOffsetBase);
         m_angOffsetTop = frc::SmartDashboard::GetNumber("Top Ang Offset", m_angOffsetTop);
@@ -241,6 +194,12 @@ void Arm::DisabledPeriodic(){
     }
     //frc::SmartDashboard::PutNumber("Ticks Bottom", m_baseMotor.GetSelectedSensorPosition());
     //frc::SmartDashboard::PutNumber("Ticks Top", m_topMotor.GetSelectedSensorPosition());
+
+    double br = getAng(m_baseMotor, ArmConstants::BASE_GEAR_RATIO) + m_angOffsetBase;
+    double tr = getAng(m_topMotor, ArmConstants::TOP_GEAR_RATIO) + m_angOffsetTop + 30.0/54.0*baseReading;
+
+    frc::SmartDashboard::PutNumber("Angle bottom", br);
+    frc::SmartDashboard::PutNumber("Angle top", tr);
 }
 
 void Arm::TestPeriodic(double vBase, double vTop){
@@ -257,6 +216,12 @@ void Arm::TestPeriodic(double vBase, double vTop){
         frc::SmartDashboard::PutNumber("Base Voltage", vBase);
         frc::SmartDashboard::PutNumber("Top Voltage", vTop);
     }
+
+    double br = getAng(m_baseMotor, ArmConstants::BASE_GEAR_RATIO) + m_angOffsetBase;
+    double tr = getAng(m_topMotor, ArmConstants::TOP_GEAR_RATIO) + m_angOffsetTop + 30.0/54.0*baseReading;
+
+    frc::SmartDashboard::PutNumber("Angle bottom", br);
+    frc::SmartDashboard::PutNumber("Angle top", tr);
 }
 
 void Arm::ReadSmartDashboard(){
@@ -278,6 +243,88 @@ void Arm::ReadSmartDashboard(){
         m_kGravityTop = frc::SmartDashboard::GetNumber("Top Gravity Constant", m_kGravityTop);
         m_botArmSlack = frc::SmartDashboard::GetNumber("Bot Gravity Slack", m_botArmSlack);
     }
+}
+
+/**
+ * Check if target is valid (true) or unreachable (false)
+*/
+bool Arm::checkTarget() {
+
+    // If target is under floor
+    if (m_targetZ < 0.0) {
+        std::cout << "Under the floor" << std::endl;
+        TargetFail();
+        return false;
+    }
+    double targetdz = m_targetZ - m_pivotHeight;
+    double distance = sqrt((m_targetX*m_targetX) + (targetdz*targetdz));
+    
+    // Target distance is too far, signal that to driver and cancel movement
+    if(distance > m_baseArmLength + m_topArmLength){
+        std::cout << "Too Far" << std::endl;
+        TargetFail();
+        return false;
+    }
+
+    // Target distance too close, signal to driver and cancel movement
+    if(distance < abs(m_baseArmLength - m_topArmLength)){
+        TargetFail();
+        std::cout<<"Too Close"<<std::endl;
+        return false;
+    }
+
+}
+
+/**
+ * Return std::pair{ang1, ang2} calculated via inverse kinematics
+*/
+std::pair<double, double> Arm::getGoalAngles() {
+    double targetdz = m_targetZ - m_pivotHeight;
+    double distance = sqrt((m_targetX*m_targetX) + (targetdz*targetdz));
+
+    double angle = atan2(m_targetX, targetdz);//Angle to target (0 is upwards)
+    //Finding ideal angles
+    //https://www.google.com/search?q=law+of+cosine
+    double a = m_baseArmLength;
+    double b = m_topArmLength;
+    double c = distance;
+    double topArmAng = ((a*a)+(b*b)-(c*c))/(2*a*b); //Angle between 2 arms
+    if(topArmAng > 1.0){
+        topArmAng = 0;
+    }
+    else if(topArmAng < -1.0){
+        topArmAng = M_PI;
+    }
+    else{
+        topArmAng = acos(topArmAng);
+    }
+    //https://www.google.com/search?q=law+of+sines
+    double baseArmAng = M_PI - asin((sin(topArmAng)/c) * a) - topArmAng; //Angle of base arm relative to target
+    
+    double ang1;
+    double ang2;
+
+    // Handling cases when the target is front of or behind the arm
+    // Including the case where the elbow bend is facing down, like ^
+    if (m_targetX > 0) {
+        ang1 = angle - baseArmAng;
+        ang2 = M_PI - topArmAng + ang1;
+    } else {
+        ang1 = angle + baseArmAng;
+        ang2 = topArmAng - M_PI + ang1;
+    }
+    
+    ang1 = getPrincipalAng2(ang1);
+    ang2 = getPrincipalAng2(ang2);
+
+    return{ang1, ang2};
+}
+
+void Arm::setTraj(TwoJointArmProfiles::Positions start, TwoJointArmProfiles::Positions end) {
+    followingTraj = true;
+    currTraj.first = start;
+    currTraj.second = end;
+    trajStartTime = frc::Timer::GetFPGATimestamp().value();
 }
 
 /**
