@@ -15,7 +15,8 @@ void Arm::init(){
     if (configPID) {
         frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
         frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
-        frc::SmartDashboard::PutNumber("Max Amps", m_maxAmps);
+        frc::SmartDashboard::PutNumber("Max Amps Bot", m_maxAmpsBot);
+        frc::SmartDashboard::PutNumber("Max Amps Top", m_maxAmpsTop);
         frc::SmartDashboard::PutNumber("Base P", m_pidBase.GetP());
         frc::SmartDashboard::PutNumber("Base I", m_pidBase.GetI());
         frc::SmartDashboard::PutNumber("Base D", m_pidBase.GetD());
@@ -36,21 +37,20 @@ void Arm::init(){
 
     //m_baseMotor2.SetInverted(InvertType::FollowMaster);
     //m_baseMotor2.Follow(m_baseMotor);
-    m_baseMotor2.SetControl(controls::Follower(m_baseMotor.GetDeviceID(), false));
+    
 
     //TODO: figue out neutral mode
     //m_topMotor.SetNeutralMode(NeutralMode::Brake);
     //m_topMotor2.SetNeutralMode(NeutralMode::Brake);
 
     //m_topMotor2.Follow(m_topMotor);
-    m_topMotor2.SetControl(controls::Follower(m_topMotor.GetDeviceID(), false));
 
     resetEncoder();
 
     setBrakes(false, false);
 
-    m_pidBase.SetIntegratorRange(-m_maxAmps, m_maxAmps);
-    m_pidTop.SetIntegratorRange(-m_maxAmps, m_maxAmps);
+    m_pidBase.SetIntegratorRange(-m_maxAmpsBot, m_maxAmpsBot);
+    m_pidTop.SetIntegratorRange(-m_maxAmpsTop, m_maxAmpsTop);
 
     frc::SmartDashboard::PutNumber("Target X", m_targetX);
     frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
@@ -133,9 +133,19 @@ void Arm::TeleopPeriodic() {
     double a = m_baseArmLength;
     double b = m_topArmLength;
     double c = distance;
-    double topArmAng = acos(((a*a)+(b*b)-(c*c))/(2*a*b)); //Angle between 2 arms
+    double topArmAng = ((a*a)+(b*b)-(c*c))/(2*a*b); //Angle between 2 arms
+    if(topArmAng > 1.0){
+        topArmAng = 0;
+    }
+    else if(topArmAng < -1.0){
+        topArmAng = M_PI;
+    }
+    else{
+        topArmAng = acos(topArmAng);
+    }
     //https://www.google.com/search?q=law+of+sines
     double baseArmAng = M_PI - asin((sin(topArmAng)/c) * a) - topArmAng; //Angle of base arm relative to target
+    
     double ang1;
     double ang2;
 
@@ -143,14 +153,16 @@ void Arm::TeleopPeriodic() {
     // Including the case where the elbow bend is facing down, like ^
     if (m_targetX > 0) {
         ang1 = angle - baseArmAng;
-        ang2 = M_PI - topArmAng + ang1 - 30.0/54.0*ang1;
+        ang2 = M_PI - topArmAng + ang1;
     } else {
         ang1 = angle + baseArmAng;
-        ang2 = topArmAng - M_PI + ang1 - 30.0/54.0*ang1;
+        ang2 = topArmAng - M_PI + ang1;
     }
+    
     ang1 = getPrincipalAng2(ang1);
     ang2 = getPrincipalAng2(ang2);
-
+    
+    //std::cout<< "baseArmAng: " << baseArmAng << ", ang1: " << ang1 << ", ang2: " << ang2 << std::endl;
     //Difference of angles (dAng) ~ error
 
     //ang1 = frc::SmartDashboard::GetNumber("Target Ang Base", baseReading);
@@ -181,12 +193,22 @@ void Arm::TeleopPeriodic() {
     }
 
     if(angInBetween(ArmConstants::BASE_MIN_ANG, baseReading, ang1)){
-        dAngBase = -2*M_PI + dAngBase;
+        if(dAngBase > 0){
+            dAngBase = -2*M_PI + dAngBase;
+        }
+        else{
+            dAngBase = 2*M_PI + dAngBase;
+        }
     }
 
    // std::cout<< "Top Min Ang:" <<ArmConstants::TOP_MIN_ANG << ", top reading:" << topReading << ", ang reading:" <<ang2 << std::endl;
     if(angInBetween(ArmConstants::TOP_MIN_ANG, topReading, ang2)){
-        dAngTop = -2*M_PI + dAngTop;
+        if(dAngTop > 0){
+            dAngTop = -2*M_PI + dAngTop;
+        }
+        else{
+            dAngTop = 2*M_PI + dAngTop;
+        }
         std::cout << "IN BETWEEN\n";
     } else { std::cout << "NOT\n";}
 
@@ -196,48 +218,85 @@ void Arm::TeleopPeriodic() {
     double baseTarget = dAngBase + baseReading;
     double topTarget = dAngTop + topReading;
     if (firstRun) {
-        baseArmProfile = frc::TrapezoidProfile<units::radian_t>(
-            frc::TrapezoidProfile<units::angle::radian_t>::Constraints{1_rad_per_s, 0.5_rad_per_s_sq},
-            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(baseTarget), 0_rad_per_s},
-            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(baseReading), 0_rad_per_s}
+        baseArmProfile = frc::TrapezoidProfile<units::radians>(
+            frc::TrapezoidProfile<units::angle::radians>::Constraints{0.1_rad_per_s, 0.03_rad_per_s_sq},
+            frc::TrapezoidProfile<units::angle::radians>::State{units::angle::radian_t(baseTarget), 0_rad_per_s},
+            frc::TrapezoidProfile<units::angle::radians>::State{units::angle::radian_t(baseReading), 0_rad_per_s}
         );
-        topArmProfile = frc::TrapezoidProfile<units::radian_t>(
-            frc::TrapezoidProfile<units::angle::radian_t>::Constraints{1_rad_per_s, 0.5_rad_per_s_sq},
-            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(topTarget), 0_rad_per_s},
-            frc::TrapezoidProfile<units::angle::radian_t>::State{units::angle::radian_t(topReading), 0_rad_per_s}
+        topArmProfile = frc::TrapezoidProfile<units::radians>(
+            frc::TrapezoidProfile<units::angle::radians>::Constraints{0.1_rad_per_s, 0.03_rad_per_s_sq},
+            frc::TrapezoidProfile<units::angle::radians>::State{units::angle::radian_t(topTarget), 0_rad_per_s},
+            frc::TrapezoidProfile<units::angle::radians>::State{units::angle::radian_t(topReading), 0_rad_per_s}
         );
+        startTime = frc::Timer::GetFPGATimestamp();
         firstRun = false;
     }
 
-    auto state = baseArmProfile.Calculate(frc::Timer::GetFPGATimestamp());
-    double baseArmPos = baseArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).position.to<double>();
-    double baseArmVel = baseArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).velocity.to<double>();
+    auto state = baseArmProfile.Calculate(frc::Timer::GetFPGATimestamp() - startTime);
+    double baseArmPos = state.position.to<double>();
+    double baseArmVel = state.velocity.to<double>();
+    std::cout << "vel: " << baseArmVel << "pos: " << baseArmPos << std::endl; 
+    std::cout << "base reading: " << baseReading << std::endl;
     double baseArmAccel = (baseArmVel - baseArmLastVel) / 0.02;
     baseArmLastVel = baseArmVel;
 
-    state = topArmProfile.Calculate(frc::Timer::GetFPGATimestamp());
-    double topArmPos = topArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).position.to<double>();
-    double topArmVel = topArmProfile.Calculate(frc::Timer::GetFPGATimestamp()).velocity.to<double>();
+    state = topArmProfile.Calculate(frc::Timer::GetFPGATimestamp() - startTime);
+    double topArmPos = state.position.to<double>();
+    double topArmVel = state.velocity.to<double>();
     double topArmAccel = (topArmVel - topArmLastVel) / 0.02;
     topArmLastVel = topArmVel;
 
+
+    double baseArmGravff = std::sin(baseReading) * m_base_r * m_base_m * 9.81;
+    double baseArmAccelff = baseArmAccel * m_base_I;
     // feed forward base arm
-    double baseArmTorque = sin(baseReading) * m_base_r * m_base_m * 9.81 + baseArmAccel * m_base_I;
+    double baseArmTorque = baseArmGravff + baseArmAccelff;
+    frc::SmartDashboard::PutNumber("base arm torque", baseArmTorque);
     double feedForwardBase = baseArmTorque / m_base_Kt;
 
     // feed forward top arm
-    double topArmTorque = sin(topReading) * m_top_r * m_top_m * 9.81 + topArmAccel * m_top_I;
+    double topArmTorque = std::sin(topReading) * m_top_r * m_top_m * 9.81 + topArmAccel * m_top_I;
+    frc::SmartDashboard::PutNumber("top arm torque", topArmTorque);
     double feedForwardTop = topArmTorque / m_top_Kt;
 
+    // also need to factor in centripetal acceleration:
+    //sin(baseReading-topReading) * topArmVel^2 * top_arm_mass / top_arm_length
+
+    m_baseMotor2.SetControl(controls::Follower(m_baseMotor.GetDeviceID(), false));
+    m_topMotor2.SetControl(controls::Follower(m_topMotor.GetDeviceID(), false));
+
     double pidBaseOutput = m_pidBase.Calculate(dAngBase);
-    double baseCurrent = std::clamp(pidBaseOutput+feedForwardBase, -m_maxAmps, m_maxAmps);
+    double add = 10;
+    double baseCurrent = feedForwardBase;//std::clamp(pidBaseOutput+feedForwardBase, -m_maxAmpsBot, m_maxAmpsBot);
+    if (baseCurrent < 0) {
+        baseCurrent -= add;
+    } else if (baseCurrent > 0) {
+        baseCurrent += add;
+    }
+
     //m_baseMotor.SetVoltage(units::volt_t{baseVoltage});
     //m_baseMotor2.SetVoltage(units::volt_t{baseVoltage});
+    if (baseCurrent < 0) {
+        m_baseMotor.SetInverted(true);
+    } else {
+        m_baseMotor.SetInverted(false);
+    }
     m_baseMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{baseCurrent}});
 
     double pidTopOutput = m_pidTop.Calculate(dAngTop);
-    double topCurrent = std::clamp(pidTopOutput+feedForwardTop, -m_maxAmps, m_maxAmps);
+    add = 5;
+    double topCurrent = feedForwardTop;//std::clamp(pidTopOutput+feedForwardTop, -m_maxAmpsTop, m_maxAmpsTop);
+    if (topCurrent < 0) {
+        topCurrent -= add;
+    } else if (topCurrent > 0) {
+        topCurrent += add;
+    }
     //m_topMotor.SetVoltage(units::volt_t{topVoltage});
+    if (topCurrent < 0) {
+        m_topMotor.SetInverted(true);
+    } else {
+        m_topMotor.SetInverted(false);
+    }
     m_topMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{topCurrent}});
 
     frc::SmartDashboard::PutBoolean("Target", true);
@@ -277,6 +336,8 @@ void Arm::TestPeriodic(double ampBase, double ampTop){
         frc::SmartDashboard::PutNumber("Base Ang Offset", m_angOffsetBase);
         frc::SmartDashboard::PutNumber("Top Ang Offset", m_angOffsetTop);
     }
+    m_baseMotor2.SetControl(controls::Follower(m_baseMotor.GetDeviceID(), false));
+    m_topMotor2.SetControl(controls::Follower(m_topMotor.GetDeviceID(), false));
 
     m_baseMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{ampBase}});
     m_topMotor.SetControl(controls::TorqueCurrentFOC{units::ampere_t{ampTop}});
@@ -296,7 +357,8 @@ void Arm::ReadSmartDashboard(){
         m_pivotHeight = frc::SmartDashboard::GetNumber("Pivot Height", m_pivotHeight);
     }
     if(configPID){
-        m_maxAmps = frc::SmartDashboard::GetNumber("Max Amps", m_maxAmps);
+        m_maxAmpsTop = frc::SmartDashboard::GetNumber("Max Amps Top", m_maxAmpsTop);
+        m_maxAmpsBot = frc::SmartDashboard::GetNumber("Max Amps Bot", m_maxAmpsBot);
         m_pidBase.SetP(frc::SmartDashboard::GetNumber("Base P", m_pidBase.GetP()));
         m_pidBase.SetI(frc::SmartDashboard::GetNumber("Base I", m_pidBase.GetI()));
         m_pidBase.SetD(frc::SmartDashboard::GetNumber("Base D", m_pidBase.GetD()));

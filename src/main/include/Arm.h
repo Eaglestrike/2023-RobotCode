@@ -70,19 +70,21 @@ class Arm {
                                         ArmConstants::TOP_PID[1],
                                         ArmConstants::TOP_PID[2]
                                     };
+                        
+        double m_kGravityTop = ArmConstants::TOP_KGRAVITY;
 
         double m_botArmSlack = ArmConstants::BOT_ARM_SLACK;//Radians
         double m_topArmSlack = ArmConstants::TOP_ARM_SLACK;//Radians
-                        
-        double m_kGravityTop = ArmConstants::TOP_KGRAVITY;
-        double m_maxAmps = ArmConstants::MAX_AMPS;
+
+        double m_maxAmpsBot = ArmConstants::MAX_AMPS_BOTTOM;
+        double m_maxAmpsTop = ArmConstants::MAX_AMPS_TOP;
 
         //Updates in periodic
         double baseReading = 0.0;
         double topReading = 0.0;
 
-        double m_base_Kt = ArmConstants::FALCON_500_KT / ArmConstants::BASE_GEAR_RATIO;
-        double m_top_Kt = ArmConstants::FALCON_500_KT / ArmConstants::TOP_GEAR_RATIO;
+        double m_base_Kt = ArmConstants::FALCON_500_KT * ArmConstants::BASE_GEAR_RATIO;
+        double m_top_Kt = ArmConstants::FALCON_500_KT * ArmConstants::TOP_GEAR_RATIO;
 
         double m_base_m = ArmConstants::BASE_ARM_MASS; // base arm mass
         double m_base_r = ArmConstants::BASE_ARM_R; // base arm distance to center of mass from pivot
@@ -92,8 +94,17 @@ class Arm {
         double m_top_r = ArmConstants::TOP_ARM_R; // top arm distance to center of mass from pivot
         double m_top_I = ArmConstants::TOP_ARM_I; // top arm moment of inertia
 
-        frc::TrapezoidProfile<units::angle::radian_t> baseArmProfile;
+        frc::TrapezoidProfile<units::angle::radians> baseArmProfile{
+            frc::TrapezoidProfile<units::angle::radians>::Constraints{1_rad_per_s, 0.5_rad_per_s_sq},
+            frc::TrapezoidProfile<units::angle::radians>::State{0_rad, 0_rad_per_s},
+            frc::TrapezoidProfile<units::angle::radians>::State{0_rad, 0_rad_per_s}
+        };
         double baseArmLastVel = 0;
-        frc::TrapezoidProfile<units::angle::radian_t> topArmProfile;
+        frc::TrapezoidProfile<units::angle::radians> topArmProfile{
+            frc::TrapezoidProfile<units::angle::radians>::Constraints{1_rad_per_s, 0.5_rad_per_s_sq},
+            frc::TrapezoidProfile<units::angle::radians>::State{0_rad, 0_rad_per_s},
+            frc::TrapezoidProfile<units::angle::radians>::State{0_rad, 0_rad_per_s}
+        };
         double topArmLastVel = 0;
+        units::second_t startTime;
 };

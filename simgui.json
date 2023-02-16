@@ -3,12 +3,12 @@
     "Other Devices": {
       "Talon FX[14]/Integrated Sensor": {
         "header": {
-          "open": true
+          "open": false
         }
       },
       "Talon FX[20]/Integrated Sensor": {
         "header": {
-          "open": true
+          "open": false
         }
       }
     }
@@ -16,26 +16,22 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/LiveWindow/Ungrouped/Talon FX [14]": "Motor Controller",
-      "/LiveWindow/Ungrouped/Talon FX [20]": "Motor Controller"
-    }
-  },
-  "NetworkTables": {
-    "transitory": {
-      "SmartDashboard": {
-        "open": true
-      }
+      "/LiveWindow/Ungrouped/DigitalInput[2]": "Digital Input",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [15]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [1]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [6]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Talon FX (Pro) [8]": "Motor Controller"
     }
   },
   "NetworkTables Info": {
     "Clients": {
-      "open": true
+      "open": false
     },
     "Connections": {
-      "open": true
+      "open": false
     },
     "NT3@127.0.0.1:55939": {
-      "open": true
+      "open": false
     }
   }
 }

@@ -15,9 +15,11 @@ namespace Helpers{
     }
 
 /**
- * 
+ * @param ang Input radians
+ * @returns output in range [-pi, pi]
 */
-    static double getPrincipalAng2(double ang){//Input radians, output [-pi, pi]
+    static double getPrincipalAng2(double ang){
+        //https://www.desmos.com/calculator/yctu2qoevr
         double div = floor(((ang - M_PI) / (2.0*M_PI)) + 1);
         double multiple = div * 2.0*M_PI;
         double mod = ang - multiple; 
@@ -48,14 +50,15 @@ namespace Helpers{
         return getPrincipalAng2(ang2 - ang1);
     }
 
-    /*
-    @param angMid angle tested in between 1 and 2
-    https://www.desmos.com/calculator/bo2iuiuukb
+    /**
+    * @param angMid angle tested in between 1 and 2
     */
     static bool angInBetween(double angMid, double ang1, double ang2){
+        //https://www.desmos.com/calculator/bo2iuiuukb
         double angDiff12 = getAngDiff(ang1, ang2);
         double angDiff1Mid = getAngDiff(ang1, angMid);
-       // std::cout<< "ang diffl2:" <<angDiff<< ", top reading:" << topReading << ", ang reading:" <<ang2 << std::endl;
+        //std::cout<< "angMid: " << angMid << ", ang1: " << ang1 << ", ang2: " << ang2 << std::endl;
+        //std::cout<< "ang diffl2:" <<angDiff12<< ", angDiff1Mid:" << angDiff1Mid << std::endl;
         if(angDiff12 > 0){
             if(angDiff1Mid > 0 && angDiff1Mid < angDiff12){
                 return true;

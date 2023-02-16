@@ -27,6 +27,6 @@ class Robot : public frc::TimedRobot {
    Controls controller;
    double moveMetersPerSecond = 0.1;
    double moveRadiansPerSecond = 0.3;
-   double maxAmpsBase = 5.0;
-   double maxAmpsTop = 4.0;
+   double maxAmpsBase = 20.0;
+   double maxAmpsTop = 10.0;
 };
