@@ -13,7 +13,7 @@
 
 class Arm {
     public:
-        void init();
+        void init(Robot* robot);
         void Periodic();
         void TeleopPeriodic();
         void DisabledPeriodic();
@@ -107,4 +107,5 @@ class Arm {
         };
         double topArmLastVel = 0;
         units::second_t startTime;
+        Robot* robot;
 };

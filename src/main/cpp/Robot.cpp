@@ -6,8 +6,6 @@
 
 //Initialize pointer objects
 void Robot::RobotInit() {
-  frc::SmartDashboard::PutNumber("Target X", 0.0);
-  frc::SmartDashboard::PutNumber("Target Z", 0.0);
   arm.init();
   //frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   //hi this is caleb
@@ -17,12 +15,15 @@ void Robot::RobotInit() {
 }
 
 void Robot::RobotPeriodic() {
-  arm.moveTarget(moveMetersPerSecond*controller.getXStrafe()*0.02,
-                moveMetersPerSecond*controller.getYStrafe()*0.02);
-  if (controller.A_IsPressed()) {
-    arm.resetTarget();
-  }
-  arm.Periodic();
+    double xStrafe = moveMetersPerSecond*controller.getXStrafe()*0.02;
+    double yStrafe = moveMetersPerSecond*controller.getYStrafe()*0.02;
+    if((xStrafe != 0) || (yStrafe != 0)){
+        arm.moveTarget(xStrafe, yStrafe);
+    }
+    if (controller.A_IsPressed()) {
+        arm.resetTarget();
+    }
+    arm.Periodic();
 }
 
 void Robot::AutonomousInit() {
@@ -46,7 +47,17 @@ void Robot::TeleopPeriodic() {
     frc::SmartDashboard::PutNumber("Switch to one to set new target", 0);
   }
   */
+  if (controller.X_IsPressed()) {
+    arm.setTarget(-1.27, 0.995);
+  }
+  if (controller.Y_IsPressed()) {
+    arm.setTarget(-1.27, 1.1);
+  }
+  if (controller.B_IsPressed()) {
+    arm.setTarget(-0.2, 1.1);
+  }
   arm.TeleopPeriodic();
+  
 }
 
 void Robot::DisabledInit() {

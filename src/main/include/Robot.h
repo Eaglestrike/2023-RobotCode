@@ -22,6 +22,8 @@ class Robot : public frc::TimedRobot {
     void SimulationInit() override;
     void SimulationPeriodic() override;
 
+    bool emergencyStop;
+
  private:
    Arm arm;
    Controls controller;
@@ -29,4 +31,6 @@ class Robot : public frc::TimedRobot {
    double moveRadiansPerSecond = 0.3;
    double maxAmpsBase = 20.0;
    double maxAmpsTop = 10.0;
+
+   
 };

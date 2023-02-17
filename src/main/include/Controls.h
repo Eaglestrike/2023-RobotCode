@@ -14,6 +14,9 @@ class Controls
         double getX2Strafe();
         double getY2Strafe();
         bool A_IsPressed();
+        bool B_IsPressed();
+        bool X_IsPressed();
+        bool Y_IsPressed();
 
     private:
         frc::Joystick xbox_;

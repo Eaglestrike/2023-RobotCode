@@ -27,6 +27,11 @@ namespace InputConstants{
     const int XBOX_RTRIGGER = 3;
     const int XBOX_RJOY_X = 4;
     const int XBOX_RJOY_Y = 5;
+
+    const int A_BUTTON = 1;
+    const int B_BUTTON = 2;
+    const int X_BUTTON = 3;
+    const int Y_BUTTON = 4; 
 }
 
 namespace ArmConstants{
@@ -47,9 +52,9 @@ namespace ArmConstants{
     const double TOP_MIN_ANG = -0.001;
 	const double TOP_MAX_ANG = 5.9;
 
-    const double BASE_ARM_LENGTH = 0.635;
-    const double TOP_ARM_LENGTH = 0.7112;
-    const double PIVOT_HEIGHT = 0.508;
+    const double BASE_ARM_LENGTH = 0.7366; //29 inches
+    const double TOP_ARM_LENGTH = 0.7366; //29 inches
+    const double PIVOT_HEIGHT = 0.5588; //22 inches
 
     const double FALCON_500_KT = 5.84 / 384;
 

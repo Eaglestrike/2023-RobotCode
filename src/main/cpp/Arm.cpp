@@ -1,12 +1,15 @@
 #include "Arm.h"
 #include <frc/trajectory/TrapezoidProfile.h>
+#include <stdlib.h>
+#include "Robot.h"
 
 
 using namespace Helpers;
 using namespace ctre::phoenixpro;
 
 // Sets up SmartDashboard, zeroes motor readings.
-void Arm::init(){
+void Arm::init(Robot* robot){
+    this->robot = robot;
     if (configDimensions) {
         frc::SmartDashboard::PutNumber("Base Length", m_baseArmLength);
         frc::SmartDashboard::PutNumber("Top Length", m_topArmLength);
@@ -70,14 +73,26 @@ void Arm::Periodic(){
     baseReading = getAng(m_baseMotor, ArmConstants::BASE_GEAR_RATIO) + m_angOffsetBase;
     topReading = getAng(m_topMotor, ArmConstants::TOP_GEAR_RATIO) + m_angOffsetTop + 30.0/54.0*baseReading;
 
+    if (baseReading < -M_PI || baseReading > M_PI || topReading < -0.2 || topReading > 2*M_PI) {
+        // EMERGENCY STOP
+        // NO MATTER WHAT JUST STOP
+        //abort();
+        //exit(1);
+        m_baseMotor.SetControl(units::current::ampere_t(0));
+        m_baseMotor2.SetControl(units::current::ampere_t(0));
+        m_topMotor.SetControl(units::current::ampere_t(0));
+        m_topMotor2.SetControl(units::current::ampere_t(0));
+        robot->emergencyStop = true;
+        std::cout << "EMERGENCY ALERT" << std::endl;
+        return;
+    }
+
     if(debug){
         frc::SmartDashboard::PutNumber("Base Arm Angle", baseReading);
         frc::SmartDashboard::PutNumber("Top Arm Angle", topReading);
     }
-    if(debug){
-        frc::SmartDashboard::PutNumber("Target X", m_targetX);
-        frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
-    }
+    m_targetX = frc::SmartDashboard::GetNumber("Target X", m_targetX);
+    m_targetZ = frc::SmartDashboard::GetNumber("Target Z", m_targetZ);
 }
 
 void Arm::setBrakes(bool base, bool top){
@@ -209,8 +224,7 @@ void Arm::TeleopPeriodic() {
         else{
             dAngTop = 2*M_PI + dAngTop;
         }
-        std::cout << "IN BETWEEN\n";
-    } else { std::cout << "NOT\n";}
+    }
 
     dAngBase = scaleError(2.1, 0.07, dAngBase);
     dAngTop = scaleError(2.1, 0.07, dAngTop);
@@ -383,6 +397,8 @@ void Arm::setTarget(double targetX, double targetZ) {
     m_targetZ = targetZ;
     m_pidBase.Reset();
     m_pidTop.Reset();
+    frc::SmartDashboard::PutNumber("Target X", m_targetX);
+    frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
 }
 
 /**
@@ -396,6 +412,9 @@ void Arm::moveTarget(double dx, double dz) {
     m_targetZ += dz;
     m_pidBase.Reset();
     m_pidTop.Reset();
+    frc::SmartDashboard::PutNumber("Target X", m_targetX);
+    frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
+    
 }
 
 /**
@@ -406,6 +425,8 @@ void Arm::resetTarget() {
     m_targetZ = m_baseArmLength + m_topArmLength + m_pivotHeight;
     m_pidBase.Reset();
     m_pidTop.Reset();
+    frc::SmartDashboard::PutNumber("Target X", m_targetX);
+    frc::SmartDashboard::PutNumber("Target Z", m_targetZ);
 }
 
 void Arm::changeOffsetBase(double da) {
