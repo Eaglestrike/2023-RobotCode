@@ -10,7 +10,7 @@ using namespace frc;
 // roll (x, 1st value in rotation3d) - doesn't matter, can be left 0
 // pitch (y, 2nd value in rotation3d) - doesn't matter, can be left 0
 // yaw (z, 3rd value in rotation3d) - 4th value from jetson
-// aprilTagNum: april tag number
+// aprilTagNum: april tag number - 2nd value from jetson
 Pose2d AprilTagPoseEstimator::getPose(Pose3d aprilTagPosReading, int aprilTagNum) {
     units::meter_t x = aprilTagPosReading.X();
     units::meter_t y = aprilTagPosReading.Y();
