@@ -18,6 +18,8 @@ class Controls
         bool rJoyTriggerPressed();
         bool outakePressed();
         bool intakePressed();
+        bool lLowerButtonPressed();
+        bool rLowerButtonPressed();
 
         double xboxLJoyX();
         double xboxLJoyY();
@@ -46,4 +48,6 @@ class Controls
         frc::Joystick rJoy_;
         frc::Joystick xbox_;
         frc::Joystick buttonBoard_;
+
+        bool dPadLeftDown_, dPadRightDown_, intakeDown_, outakeDown_;
 };

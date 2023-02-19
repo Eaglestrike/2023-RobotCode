@@ -14,25 +14,18 @@ class Claw
 {
     private:
         bool open_;
+        double wheelSpeed_;
 
         frc::Solenoid clawPneumatic_;
         rev::CANSparkMax wheelMotor_;
 
     public:
-        // enum WheelState
-        // {
-        //     INTAKING,
-        //     OUTAKING,
-        //     IDLE
-        // };
-        // WheelState wheelState_;
         Claw();
         void periodic();
 
         bool isOpen();
-        // WheelState getWheelState();
+        double wheelSpeed();
 
         void setOpen(bool open);
-        // void setWheelState(WheelState wheelState);
         void setWheelSpeed(double speed);
 };

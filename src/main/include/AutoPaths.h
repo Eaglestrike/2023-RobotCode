@@ -4,7 +4,9 @@
 
 #include "SwerveDrive.h"
 #include "SwervePath.h"
+#include "TwoJointArm.h"
 #include "Constants.h"
+#include "TwoJointArmProfiles.h"
 #include <vector>
 
 class AutoPaths
@@ -21,27 +23,36 @@ class AutoPaths
             SECOND_CUBE,
             AUTO_DOCK,
             NOTHING,
-            DRIVE_BACK_DUMB
+            DRIVE_BACK_DUMB,
+            WAIT_5_SECONDS
         };
-        AutoPaths(SwerveDrive* swerveDrive);
-        void setActions(Path a1, Path a2, Path a3);
+        AutoPaths(SwerveDrive* swerveDrive, TwoJointArm* arm);
+        void setActions(Path a1, Path a2, Path a3, Path a4);
         vector<Path> getActions();
 
         void startTimer();
         void setActionsSet(bool actionsSet);
         void setPathSet(bool pathSet);
 
-        void periodic(SwerveDrive* swerveDrive);
+        void periodic();
         double initYaw();
         pair<double, double> initPos();
 
         int pointNum();
 
         void setMirrored(bool mirrored);
+
+        bool getClawOpen();
+        bool getForward();
+        double getWheelSpeed();
+        TwoJointArmProfiles::Positions getArmPosition();
+        bool cubeIntaking();
+        bool coneIntaking();
     private:
         vector<Path> actions_;
         Path path_;
         SwerveDrive* swerveDrive_;
+        TwoJointArm* arm_;
 
         TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 0.6, SwerveConstants::MAX_LA * 0.6, 0, 0, 0, 0};
         TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 0.6, SwerveConstants::MAX_LA * 0.6, 0, 0, 0, 0};
@@ -49,8 +60,8 @@ class AutoPaths
 
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
-        double startTime_, curveSecondStageStartTime_;
-        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, mirrored_;
+        double startTime_, curveSecondStageStartTime_, placingStartTime_;
+        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_;
 
         //vector<SwervePath> swervePaths_;
         int actionNum_;
@@ -60,4 +71,8 @@ class AutoPaths
 
         void setPath(Path path);
         Path getPath();
+
+        bool clawOpen_, forward_;
+        double wheelSpeed_;
+        TwoJointArmProfiles::Positions armPosition_;
 };

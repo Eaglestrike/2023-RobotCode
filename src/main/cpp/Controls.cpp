@@ -2,12 +2,14 @@
 
 Controls::Controls() : lJoy_{InputConstants::LJOY_PORT}, rJoy_{InputConstants::RJOY_PORT}, xbox_{InputConstants::XBOX_PORT}, buttonBoard_{InputConstants::BUTTON_BOARD_PORT}
 {
-    //idk
+    dPadLeftDown_ = false;
+    dPadRightDown_ = false;
+    intakeDown_ = false;
+    outakeDown_ = false;
 }
 
 void Controls::periodic()
 {
-
 }
 
 double Controls::getXStrafe()
@@ -18,8 +20,8 @@ double Controls::getXStrafe()
     }*/
 
     double x = lJoy_.GetRawAxis(InputConstants::LJOY_X);
-    //double x = xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);
-    if(abs(x) < 0.05)
+    // double x = xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);
+    if (abs(x) < 0.05)
     {
         return 0;
     }
@@ -35,8 +37,8 @@ double Controls::getYStrafe()
     }*/
 
     double y = -lJoy_.GetRawAxis(InputConstants::LJOY_Y);
-    //double y = -xbox_.GetRawAxis(InputConstants::XBOX_LJOY_Y);
-    if(abs(y) < 0.05)
+    // double y = -xbox_.GetRawAxis(InputConstants::XBOX_LJOY_Y);
+    if (abs(y) < 0.05)
     {
         return 0;
     }
@@ -52,8 +54,8 @@ double Controls::getTurn()
     }*/
 
     double turn = rJoy_.GetRawAxis(InputConstants::RJOY_X);
-    //double turn = xbox_.GetRawAxis(InputConstants::XBOX_RJOY_X);
-    if(abs(turn) < 0.05)
+    // double turn = xbox_.GetRawAxis(InputConstants::XBOX_RJOY_X);
+    if (abs(turn) < 0.05)
     {
         return 0;
     }
@@ -119,12 +121,22 @@ bool Controls::lXTriggerPressed()
 
 bool Controls::outakePressed()
 {
-    return rJoy_.GetRawButton(InputConstants::OUTAKE_BUTTON);
+    return lJoy_.GetRawButtonPressed(InputConstants::OUTAKE_BUTTON);
 }
 
 bool Controls::intakePressed()
 {
-    return rJoy_.GetRawButton(InputConstants::INTAKE_BUTTON);
+    return rJoy_.GetRawButtonPressed(InputConstants::INTAKE_BUTTON);
+}
+
+bool Controls::lLowerButtonPressed()
+{
+    return lJoy_.GetRawButtonPressed(InputConstants::LOWER_BUTTON);
+}
+
+bool Controls::rLowerButtonPressed()
+{
+    return rJoy_.GetRawButtonPressed(InputConstants::LOWER_BUTTON);
 }
 
 double Controls::xboxLJoyX()
@@ -146,7 +158,7 @@ double Controls::xboxRJoyY()
 
 bool Controls::dPadUpPressed()
 {
-    return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >=0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
+    return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
 }
 bool Controls::dPadDownPressed()
 {
@@ -154,47 +166,80 @@ bool Controls::dPadDownPressed()
 }
 bool Controls::dPadLeftPressed()
 {
-    return (xbox_.GetPOV() < 280 && xbox_.GetPOV() > 260);
+    bool down = (xbox_.GetPOV() < 280 && xbox_.GetPOV() > 260);
+    if (down && !dPadLeftDown_)
+    {
+        dPadLeftDown_ = true;
+        return true;
+    }
+    else if (dPadLeftDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        dPadLeftDown_ = false;
+        return false;
+    }
+
+    // return (xbox_.GetPOV() < 280 && xbox_.GetPOV() > 260);
 }
-bool Controls::dPadRightPressed(){
-    return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
+bool Controls::dPadRightPressed()
+{
+    bool down = (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
+    if (down && !dPadRightDown_)
+    {
+        dPadRightDown_ = true;
+        return true;
+    }
+    else if (dPadRightDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        dPadRightDown_ = false;
+        return false;
+    }
+
+    //return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
 }
 
 int Controls::checkScoringButtons()
 {
-    if(buttonBoard_.GetRawButton(InputConstants::B1))
+    if (buttonBoard_.GetRawButton(InputConstants::B1))
     {
         return 1;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B2))
+    else if (buttonBoard_.GetRawButton(InputConstants::B2))
     {
         return 2;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B3))
+    else if (buttonBoard_.GetRawButton(InputConstants::B3))
     {
         return 3;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B4))
+    else if (buttonBoard_.GetRawButton(InputConstants::B4))
     {
         return 4;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B5))
+    else if (buttonBoard_.GetRawButton(InputConstants::B5))
     {
         return 5;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B6))
+    else if (buttonBoard_.GetRawButton(InputConstants::B6))
     {
         return 6;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B7))
+    else if (buttonBoard_.GetRawButton(InputConstants::B7))
     {
         return 7;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B8))
+    else if (buttonBoard_.GetRawButton(InputConstants::B8))
     {
         return 8;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::B9))
+    else if (buttonBoard_.GetRawButton(InputConstants::B9))
     {
         return 9;
     }

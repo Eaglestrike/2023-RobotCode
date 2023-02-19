@@ -17,6 +17,9 @@ SwerveModule::SwerveModule(int turnID, int driveID, int cancoderID, double offse
 void SwerveModule::periodic(double driveSpeed, double angle, bool inVolts)
 {
     double time = timer_.GetFPGATimestamp().value();
+    frc::SmartDashboard::PutNumber(id_ + " time", time);
+    frc::SmartDashboard::PutNumber(id_ + " sp", driveSpeed);
+    frc::SmartDashboard::PutNumber(id_ + " ang", angle);
     dT_ = time - prevTime_;
     prevTime_ = time;
     
