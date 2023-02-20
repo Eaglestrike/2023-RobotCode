@@ -64,7 +64,6 @@ TwoJointArmProfiles::Positions TwoJointArm::getPosition()
 
 void TwoJointArm::periodic()
 {
-    return;
     if(eStopped_)
     {
         claw_.setWheelSpeed(0);
