@@ -169,6 +169,10 @@ namespace SwerveConstants
 
     const double CLAW_MID_OFFSET = 0.05; //0.0889
 
+    const double AUTOKTILT = 0.01;
+    const double AUTODEADANGLE = 1.0;
+    const double PITCHOFFSET = 0.0;
+    const double ROLLOFFSET = 180.0;
 }
 
 namespace TwoJointArmConstants

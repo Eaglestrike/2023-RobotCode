@@ -1,6 +1,7 @@
 #pragma once
 
 #include <frc/Timer.h>
+#include <AHRS.h>
 
 #include "SwerveDrive.h"
 #include "SwervePath.h"
@@ -48,11 +49,14 @@ class AutoPaths
         TwoJointArmProfiles::Positions getArmPosition();
         bool cubeIntaking();
         bool coneIntaking();
+
+        void setNavx(AHRS* navx){navx_ = navx;};
     private:
         vector<Path> actions_;
         Path path_;
         SwerveDrive* swerveDrive_;
         TwoJointArm* arm_;
+        AHRS* navx_;
 
         TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
