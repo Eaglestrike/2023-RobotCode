@@ -36,12 +36,15 @@ class TwoJointArm
 
         void periodic();
         void zeroArms();
+        void zeroArmsToStow();
         void setPosTo(TwoJointArmProfiles::Positions setPosition);
         void toggleForward();
+        void toggleForwardCubeIntake();
         void manualControl(double thetaVel, double phiVel);
         void stop();
         void resetIntaking();
         void switchDirections();
+        void switchDirectionsCubeIntake();
         void intake();
         void placeCone();
         void placeCube();
@@ -61,23 +64,32 @@ class TwoJointArm
 
         string getStateString();
         string getPosString();
+        string getSetPosString();
 
-        void goToPos(double thetaPos, double phiPos); //HERE
+        // void goToPos(double thetaPos, double phiPos); //HERE
         // double getThetaVolts();
         // double getPhiVolts();
 
-        void toggleClaw();
+        bool getClawOpen();
+        void setClaw(bool open);
         void setClawWheels(double speed);
+        void setEStopped(bool eStopped);
+        bool isEStopped();
+        pair<bool, bool> intakesNeededDown();
+        void setForward(bool forward);
+
+        double getClawWheelSpeed();
+        bool clawOpen();
 
     private:
-        // WPI_TalonFX shoulderMaster_;
-        // WPI_TalonFX shoulderSlave_;
-        // WPI_TalonFX elbowMaster_;
-        // WPI_TalonFX elbowSlave_;
-        WPI_TalonSRX shoulderMaster_;
-        WPI_TalonSRX shoulderSlave_;
-        WPI_TalonSRX elbowMaster_;
-        WPI_TalonSRX elbowSlave_;
+        WPI_TalonFX shoulderMaster_;
+        WPI_TalonFX shoulderSlave_;
+        WPI_TalonFX elbowMaster_;
+        WPI_TalonFX elbowSlave_;
+        // WPI_TalonSRX shoulderMaster_;
+        // WPI_TalonSRX shoulderSlave_;
+        // WPI_TalonSRX elbowMaster_;
+        // WPI_TalonSRX elbowSlave_;
         // TalonFXSim shoulderMaster_;
         // TalonFXSim shoulderSlave_;
         // TalonFXSim elbowMaster_;
@@ -104,7 +116,7 @@ class TwoJointArm
 
         State state_;
 
-        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, gotCone_;
+        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, gotCone_, eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_, switchingToCubeIntake_;
         pair<bool, bool> homing_;
         double prevShoulderVolts_, prevElbowVolts_;
         double prevElbowPos_, elbowVel_, elbowVelTime_, prevShoulderPos_, shoulderVel_, shoulderVelTime_;
@@ -130,5 +142,5 @@ class TwoJointArm
 
         void setBrakes(bool shoulder, bool elbow);
 
-        double setPhiPos_, setThetaPos_; //HERE
+        // double setPhiPos_, setThetaPos_; //HERE
 };

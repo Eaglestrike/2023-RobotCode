@@ -1,9 +1,9 @@
 #include "Claw.h"
 
-Claw::Claw() : clawPneumatic_(frc::PneumaticsModuleType::REVPH, ClawConstants::PNEUMATIC_ID), wheelMotor_(ClawConstants::WHEEL_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless)
+Claw::Claw() : clawPneumatic_(frc::PneumaticsModuleType::CTREPCM, ClawConstants::PNEUMATIC_ID), wheelMotor_(ClawConstants::WHEEL_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless)
 {
     open_ = false;
-    // wheelState_ = IDLE;
+    wheelSpeed_ = 0;
     wheelMotor_.SetIdleMode(rev::CANSparkMax::IdleMode::kBrake);
 }
 
@@ -11,54 +11,35 @@ void Claw::periodic()
 {
     frc::SmartDashboard::PutBoolean("Claw Open", open_);
 
-    if (open_)
+    clawPneumatic_.Set(open_);
+
+    if(wheelSpeed_ == ClawConstants::INTAKING_SPEED && wheelMotor_.GetOutputCurrent() > ClawConstants::RETAINING_CURRENT)
     {
-        clawPneumatic_.Set(false);
+        wheelMotor_.SetVoltage(units::volt_t{ClawConstants::RETAINING_SPEED});
     }
     else
     {
-        clawPneumatic_.Set(true);
+        wheelMotor_.SetVoltage(units::volt_t{wheelSpeed_});
     }
-
-    // switch (wheelState_)
-    // {
-    // case INTAKING:
-    // {
-    //     wheelMotor_.Set(ClawConstants::INTAKING_SPEED);
-    //     break;
-    // }
-    // case OUTAKING:
-    // {
-    //     wheelMotor_.Set(ClawConstants::OUTAKING_SPEED);
-    //     break;
-    // }
-    // case IDLE:
-    // {
-    //     wheelMotor_.Set(0);
-    //     break;
-    // }
-    // }
+    
 }
 
 bool Claw::isOpen()
 {
     return open_;
 }
-// Claw::WheelState Claw::getWheelState()
-// {
-//     return wheelState_;
-// }
+
+double Claw::wheelSpeed()
+{
+    return wheelSpeed_;
+}
 
 void Claw::setOpen(bool open)
 {
     open_ = open;
 }
-// void Claw::setWheelState(WheelState wheelState)
-// {
-//     wheelState_ = wheelState;
-// }
 
 void Claw::setWheelSpeed(double speed)
 {
-    wheelMotor_.SetVoltage(units::volt_t{speed});
+    wheelSpeed_ = speed;
 }
