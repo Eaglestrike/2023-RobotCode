@@ -77,20 +77,29 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
             {
                 if (forward)
                 {
-                    wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+                    
                     wantedYaw = 90.0;
                     if (scoringPos.first > 6.0)
                     {
+                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
                         wantedYaw *= -1;
+                    }
+                    else
+                    {
+                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
                     }
                 }
                 else
                 {
-                    wantedY += SwerveConstants::CLAW_MID_OFFSET;
                     wantedYaw = -90.0;
                     if (scoringPos.first > 6.0)
                     {
                         wantedYaw *= -1;
+                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+                    }
+                    else
+                    {
+                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
                     }
                 }
             }
@@ -98,20 +107,28 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
             {
                 if (forward)
                 {
-                    wantedY += SwerveConstants::CLAW_MID_OFFSET;
                     wantedYaw = -90.0;
-                    if (scoringPos.first > 6.0)
+                    if (scoringPos.first < 6.0)
                     {
+                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
                         wantedYaw *= -1;
+                    }
+                    else
+                    {
+                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
                     }
                 }
                 else
                 {
-                    wantedY -= SwerveConstants::CLAW_MID_OFFSET;
                     wantedYaw = 90.0;
-                    if (scoringPos.first > 6.0)
+                    if (scoringPos.first < 6.0)
                     {
+                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
                         wantedYaw *= -1;
+                    }
+                    else
+                    {
+                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
                     }
                 }
             }
@@ -309,6 +326,10 @@ void SwerveDrive::drivePose(SwervePose pose)
     double xVel = pose.getXVel();
     double yVel = pose.getYVel();
     double yawVel = pose.getYawVel();
+
+    //HERE
+    // setPos(pair<double, double>{pose.getX(), pose.getY()});
+    // setYaw(pose.getYaw());
 
     if ((pose.getXVel() != 0 || pose.getYVel() != 0 || pose.getYawVel() != 0) || frc::DriverStation::IsTeleop())
     {
@@ -604,8 +625,6 @@ void SwerveDrive::calcOdometry()
     robotX_ += xyVel.first * dT_;
     robotY_ += xyVel.second * dT_;
 
-    frc::SmartDashboard::PutNumber("x", robotX_);
-    frc::SmartDashboard::PutNumber("y", robotY_);
 }
 
 /**
@@ -741,8 +760,8 @@ void SwerveDrive::updateAprilTagFieldXY()
     // frc::SmartDashboard::PutNumber("GX", fieldTagX);
     // frc::SmartDashboard::PutNumber("GY", fieldTagY);
 
-    // frc::SmartDashboard::PutNumber("TOX", orientedTagX);
-    // frc::SmartDashboard::PutNumber("TOY", orientedTagY);
+    frc::SmartDashboard::PutNumber("TOX", orientedTagX);
+    frc::SmartDashboard::PutNumber("TOY", orientedTagY);
 
     double aprilTagX, aprilTagY;
     // Really just field-oriented coordinates (idk why called apriltagY) - call SeenPositionX or smthg
@@ -810,13 +829,13 @@ pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
             wantedX = FieldConstants::BLUE_PS_X;
             if (robotY_ > FieldConstants::TAG_XY[4][1])
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.6096;
+                wantedY = FieldConstants::TAG_XY[4][1] + 0.6;
             }
             else
             {
-                wantedY = FieldConstants::TAG_XY[4][1] - 0.6096;
+                wantedY = FieldConstants::TAG_XY[4][1] - 0.6;
             }
-            wantedY = FieldConstants::TAG_XY[4][1];
+            // wantedY = FieldConstants::TAG_XY[4][1];
         }
         else
         {
@@ -831,11 +850,11 @@ pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
             wantedX = FieldConstants::RED_PS_X;
             if (robotY_ > FieldConstants::TAG_XY[4][1])
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.6096;
+                wantedY = FieldConstants::TAG_XY[4][1] + 0.9144;
             }
             else
             {
-                wantedY = FieldConstants::TAG_XY[4][1] - 0.6096;
+                wantedY = FieldConstants::TAG_XY[4][1] - 0.9144;
             }
         }
         else

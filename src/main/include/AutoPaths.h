@@ -54,8 +54,8 @@ class AutoPaths
         SwerveDrive* swerveDrive_;
         TwoJointArm* arm_;
 
-        TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 0.6, SwerveConstants::MAX_LA * 0.6, 0, 0, 0, 0};
-        TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 0.6, SwerveConstants::MAX_LA * 0.6, 0, 0, 0, 0};
+        TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
+        TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yawTraj_{SwerveConstants::MAX_AV * 0.4, SwerveConstants::MAX_AA * 0.4, 0, 0, 0, 0};
 
         frc::Timer timer_;
