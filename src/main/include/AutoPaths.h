@@ -80,15 +80,4 @@ class AutoPaths
         bool clawOpen_, forward_;
         double wheelSpeed_;
         TwoJointArmProfiles::Positions armPosition_;
-
-        double kTilt = 0.0;
-        bool debugAutoDock = true;
-        frc::ShuffleboardTab* autoTab;
-        nt::GenericEntry *pitchEntry,
-                            *rollEntry,
-                            *outputEntry,
-                            *enableOutput,
-                            *kTiltEntry,
-                            *angEntry,
-                            *tiltEntry;
 };
