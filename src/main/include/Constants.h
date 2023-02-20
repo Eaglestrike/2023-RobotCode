@@ -325,8 +325,9 @@ namespace MotorIntakeConstants {
 namespace PneumaticsIntakeConstants {
     const bool USING_CTRE = true; // if this is set to false, then you are using the REV pneumatics hub
 
-    const int LEFT_SOLENOID_ID = 1;  // TODO get value
-    const int RIGHT_SOLENOID_ID = 1; // TODO get value
+    const int LEFT_SOLENOID_ID = 0;
+    const int RIGHT_SOLENOID_ID = 7;
+    const int ROLLER_MOTOR_ID = 13;
 
-    const double ROLLER_MAX_VOLTAGE = 0; // TODO measure voltage for cube/cone to actually pass through
+    const double ROLLER_MAX_VOLTAGE = -5;
 } // namespace PneumaticsIntakeConstants
