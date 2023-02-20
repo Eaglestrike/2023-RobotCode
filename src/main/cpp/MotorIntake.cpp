@@ -96,7 +96,7 @@ void MotorIntake::Periodic() {
         Helpers::convertStepsToRadians(MotorIntakeConstants::ENCODER_DEPLOYED_TARGET, 2048)); 
       double voltage = std::clamp(pidVal, -MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE, MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE);
 
-      m_deployer.SetVoltage(units::volt_t{pidVal});
+      m_deployer.SetVoltage(units::volt_t{voltage});
 
       if (m_pid.AtGoal()) {
         m_state = DEPLOYED;
@@ -109,7 +109,7 @@ void MotorIntake::Periodic() {
       double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{0}); 
       double voltage = std::clamp(pidVal, -MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE, MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE);
 
-      m_deployer.SetVoltage(units::volt_t{pidVal});
+      m_deployer.SetVoltage(units::volt_t{voltage});
 
       if (m_pid.AtGoal()) {
         m_state = STOWED;
