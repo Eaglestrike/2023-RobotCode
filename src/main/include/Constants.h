@@ -50,10 +50,10 @@ namespace FieldConstants
     {1.02743, 2.748026}, 
     {1.02743, 1.071626}};
 
-    const double BOTTOM_CONE_Y = 0.513;
-    const double TOP_CONE_Y = 4.977;
-    const double BOTTOM_CUBE_Y = 1.072;
-    const double TOP_CUBE_Y = 4.424;
+    const double BOTTOM_CONE_Y = 0.5128;
+    const double TOP_CONE_Y = 4.983;
+    const double BOTTOM_CUBE_Y = 1.0716;
+    const double TOP_CUBE_Y = 4.4244;
 
     const double BLUE_SCORING_X = 1.923-0.019; //1.923
     const double RED_SCORING_X = 14.617+0.019; //14.617
@@ -61,8 +61,8 @@ namespace FieldConstants
     const double RED_PS_X = TAG_XY[4][0] + 0.5;
 
     const double AUTO_DOCK_Y = 2.748;
-    const double BLUE_AUTO_DOCK_X = 2.412;
-    const double RED_AUTO_DOCK_X = 14.130;
+    const double BLUE_AUTO_DOCK_X = 3.825875; //2.412
+    const double RED_AUTO_DOCK_X = 12.09675; //14.130
 
     const double BOTTOM_PIECE_Y = 0.919;
     const double BOTTOM_MID_PIECE_Y = 2.138;
@@ -150,13 +150,13 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = 74.26; //75.85
     const double BL_CANCODER_OFFSET = 41.6; //43.2
 
-    const double MAX_LA = 2;//3
-    const double MAX_LV = 3;//4
+    const double MAX_LA = 2.5;//3
+    const double MAX_LV = 5;//4
     const double MAX_AA = 360;//270
     const double MAX_AV = 540;//450
 
-    const double klV = 0.495; //If you increase pd, check auto lineup
-    const double klVI = -0.328;
+    const double klV = 0.502636;//0.495 If you increase pd, check auto lineup
+    const double klVI = -0.359672; //-0.328
     const double klA = 4.11;
     const double klP = 0.2; //0.05 (0.2, 0.2?)
     const double klD = 0.2;
@@ -167,7 +167,7 @@ namespace SwerveConstants
     const double kaP = 0.06; //0.008
     const double kaD = 0;
 
-    const double CLAW_MID_OFFSET = 0.0889;
+    const double CLAW_MID_OFFSET = 0.05; //0.0889
 
     const double AUTOKTILT = 0.01;
     const double AUTODEADANGLE = 1.0;
@@ -209,7 +209,7 @@ namespace TwoJointArmConstants
     const int SHOULDER_BRAKE_ID = 4;
     const int ELBOW_BRAKE_ID = 5;
     const int SHOULDER_ENCODER_ID = 0;
-    const double SHOULDER_ENCODER_OFFSET = 0;
+    const double SHOULDER_ENCODER_OFFSET = -51;
 
     const double UPPER_ARM_I = 0.206;
     const double FOREARM_I = 0.22; //0.32, 0.35?
@@ -223,10 +223,10 @@ namespace TwoJointArmConstants
     const double SHOULDER_I = UPPER_ARM_I + UPPER_ARM_M * UPPER_ARM_COM_DIST * UPPER_ARM_COM_DIST;
     const double ELBOW_I = FOREARM_I + FOREARM_M * FOREARM_COM_DIST * FOREARM_COM_DIST;
 
-    const double SHOULDER_KV = 13.6664;
-    const double SHOULDER_KVI = -10.6125;
-    const double ELBOW_KV = 43.4462;
-    const double ELBOW_KVI = -29.9439;
+    const double SHOULDER_KV = 13.6377; //13.6664
+    const double SHOULDER_KVI = -8.54262; //-10.6125
+    const double ELBOW_KV = 40.8737; //43.4462
+    const double ELBOW_KVI = -22.7796; //-29.9439
 
     const double skD_ = 0.05;
     const double skP_ = 0.05;
@@ -256,12 +256,12 @@ namespace TwoJointArmConstants
     {
         {0.3526, -0.1769, -18.5, 164.5}, //stowed, -18.5, 164.5
         {0.62747, -0.2446, 15, 140}, //cube intake, 15, 140
-        {0.8071, 0.63681, -18.79, 111.46}, //player station, -18.79, 111.46
-        {1.07088, 0.63964, 2.6, 92}, //mid, 2.6, 92
-        {1.40282, 1.01912, 41, 22}, //high, 41, 22
+        {0.79893, 0.55615, -18.9, 116}, //player station, -18.9, 116
+        {1.07088, 0.63964, 2.6, 92}, //mid, 2.6, 92 
+        {1.49643, 0.92416, 52.4, 10}, //high, 52.4, 10
         {0.91348, 0.29933, -3, 117}, //cube mid, -3, 117
         {1.31242, 0.68936, 22, 67}, //cube high, 22, 67
-        {0.57996, -0.50203, 42.32, 132.58} //cone intake, 42.32, 132.58
+        {0.40667, -0.51622, 44, 141.3} //cone intake, 45, 127
     };
 
     const int STOWED_NUM = 0;
@@ -274,7 +274,7 @@ namespace TwoJointArmConstants
     const int CONE_INTAKE_NUM = 7;
 
     const double ANGLE_ERROR_THRESHOLD = 3;
-    const double ANGLE_POS_KNOWN_THRESHOLD = 5;
+    const double ANGLE_POS_KNOWN_THRESHOLD = 10;
 
     const double STALL_SAFETY = 50;
 
@@ -282,10 +282,10 @@ namespace TwoJointArmConstants
 
 namespace ClawConstants
 {
-    const int PNEUMATIC_ID = 6; //TODO get value
+    const int PNEUMATIC_ID = 6;
     const int WHEEL_MOTOR_ID = 1;
     const double INTAKING_SPEED = 7;
-    const double OUTAKING_SPEED = -2;
+    const double OUTAKING_SPEED = -3;
     const double RETAINING_SPEED = 0.5;
     const double RETAINING_CURRENT = 7;
 }

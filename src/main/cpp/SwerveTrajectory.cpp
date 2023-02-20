@@ -107,7 +107,7 @@ SwervePose SwerveTrajectory::getPose(double time)
         {
             linAcc = -MAX_LA;
             linVel = linCruiseVel_ - (time - yawTime - linAccelTime_ - linCruiseTime_) * MAX_LA;
-            linDist = actualYawDist_ + ((2 * endVel_ + linAccelTime_ * MAX_LA) / 2) * linAccelTime_ + linCruiseTime_ * linCruiseVel_ + (time - yawTime - linAccelTime_ - linCruiseTime_) * (linCruiseVel_ + linVel) * MAX_LA / 2;
+            linDist = actualYawDist_ + ((2 * endVel_ + linAccelTime_ * MAX_LA) / 2) * linAccelTime_ + linCruiseTime_ * linCruiseVel_ + (time - yawTime - linAccelTime_ - linCruiseTime_) * (linCruiseVel_ + linVel)/* MAX_LA*/ / 2;
         }
     }
     else

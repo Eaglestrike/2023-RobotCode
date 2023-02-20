@@ -4,6 +4,7 @@
 #include "Helpers.h"
 #include "Constants.h"
 #include <math.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 
 using namespace std;
 

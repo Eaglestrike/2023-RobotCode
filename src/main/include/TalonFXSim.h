@@ -41,6 +41,10 @@ class TalonFXSim
         {
             return volts_;
         }
+        double GetSupplyCurrent()
+        {
+            return 0;
+        }
     private:
         int id_;
         double pos_, vel_, acc_, volts_;

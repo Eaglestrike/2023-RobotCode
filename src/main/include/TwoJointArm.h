@@ -36,12 +36,15 @@ class TwoJointArm
 
         void periodic();
         void zeroArms();
+        void zeroArmsToStow();
         void setPosTo(TwoJointArmProfiles::Positions setPosition);
         void toggleForward();
+        void toggleForwardCubeIntake();
         void manualControl(double thetaVel, double phiVel);
         void stop();
         void resetIntaking();
         void switchDirections();
+        void switchDirectionsCubeIntake();
         void intake();
         void placeCone();
         void placeCube();
@@ -61,8 +64,9 @@ class TwoJointArm
 
         string getStateString();
         string getPosString();
+        string getSetPosString();
 
-        void goToPos(double thetaPos, double phiPos); //HERE
+        // void goToPos(double thetaPos, double phiPos); //HERE
         // double getThetaVolts();
         // double getPhiVolts();
 
@@ -72,6 +76,7 @@ class TwoJointArm
         void setEStopped(bool eStopped);
         bool isEStopped();
         pair<bool, bool> intakesNeededDown();
+        void setForward(bool forward);
 
         double getClawWheelSpeed();
         bool clawOpen();
@@ -111,7 +116,7 @@ class TwoJointArm
 
         State state_;
 
-        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, gotCone_, eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_;
+        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, gotCone_, eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_, switchingToCubeIntake_;
         pair<bool, bool> homing_;
         double prevShoulderVolts_, prevElbowVolts_;
         double prevElbowPos_, elbowVel_, elbowVelTime_, prevShoulderPos_, shoulderVel_, shoulderVelTime_;
@@ -137,5 +142,5 @@ class TwoJointArm
 
         void setBrakes(bool shoulder, bool elbow);
 
-        double setPhiPos_, setThetaPos_; //HERE
+        // double setPhiPos_, setThetaPos_; //HERE
 };
