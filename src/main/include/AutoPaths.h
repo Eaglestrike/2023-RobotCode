@@ -2,7 +2,6 @@
 
 #include <frc/Timer.h>
 #include <AHRS.h>
-#include <frc/shuffleboard/Shuffleboard.h>
 
 #include "SwerveDrive.h"
 #include "SwervePath.h"
