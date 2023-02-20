@@ -387,7 +387,6 @@ void TwoJointArm::placeCube()
 
 void TwoJointArm::followTaskSpaceProfile(double time)
 {
-    return;
     tuple<double, double, double> thetaProfile = movementProfiles_.getThetaProfile(key_, time);
     tuple<double, double, double> phiProfile = movementProfiles_.getPhiProfile(key_, time);
 
@@ -523,7 +522,6 @@ void TwoJointArm::followTaskSpaceProfile(double time)
 
 void TwoJointArm::followJointSpaceProfile()
 {
-    return;
     tuple<double, double, double> shoulderProfile = shoulderTraj_.getProfile();
     tuple<double, double, double> elbowProfile = elbowTraj_.getProfile();
 
@@ -586,7 +584,6 @@ void TwoJointArm::followJointSpaceProfile()
 
 void TwoJointArm::home()
 {
-    return;
     claw_.setOpen(false);
 
     double shoulderVel = getThetaVel(); // shoulderMaster_.GetSelectedSensorVelocity() * (10.0 / 2048.0) * 360.0 * TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
@@ -679,7 +676,6 @@ void TwoJointArm::toggleForward()
 
 void TwoJointArm::manualControl(double thetaVel, double phiVel)
 {
-    return;
     state_ = MANUAL;
     if (eStopped_)
     {
@@ -1029,7 +1025,6 @@ double TwoJointArm::calcR(double volts)
 
 void TwoJointArm::setShoulderVolts(double volts)
 {
-    return;
     // frc::SmartDashboard::PutNumber("SC", shoulderMaster_.GetSupplyCurrent());
     double theta = getTheta();
     if (shoulderMaster_.GetSupplyCurrent() > TwoJointArmConstants::STALL_SAFETY)
@@ -1062,7 +1057,6 @@ void TwoJointArm::setShoulderVolts(double volts)
 
 void TwoJointArm::setElbowVolts(double volts)
 {
-    return;
     // frc::SmartDashboard::PutNumber("EC", elbowMaster_.GetSupplyCurrent());
     double phi = getPhi();
     if (elbowMaster_.GetSupplyCurrent() > TwoJointArmConstants::STALL_SAFETY)
