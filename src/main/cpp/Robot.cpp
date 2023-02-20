@@ -8,7 +8,7 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-Robot::Robot() : autoPaths_(swerveDrive_, arm_)
+Robot::Robot(): autoPaths_(swerveDrive_, arm_)
 {
 
     AddPeriodic(
@@ -107,6 +107,7 @@ void Robot::RobotInit()
     {
         cout << e.what() << endl;
     }
+    autoPaths_.setNavx(navx_);
     navx_->ZeroYaw();
 }
 
@@ -239,6 +240,23 @@ void Robot::TeleopPeriodic()
     swerveDrive_->setScoringPos(controls_->checkScoringButtons());
 
     pair<bool, bool> intakesNeededDown = arm_->intakesNeededDown();
+
+    if(controls_->rXTriggerPressed()){
+        //ang, pitch, roll
+        //0,  - ,  0
+        //90, 0, -
+        //180, +, 0
+        //270, 0, +
+        double ang = ((double)navx_->GetAngle())*pi/180.0; //Radians
+        double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); //Degrees
+        double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET); //Degrees
+        double tilt = -pitch*cos(ang) - roll*sin(ang);
+        if(abs(tilt) < SwerveConstants::AUTODEADANGLE){
+            tilt = 0.0;
+        }
+        double output = -SwerveConstants::AUTOKTILT*tilt;
+        swerveDrive_->drive(output, 0, 0);
+    }
 
     if (controls_->fieldOrient())
     {

@@ -1,6 +1,8 @@
 #include "AutoPaths.h"
 
-AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(swerveDrive), arm_(arm)
+AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) :
+    swerveDrive_(swerveDrive),
+    arm_(arm)
 {
     pointNum_ = 0;
     actionNum_ = 0;
@@ -929,11 +931,17 @@ void AutoPaths::periodic()
     }
     case AUTO_DOCK:
     {
-        if (pointOver)
-        {
-            // TODO auto dock
+        if (pointOver){
+            double ang = ((double)navx_->GetAngle())*pi/180.0; //Radians
+            double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); //Degrees
+            double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET); //Degrees
+            double tilt = -pitch*cos(ang) - roll*sin(ang);
+            if(abs(tilt) < SwerveConstants::AUTODEADANGLE){
+                tilt = 0.0;
+            }
+            double output = -SwerveConstants::AUTOKTILT*tilt;
+            swerveDrive_->drive(output, 0, 0);
         }
-
         break;
     }
     case NOTHING:

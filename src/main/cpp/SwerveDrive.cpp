@@ -227,7 +227,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
         drivePose(*wantedPose);
         delete wantedPose;
     }
-    else
+    else if(!controls->rXTriggerPressed())
     {
         trackingTag_ = false;
         double xStrafe, yStrafe;

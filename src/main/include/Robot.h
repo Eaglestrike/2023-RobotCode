@@ -55,4 +55,14 @@ private:
 
     bool cubeIntaking_, coneIntaking_;
 
+    bool debugAutoDock = true;
+    frc::ShuffleboardTab* autoTab;
+    nt::GenericEntry *pitchEntry,
+                        *rollEntry,
+                        *outputEntry,
+                        *enableOutput,
+                        *kTiltEntry,
+                        *angEntry,
+                        *tiltEntry,
+                        *deadEntry;
 };
