@@ -43,7 +43,7 @@ private:
     PneumaticsIntakeConstants::USING_CTRE ? frc::PneumaticsModuleType::CTREPCM : frc::PneumaticsModuleType::REVPH,
     PneumaticsIntakeConstants::RIGHT_SOLENOID_ID};
 
-  WPI_TalonFX m_roller{PneumaticsIntakeConstants::ROLLER_MOTOR_ID};  // for spinning the rollers
+  WPI_TalonFX m_roller{MotorIntakeConstants::ROLLER_MOTOR_ID};  // for spinning the rollers
 
   State m_state{STOWED};
 

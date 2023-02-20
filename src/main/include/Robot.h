@@ -18,7 +18,6 @@
 #include "SwerveDrive.h"
 #include "AutoPaths.h"
 #include "TwoJointArm.h"
-#include "PneumaticsIntake.h"
 #include <frc/PneumaticHub.h>
 
 class Robot : public frc::TimedRobot
@@ -49,7 +48,6 @@ private:
     Controls* controls_ = new Controls();
     SwerveDrive* swerveDrive_ = new SwerveDrive();
     AutoPaths autoPaths_;
-    PneumaticsIntake m_cubeIntake;
 
     double yawOffset_;
 
