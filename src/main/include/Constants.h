@@ -290,22 +290,32 @@ namespace ClawConstants
     const double RETAINING_CURRENT = 7;
 }
 
-// namespace CubeIntakeConstants {
-//     const int DEPLOYER_MOTOR_ID = 0; // TODO get value
-//     const int ROLLER_MOTOR_ID = 0; // TODO get value
+namespace MotorIntakeConstants {
+    const int DEPLOYER_MOTOR_ID = 0; // TODO get value
+    const int ROLLER_MOTOR_ID = 0; // TODO get value
 
-//     const double ENCODER_DEPLOYED_TARGET = 512;
+    const double ENCODER_DEPLOYED_TARGET = 512;
 
-//     const double DEPLOYER_MAX_VOLTAGE = 0;    // TODO measure capped voltage for deployer
-//     const double ROLLER_MAX_VOLTAGE = 0;      // TODO measure voltage for cube to actually pass through
+    const double DEPLOYER_MAX_VOLTAGE = 0;    // TODO measure capped voltage for deployer
+    const double ROLLER_MAX_VOLTAGE = 0;      // TODO measure voltage for cube/cone to actually pass through
 
-//     const double kP = 0; // TODO tune
-//     const double kI = 0; // TODO tune
-//     const double kD = 0; // TODO tune
+    const double kP = 0; // TODO tune
+    const double kI = 0; // TODO tune
+    const double kD = 0; // TODO tune
 
-//     const double MAX_VELOCITY = pi / 2;   // TODO tune - radians per second
-//     const double MAX_ACCELERATION = pi;   // TODO tune - radians per second squared
+    const double MAX_VELOCITY = pi / 2;   // TODO tune - radians per second
+    const double MAX_ACCELERATION = pi;   // TODO tune - radians per second squared
 
-//     const double POS_ERR_TOLERANCE = 0.01;  // TODO tune - error tolerance, in radians
-//     const double VEL_ERR_TOLERANCE = 0.1;   // TODO tune - error tolerance, in radians/s
-// } // namespace CubeIntakeConstants
+    const double POS_ERR_TOLERANCE = 0.01;  // TODO tune - error tolerance, in radians
+    const double VEL_ERR_TOLERANCE = 0.1;   // TODO tune - error tolerance, in radians/s
+} // namespace MotorIntakeConstants
+
+namespace PneumaticsIntakeConstants {
+    const bool USING_CTRE = true; // if this is set to false, then you are using the REV pneumatics hub
+
+    const int LEFT_SOLENOID_ID = 0;
+    const int RIGHT_SOLENOID_ID = 7;
+    const int ROLLER_MOTOR_ID = 13;
+
+    const double ROLLER_MAX_VOLTAGE = -5;
+} // namespace PneumaticsIntakeConstants
