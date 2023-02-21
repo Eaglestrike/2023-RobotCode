@@ -10,7 +10,6 @@ MotorIntake::MotorIntake() {
 */
 void MotorIntake::Deploy() {
   m_state = DEPLOYING;
-  ResetEncoderPosition();
   ResetPID();
   ResetAcceleration();
 }
@@ -40,7 +39,7 @@ void MotorIntake::ResetEncoderPosition() {
  * 
  * Note that this does not move any motor positions.
  * 
- * This should be called when enabled.
+ * This should be called on init.
 */
 void MotorIntake::Reset() {
   ResetEncoderPosition();
