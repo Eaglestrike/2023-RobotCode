@@ -55,8 +55,8 @@ namespace FieldConstants
     const double BOTTOM_CUBE_Y = 1.0716;
     const double TOP_CUBE_Y = 4.4244;
 
-    const double BLUE_SCORING_X = 1.923-0.019; //1.923
-    const double RED_SCORING_X = 14.617+0.019; //14.617
+    const double BLUE_SCORING_X = 1.923-0.019-0.0508; //1.923
+    const double RED_SCORING_X = 14.617+0.019+0.0508; //14.617
     const double BLUE_PS_X = TAG_XY[3][0] - 0.5;
     const double RED_PS_X = TAG_XY[4][0] + 0.5;
 
@@ -94,6 +94,7 @@ namespace InputConstants
     const int OUTAKE_BUTTON = 4;
     const int INTAKE_BUTTON = 3;
     const int LOWER_BUTTON = 5; //TODO get value
+    const int AUTO_BALANCE_BUTTON = 4;
     
     const int A_BUTTON = 1;
     const int B_BUTTON = 2;
@@ -150,21 +151,21 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = 74.26; //75.85
     const double BL_CANCODER_OFFSET = 41.6; //43.2
 
-    const double MAX_LA = 2.5;//3
-    const double MAX_LV = 5;//4
+    const double MAX_LA = 1;//2.5
+    const double MAX_LV = 3;//5 (past year, 3, 4) (1.5, 4, stable but scary)
     const double MAX_AA = 360;//270
     const double MAX_AV = 540;//450
 
-    const double klV = 0.502636;//0.495 If you increase pd, check auto lineup
-    const double klVI = -0.359672; //-0.328
+    const double klV = 0.502636;//If you increase pd, check auto lineup
+    const double klVI = -0.359672;
     const double klA = 4.11;
-    const double klP = 0.2; //0.05 (0.2, 0.2?)
-    const double klD = 0.2;
+    const double klP = 1;
+    const double klD = 0.05;
 
     const double kaV = 34.2064;
     const double kaVI = -25.4095;
     const double kaA = 0;
-    const double kaP = 0.06; //0.008
+    const double kaP = 0.5; //0.008
     const double kaD = 0;
 
     const double CLAW_MID_OFFSET = 0.05; //0.0889
@@ -184,11 +185,11 @@ namespace TwoJointArmConstants
     const double CUBE_INTAKE_PIVOT_TO_SHOULDER_HEGHT = 0.3622548;
     const double CUBE_INTAKE_LENGTH = 0.403195028;;
     const double CUBE_INTAKE_TO_SHOULDER_X = 0.29856176;
-    const double CUBE_INTAKE_COLLISION_BUFFER = 0.2032;
+    const double CUBE_INTAKE_COLLISION_BUFFER = 0.3532;
     const double CONE_INTAKE_PIVOT_TO_SHOULDER_HEGHT = 0.3622548; //TODO get different stuffs with cone intake
     const double CONE_INTAKE_LENGTH = 0.403195028;;
     const double CONE_INTAKE_TO_SHOULDER_X = 0.29856176;
-    const double CONE_INTAKE_COLLISION_BUFFER = 0.2032;
+    const double CONE_INTAKE_COLLISION_BUFFER = 0.3532; //0.2032
 
     const double COLLISION_LOOKAHEAD_TIME = 0.65;
 	
@@ -255,13 +256,13 @@ namespace TwoJointArmConstants
     const double ARM_POSITIONS[8][4] = 
     {
         {0.3526, -0.1769, -18.5, 164.5}, //stowed, -18.5, 164.5
-        {0.62747, -0.2446, 15, 140}, //cube intake, 15, 140
+        {0.55296, -0.26022, 13, 145}, //cube intake, 13, 145
         {0.79893, 0.55615, -18.9, 116}, //player station, -18.9, 116
         {1.07088, 0.63964, 2.6, 92}, //mid, 2.6, 92 
         {1.49643, 0.92416, 52.4, 10}, //high, 52.4, 10
         {0.91348, 0.29933, -3, 117}, //cube mid, -3, 117
         {1.31242, 0.68936, 22, 67}, //cube high, 22, 67
-        {0.40667, -0.51622, 44, 141.3} //cone intake, 45, 127
+        {0.6364, -0.463, 39, 131} //cone intake, 45, 127, 39, 131
     };
 
     const int STOWED_NUM = 0;
@@ -277,6 +278,8 @@ namespace TwoJointArmConstants
     const double ANGLE_POS_KNOWN_THRESHOLD = 10;
 
     const double STALL_SAFETY = 50;
+
+    const double SWINGTHROUGH_CLEARANCE = 15;
 
 }
 

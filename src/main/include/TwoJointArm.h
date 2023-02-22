@@ -76,6 +76,7 @@ class TwoJointArm
         void setEStopped(bool eStopped);
         bool isEStopped();
         pair<bool, bool> intakesNeededDown();
+        void updateIntakeStates(bool cubeIntakeDown, bool coneIntakeDown);
         void setForward(bool forward);
 
         double getClawWheelSpeed();
@@ -116,8 +117,10 @@ class TwoJointArm
 
         State state_;
 
-        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, gotCone_, eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_, switchingToCubeIntake_;
+        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, 
+        gotCone_, eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_, switchingToCubeIntake_, ciSwitchFirstStageDone_, cubeIntakeDown_, coneIntakeDown_;
         pair<bool, bool> homing_;
+        bool homingRaising_;
         double prevShoulderVolts_, prevElbowVolts_;
         double prevElbowPos_, elbowVel_, elbowVelTime_, prevShoulderPos_, shoulderVel_, shoulderVelTime_;
 

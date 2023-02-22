@@ -139,6 +139,11 @@ bool Controls::rLowerButtonPressed()
     return rJoy_.GetRawButtonPressed(InputConstants::LOWER_BUTTON);
 }
 
+bool Controls::autoBalancePressed()
+{
+    return rJoy_.GetRawButton(InputConstants::AUTO_BALANCE_BUTTON);
+}
+
 double Controls::xboxLJoyX()
 {
     return xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);

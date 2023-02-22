@@ -1,7 +1,6 @@
 #pragma once
 
 #include <frc/Timer.h>
-#include <AHRS.h>
 
 #include "SwerveDrive.h"
 #include "SwervePath.h"
@@ -20,8 +19,12 @@ class AutoPaths
             PRELOADED_CUBE,
             FIRST_CONE,
             FIRST_CUBE,
+            FIRST_CONE_DOCK,
+            FIRST_CUBE_DOCK,
             SECOND_CONE,
             SECOND_CUBE,
+            SECOND_CONE_DOCK,
+            SECOND_CUBE_DOCK,
             AUTO_DOCK,
             NOTHING,
             DRIVE_BACK_DUMB,
@@ -36,6 +39,7 @@ class AutoPaths
         void setPathSet(bool pathSet);
 
         void periodic();
+        void setGyros(double yaw, double pitch, double roll);
         double initYaw();
         pair<double, double> initPos();
 
@@ -50,13 +54,11 @@ class AutoPaths
         bool cubeIntaking();
         bool coneIntaking();
 
-        void setNavx(AHRS* navx){navx_ = navx;};
     private:
         vector<Path> actions_;
         Path path_;
         SwerveDrive* swerveDrive_;
         TwoJointArm* arm_;
-        AHRS* navx_;
 
         TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
@@ -64,7 +66,7 @@ class AutoPaths
 
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
-        double startTime_, curveSecondStageStartTime_, placingStartTime_;
+        double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_;
         bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_;
 
         //vector<SwervePath> swervePaths_;

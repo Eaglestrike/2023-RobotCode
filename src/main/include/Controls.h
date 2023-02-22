@@ -20,6 +20,7 @@ class Controls
         bool intakePressed();
         bool lLowerButtonPressed();
         bool rLowerButtonPressed();
+        bool autoBalancePressed();
 
         double xboxLJoyX();
         double xboxLJoyY();
