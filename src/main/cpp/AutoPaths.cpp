@@ -116,12 +116,12 @@ void AutoPaths::setPath(Path path)
             yaw2 = -90;
             if (!mirrored_)
             {
-                y1 = FieldConstants::TOP_PIECE_Y;
+                y1 = FieldConstants::TOP_PIECE_Y - 0.305;
                 y2 = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
             else
             {
-                y1 = FieldConstants::BOTTOM_PIECE_Y;
+                y1 = FieldConstants::BOTTOM_PIECE_Y- 0.305;
                 y2 = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
         }
@@ -386,15 +386,16 @@ void AutoPaths::setPath(Path path)
     {
         double x, y, yaw;
         y = FieldConstants::AUTO_DOCK_Y;
+        yaw = 0;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
             x = FieldConstants::BLUE_AUTO_DOCK_X;
-            yaw = 90;
+            //yaw = 90;
         }
         else
         {
             x = FieldConstants::RED_AUTO_DOCK_X;
-            yaw = -90;
+            //yaw = -90;
         }
         swervePoints_.push_back(SwervePose(x, y, yaw, 0.5));
         break;
@@ -544,6 +545,7 @@ void AutoPaths::periodic()
             pathSet_ = false;
             nextPointReady_ = false;
             ++actionNum_;
+            swerveDrive_->drive(0, 0, 0);
             startTimer();
             return;
         }
@@ -952,7 +954,7 @@ void AutoPaths::periodic()
 
         else
         {
-            wheelSpeed_ = ClawConstants::RETAINING_SPEED;
+            wheelSpeed_ = ClawConstants::INTAKING_SPEED;
         }
 
         break;
@@ -988,7 +990,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::RETAINING_SPEED;
+            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.2)
             {
@@ -1043,7 +1045,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::RETAINING_SPEED;
+            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.2)
             {
@@ -1097,7 +1099,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::RETAINING_SPEED;
+            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.5)
             {
@@ -1160,7 +1162,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::RETAINING_SPEED;
+            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.5)
             {

@@ -55,6 +55,6 @@ private:
     double yawOffset_;
 
 
-    bool cubeIntaking_, coneIntaking_;
+    bool cubeIntaking_, coneIntaking_, armsZeroed_;
 
 };

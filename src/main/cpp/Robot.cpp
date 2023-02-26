@@ -103,6 +103,7 @@ void Robot::RobotInit()
 
     cubeIntaking_ = false;
     coneIntaking_ = false;
+    armsZeroed_ = false;
     frc::SmartDashboard::PutNumber("Test Volts", 3);
 
     try
@@ -166,6 +167,7 @@ void Robot::AutonomousInit()
     arm_->stop();
     arm_->resetIntaking();
     arm_->zeroArmsToStow();
+    armsZeroed_ = true;
 
     AutoPaths::Path action1 = auto1Chooser_.GetSelected();
     AutoPaths::Path action2 = auto2Chooser_.GetSelected();
@@ -233,10 +235,10 @@ void Robot::AutonomousPeriodic()
     }
     else
     {
-        if (arm_->getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
-        {
-            armPosition = TwoJointArmProfiles::STOWED;
-        }
+        // if (arm_->getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
+        // {
+        //     armPosition = TwoJointArmProfiles::STOWED;
+        // }
     }
 
     if (arm_->isForward() != forward)
@@ -321,6 +323,7 @@ void Robot::TeleopPeriodic()
     if (controls_->dPadDownPressed())
     {
         arm_->zeroArms();
+        armsZeroed_ = true;
     }
 
     if (controls_->lXTriggerPressed())
@@ -329,7 +332,7 @@ void Robot::TeleopPeriodic()
         cubeIntaking_ = false;
         coneIntaking_ = false;
     }
-    else
+    else if(armsZeroed_)
     {
         // if(controls_->aPressed())
         // {
@@ -463,7 +466,7 @@ void Robot::TeleopPeriodic()
         arm_->setEStopped(true);
     }
 
-    if (cubeIntaking_)
+    if (cubeIntaking_ && armsZeroed_)
     {
         intakesNeededDown.first = true;
         if (arm_->isForward())
@@ -499,7 +502,7 @@ void Robot::TeleopPeriodic()
     //     arm_->setPosTo(TwoJointArmProfiles::STOWED);
     // }
 
-    if (coneIntaking_)
+    if (coneIntaking_ && armsZeroed_)
     {
     }
     else

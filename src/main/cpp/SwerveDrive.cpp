@@ -13,6 +13,8 @@ SwerveDrive::SwerveDrive()
     tagFollowingStartTime_ = 0;
     prevTag_ = -1;
     prevUniqueVal_ = -1;
+    holdingYaw_ = 0;
+    isHoldingYaw_ = false;
 
     // aprilTagX_ = 0;
     // aprilTagY_ = 0;
@@ -272,6 +274,33 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
  */
 void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
 {
+    // if (turn == 0)
+    // {
+    //     if (!isHoldingYaw_)
+    //     {
+    //         holdingYaw_ = yaw_;
+    //         isHoldingYaw_ = true;
+    //     }
+    //     else if(abs(holdingYaw_ = yaw_) > 15)
+    //     {
+    //         holdingYaw_ = yaw_;
+    //     }
+
+    //     double yawError = (holdingYaw_ = yaw_);
+    //     if (abs(yawError) < 1)
+    //     {
+    //         turn = 0;
+    //     }
+    //     else
+    //     {
+    //         turn = -(yawError) * 0.01;
+    //     }
+    // }
+    // else
+    // {
+    //     isHoldingYaw_ = false;
+    // }
+
     calcModules(xSpeed, ySpeed, /*0, 0,*/ turn, /*0,*/ false);
 
     // double volts = frc::SmartDashboard::GetNumber("Swerve Volts", 0.0);
@@ -381,7 +410,7 @@ void SwerveDrive::drivePose(SwervePose pose)
             }
             else
             {
-                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 8.0; // 166.67
+                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 4.0; // 166.67
             }
         }
         else
@@ -715,17 +744,17 @@ void SwerveDrive::updateAprilTagFieldXY()
     //[ apriltag or nah , id , x , y , _ , _ , _ , zang]
     double tagX = data.at(2);
     double tagY = data.at(3);
-    //double tagZAng = -data.at(4);
+    // double tagZAng = -data.at(4);
     int tagID = data.at(1);
     int uniqueVal = data.at(6);
 
     double testTagZAng;
-    if(tagID <= 4 && tagID > 0)
+    if (tagID <= 4 && tagID > 0)
     {
         testTagZAng = yaw_ + 90;
         Helpers::normalizeAngle(testTagZAng);
     }
-    else if(tagID >= 5 && tagID < 9)
+    else if (tagID >= 5 && tagID < 9)
     {
         testTagZAng = yaw_ - 90;
         Helpers::normalizeAngle(testTagZAng);
@@ -750,7 +779,7 @@ void SwerveDrive::updateAprilTagFieldXY()
     {
         if (robotX_ > 3.919857 && robotX_ < 12.621893) // If robot is not near community nor loading station
         {
-            //foundTag_ = false;
+            // foundTag_ = false;
         }
         return;
     }
@@ -797,10 +826,10 @@ void SwerveDrive::updateAprilTagFieldXY()
     frc::SmartDashboard::PutNumber("AT X", aprilTagX);
     frc::SmartDashboard::PutNumber("AT Y", aprilTagY);
 
-    if (robotX_ > 3.919857-0.5 && robotX_ < 12.621893+0.5) // If robot is not near community nor loading station
+    if (robotX_ > 3.919857 - 0.5 && robotX_ < 12.621893 + 0.5) // If robot is not near community nor loading station
     {
-        //foundTag_ = false;
-        //return;
+        // foundTag_ = false;
+        // return;
     }
 
     // 1st check = set it regardless

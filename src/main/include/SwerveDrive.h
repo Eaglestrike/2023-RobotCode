@@ -61,9 +61,9 @@ class SwerveDrive
         frc::Timer timer_;
         double tagFollowingStartTime_;
 
-        double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_;
+        double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_, holdingYaw_;
 
-        bool trackingTag_, foundTag_;
+        bool trackingTag_, foundTag_, isHoldingYaw_;
         int setTagPos_, prevTag_, prevUniqueVal_;
 
 };

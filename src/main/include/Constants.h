@@ -55,8 +55,8 @@ namespace FieldConstants
     const double BOTTOM_CUBE_Y = 1.0716;
     const double TOP_CUBE_Y = 4.4244;
 
-    const double BLUE_SCORING_X = 1.923-0.019-0.0508; //1.923
-    const double RED_SCORING_X = 14.617+0.019+0.0508; //14.617
+    const double BLUE_SCORING_X = 1.923-0.019-0.127; //1.923
+    const double RED_SCORING_X = 14.617+0.019+0.127; //14.617
     const double BLUE_PS_X = TAG_XY[3][0] - 0.5;
     const double RED_PS_X = TAG_XY[4][0] + 0.5;
 
@@ -120,8 +120,8 @@ namespace InputConstants
 
 namespace SwerveConstants
 {
-    const double WIDTH = 29; //Change to 22 
-    const double LENGTH = 29;
+    const double WIDTH = 0.6858;
+    const double LENGTH = 0.6858;
     const double WHEEL_DIAGONAL = 0.8128;
     const double TREAD_RADIUS = 0.0508; 
     const double DRIVE_GEAR_RATIO = 1/6.12; 
@@ -165,7 +165,7 @@ namespace SwerveConstants
     const double kaV = 34.2064;
     const double kaVI = -25.4095;
     const double kaA = 0;
-    const double kaP = 0.5; //0.008
+    const double kaP = 1; //0.008
     const double kaD = 0;
 
     const double CLAW_MID_OFFSET = 0.05; //0.0889
@@ -257,12 +257,12 @@ namespace TwoJointArmConstants
     {
         {0.3526, -0.1769, -18.5, 164.5}, //stowed, -18.5, 164.5
         {0.55296, -0.26022, 13, 145}, //cube intake, 13, 145
-        {0.79893, 0.55615, -18.9, 116}, //player station, -18.9, 116
-        {1.07088, 0.63964, 2.6, 92}, //mid, 2.6, 92 
+        {0.80425, 0.61041, -18.9, 113}, //player station, -18.9, 113
+        {1.14708, 0.63964, 8.62, 85.57}, //mid, 2.6, 92
         {1.49643, 0.92416, 52.4, 10}, //high, 52.4, 10
         {0.91348, 0.29933, -3, 117}, //cube mid, -3, 117
         {1.31242, 0.68936, 22, 67}, //cube high, 22, 67
-        {0.6364, -0.463, 39, 131} //cone intake, 45, 127, 39, 131
+        {0.6364, -0.463, 39, 131} //cone intake, 39, 131
     };
 
     const int STOWED_NUM = 0;
