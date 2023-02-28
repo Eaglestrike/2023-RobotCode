@@ -1,6 +1,6 @@
 /**
  * Pneumatics-deployed intake
-*/
+ */
 
 #ifndef PNEUMATICS_INTAKE_H
 #define PNEUMATICS_INTAKE_H
@@ -17,15 +17,24 @@
 
 /**
  * Intake that is deployed by a motor (rather than pneumatics)
- * 
+ *
  * Used with the cube intake
-*/
-class PneumaticsIntake {
+ */
+class PneumaticsIntake
+{
 public:
-  enum State {
+  enum State
+  {
     STOWED,
     DEPLOYED
-  };  
+  };
+
+  enum RollerMode
+  {
+    INTAKE,
+    STOP,
+    OUTTAKE
+  };
 
   PneumaticsIntake(bool = false, bool = false);
 
@@ -34,18 +43,23 @@ public:
   void Deploy();
   void Stow();
 
+  RollerMode getRollerMode();
+  void setRollerMode(RollerMode);
+
   State getState();
+
 private:
   frc::Solenoid m_lSolenoid{
-    PneumaticsIntakeConstants::USING_CTRE ? frc::PneumaticsModuleType::CTREPCM : frc::PneumaticsModuleType::REVPH,
-    PneumaticsIntakeConstants::LEFT_SOLENOID_ID};
+      PneumaticsIntakeConstants::USING_CTRE ? frc::PneumaticsModuleType::CTREPCM : frc::PneumaticsModuleType::REVPH,
+      PneumaticsIntakeConstants::LEFT_SOLENOID_ID};
   frc::Solenoid m_rSolenoid{
-    PneumaticsIntakeConstants::USING_CTRE ? frc::PneumaticsModuleType::CTREPCM : frc::PneumaticsModuleType::REVPH,
-    PneumaticsIntakeConstants::RIGHT_SOLENOID_ID};
+      PneumaticsIntakeConstants::USING_CTRE ? frc::PneumaticsModuleType::CTREPCM : frc::PneumaticsModuleType::REVPH,
+      PneumaticsIntakeConstants::RIGHT_SOLENOID_ID};
 
-  WPI_TalonFX m_roller{PneumaticsIntakeConstants::ROLLER_MOTOR_ID};  // for spinning the rollers
+  WPI_TalonFX m_roller{PneumaticsIntakeConstants::ROLLER_MOTOR_ID}; // for spinning the rollers
 
   State m_state{STOWED};
+  RollerMode m_mode{INTAKE};
 
   bool m_lInverted;
   bool m_rInverted;
