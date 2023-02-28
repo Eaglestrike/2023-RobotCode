@@ -28,6 +28,9 @@ void SwerveDrive::setYaw(double yaw)
     yaw_ = yaw;
 }
 
+/**
+ * Periodic function called in the faster robot periodic
+*/
 void SwerveDrive::periodic(double yaw)
 {
     setYaw(yaw);
@@ -629,7 +632,7 @@ double SwerveDrive::getY()
 }
 
 /**
- * Returns pair of xy velocities
+ * Returns pair of xy velocities via swerve module calculations
  */
 pair<double, double> SwerveDrive::getXYVel()
 {
@@ -684,23 +687,22 @@ void SwerveDrive::setPos(pair<double, double> xy)
  */
 void SwerveDrive::updateAprilTagFieldXY()
 {
-    //-1 is no april tag
     double defaultVal[] = {-1};
-    // Get data from SmartDashboard/Networktables
     vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
 
-    if (data.at(0) == -1) // No april tag data
+    if (data.at(0) == -1) // No april tag data (defaultVal)
     {
         // foundTag_ = false;
         return;
     }
     // Format of
-    //[ apriltag or nah , id , x , y , _ , _ , _ , zang]
+    // [    0,     1, 2, 3,  4,   5,         6]
+    // [camid, tagid, x, y, az, age, sendCount]
     double tagX = data.at(2);
     double tagY = data.at(3);
     double tagZAng = -data.at(4);
     int tagID = data.at(1);
-    int uniqueVal = data.at(6);
+    int uniqueVal = data.at(6); //Basically id of the data
 
     // frc::SmartDashboard::PutNumber("Tag x", tagX);
     // frc::SmartDashboard::PutNumber("Tag y", tagY);
@@ -710,7 +712,7 @@ void SwerveDrive::updateAprilTagFieldXY()
     double orientedTagX = tagX * cos(tagZAng) + tagY * sin(tagZAng);
     double orientedTagY = tagX * -sin(tagZAng) + tagY * cos(tagZAng);
 
-    if (uniqueVal == prevUniqueVal_)
+    if (uniqueVal == prevUniqueVal_)//If the data is old/already processed, then ignore
     {
         if (robotX_ > 3.919857 && robotX_ < 12.621893) // If robot is not near community nor loading station
         {
@@ -720,7 +722,7 @@ void SwerveDrive::updateAprilTagFieldXY()
     }
     else
     {
-        prevUniqueVal_ = uniqueVal;
+        prevUniqueVal_ = uniqueVal; //Update which tag was already processed (this one)
     }
     if (tagID < 1 || tagID > 8) // Ignore for now
     {
@@ -732,7 +734,7 @@ void SwerveDrive::updateAprilTagFieldXY()
         prevTag_ = tagID; // Set to change, do nothing (skip a frame)
         return;
     }
-    prevTag_ = tagID; // Set the past known tag to be this tag
+    prevTag_ = tagID;
 
     // Get xy of field tag position
     double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0];
@@ -744,8 +746,9 @@ void SwerveDrive::updateAprilTagFieldXY()
     // frc::SmartDashboard::PutNumber("TOX", orientedTagX);
     // frc::SmartDashboard::PutNumber("TOY", orientedTagY);
 
+    // Really just field-oriented coordinates of the robot based off of the apriltag
+    //(idk why called apriltagY, not the position of the apriltag) - call CalcPositionX or smthg
     double aprilTagX, aprilTagY;
-    // Really just field-oriented coordinates (idk why called apriltagY) - call SeenPositionX or smthg
     // Adding the displacement from tag to robot + apriltag position
     if (tagID == 1 || tagID == 2 || tagID == 3 || tagID == 4) // Left side of field
     {
@@ -761,7 +764,7 @@ void SwerveDrive::updateAprilTagFieldXY()
     frc::SmartDashboard::PutNumber("AT X", aprilTagX);
     frc::SmartDashboard::PutNumber("AT Y", aprilTagY);
 
-    // 1st check = set it regardless
+    // 1st time seen -> set robot position to be calculated position regardless
     if (!foundTag_) // TODO check if necessary
     {
         robotX_ = aprilTagX;
@@ -780,6 +783,9 @@ void SwerveDrive::updateAprilTagFieldXY()
         pair<double, double> xyVel = getXYVel();
         double vel = sqrt(xyVel.first * xyVel.first + xyVel.second * xyVel.second);
 
+        //Apriltags will be more inaccurate the faster the robot is, so bias apriltags less
+        //Over time, robot position will approach the apriltag calculated position exponentially
+        //robot position += (difference in apriltag calculation) * (small constant)
         robotX_ += (-robotX_ + aprilTagX) * (0.05 / (1 + 5 * vel));
         robotY_ += (-robotY_ + aprilTagY) * (0.05 / (1 + 5 * vel));
     }

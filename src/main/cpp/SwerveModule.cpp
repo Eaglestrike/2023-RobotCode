@@ -221,7 +221,12 @@ double SwerveModule::findError(double setAngle, double angle)
 double SwerveModule::getDriveVelocity()
 {
     // frc::SmartDashboard::PutNumber(id_ + " vel", (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * pi * SwerveConstants::TREAD_RADIUS);
-    //Heavy ratio to degrees
+    
+    //TLDR: Heavy ratio to m/s
+
+    //ang vel = rad/s = (ticks/100ms) / (ticks/revolution) * (1s/100ms) * (gear ratio) * (radians/revolution)
+    //radius = TREAD_RADIUS
+    //Tangential velocity = m/s = ang vel * radius
     return (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * pi * SwerveConstants::TREAD_RADIUS;
 
 }

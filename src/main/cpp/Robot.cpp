@@ -10,7 +10,7 @@
 
 Robot::Robot() : autoPaths_(swerveDrive_, arm_)
 {
-
+    //Extra periodic function called every 5_ms, with a 2_ms offset to the default periodic call
     AddPeriodic(
         [&]
         {
@@ -19,7 +19,7 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
             frc::SmartDashboard::PutNumber("yaw", yaw);
             swerveDrive_->periodic(yaw);
 
-            if (frc::DriverStation::IsAutonomous() && frc::DriverStation::IsEnabled())
+            if (frc::DriverStation::IsAutonomous() && frc::DriverStation::IsEnabled())//Autonomous
             {
                 autoPaths_.periodic();
             }

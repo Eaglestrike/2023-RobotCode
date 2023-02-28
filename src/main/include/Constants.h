@@ -122,7 +122,7 @@ namespace SwerveConstants
     const double WIDTH = 29; //Change to 22 
     const double LENGTH = 29;
     const double WHEEL_DIAGONAL = 0.8128;
-    const double TREAD_RADIUS = 0.0508; 
+    const double TREAD_RADIUS = 0.0508; //Meters
     const double DRIVE_GEAR_RATIO = 1/6.12; 
 
     //const double trPosAngle = atan2((SwerveConstants::WIDTH/2), (SwerveConstants::LENGTH/2));

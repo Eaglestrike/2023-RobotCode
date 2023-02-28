@@ -50,7 +50,7 @@ private:
     TwoJointArm* arm_ = new TwoJointArm();
     AutoPaths autoPaths_;
 
-    double yawOffset_;
+    double yawOffset_;//Yaw offset to field-orient, degrees
 
 
     bool cubeIntaking_, coneIntaking_;

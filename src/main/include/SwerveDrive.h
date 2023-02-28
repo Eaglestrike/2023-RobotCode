@@ -43,6 +43,7 @@ class SwerveDrive
         int getScoringPos();
         
     private:
+        //Swerve modules
         SwerveModule* topRight_ = new SwerveModule(SwerveConstants::TR_TURN_ID, SwerveConstants::TR_DRIVE_ID, SwerveConstants::TR_CANCODER_ID, SwerveConstants::TR_CANCODER_OFFSET);
         SwerveModule* topLeft_ = new SwerveModule(SwerveConstants::TL_TURN_ID, SwerveConstants::TL_DRIVE_ID, SwerveConstants::TL_CANCODER_ID, SwerveConstants::TL_CANCODER_OFFSET);
         SwerveModule* bottomRight_ = new SwerveModule(SwerveConstants::BR_TURN_ID, SwerveConstants::BR_DRIVE_ID, SwerveConstants::BR_CANCODER_ID, SwerveConstants::BR_CANCODER_OFFSET);
@@ -50,13 +51,13 @@ class SwerveDrive
 
         SwervePath tagPath_{SwerveConstants::MAX_LA, SwerveConstants::MAX_LV, SwerveConstants::MAX_AA, SwerveConstants::MAX_AV};
 
-        double robotX_, robotY_, yaw_;
+        double robotX_, robotY_, yaw_; //Robot's position and orientation on the field
         TrajectoryCalc xTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yawTagTraj_{SwerveConstants::MAX_AV * 0.7, SwerveConstants::MAX_AA * 0.7, 0, 0, 0, 0};
         //double aprilTagX_, aprilTagY_;
 
-        double prevTime_, dT_;
+        double prevTime_, dT_; //Variables to keep track of time and time between frames 
 
         frc::Timer timer_;
         double tagFollowingStartTime_;
