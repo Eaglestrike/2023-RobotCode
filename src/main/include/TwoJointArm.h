@@ -37,6 +37,7 @@ class TwoJointArm
         void periodic();
         void zeroArms();
         void zeroArmsToStow();
+        void reset();
         void setPosTo(TwoJointArmProfiles::Positions setPosition);
         void toggleForward();
         void toggleForwardCubeIntake();
@@ -120,6 +121,8 @@ class TwoJointArm
         bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, 
         gotCone_, eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_, switchingToCubeIntake_, ciSwitchFirstStageDone_, cubeIntakeDown_, coneIntakeDown_;
         pair<bool, bool> homing_;
+        pair<bool, bool> homingFirstStage_;
+        pair<bool, bool> homingSecondStage_;
         bool homingRaising_;
         double prevShoulderVolts_, prevElbowVolts_;
         double prevElbowPos_, elbowVel_, elbowVelTime_, prevShoulderPos_, shoulderVel_, shoulderVelTime_;
@@ -142,6 +145,7 @@ class TwoJointArm
         void followTaskSpaceProfile(double time);//COULDO combine into one function to calculate
         void followJointSpaceProfile();
         void home();
+        void homeNew();
 
         void setBrakes(bool shoulder, bool elbow);
 

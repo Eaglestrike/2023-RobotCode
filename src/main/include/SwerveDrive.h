@@ -7,6 +7,7 @@
 #include "Constants.h"
 #include "SwervePose.h"
 #include "SwervePath.h"
+#include <map>
 
 #include "SwerveModule.h"
 
@@ -20,7 +21,7 @@ class SwerveDrive
         SwerveDrive();
         void setYaw(double yaw);
         
-        void periodic(double yaw);
+        void periodic(double yaw, double tilt);
         void teleopPeriodic(Controls* controls, bool forward, bool panic);
         void drive(double xSpeed, double ySpeed, double turn);
         void drivePose(SwervePose pose);
@@ -37,7 +38,7 @@ class SwerveDrive
         double getYaw();
         void setPos(pair<double, double> xy);
 
-        void updateAprilTagFieldXY();
+        void updateAprilTagFieldXY(double tilt);
         pair<double, double> checkScoringPos();
         void setScoringPos(int scoringPos);
         int getScoringPos();
@@ -65,5 +66,7 @@ class SwerveDrive
 
         bool trackingTag_, foundTag_, isHoldingYaw_;
         int setTagPos_, prevTag_, prevUniqueVal_;
+
+        map<double, pair<pair<double, double>, pair<double, double>>> prevPoses_;
 
 };

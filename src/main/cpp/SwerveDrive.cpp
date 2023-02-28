@@ -30,11 +30,11 @@ void SwerveDrive::setYaw(double yaw)
     yaw_ = yaw;
 }
 
-void SwerveDrive::periodic(double yaw)
+void SwerveDrive::periodic(double yaw, double tilt)
 {
     setYaw(yaw);
     calcOdometry();
-    updateAprilTagFieldXY();
+    updateAprilTagFieldXY(tilt);
 }
 
 void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
@@ -42,8 +42,8 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
     frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
 
-    frc::SmartDashboard::PutBoolean("LJT", controls->lJoyTriggerPressed());
-    if (controls->lJoyTriggerPressed())
+    // frc::SmartDashboard::PutBoolean("LJT", controls->lJoyTriggerDown());
+    if (controls->lJoyTriggerDown())
     {
         if (!trackingTag_)
         {
@@ -71,6 +71,8 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
                 drive(xStrafe, yStrafe, turn);
                 return;
             }
+
+            holdingYaw_ = false;
 
             double wantedX = scoringPos.first;
             double wantedY = scoringPos.second;
@@ -246,7 +248,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
         drivePose(*wantedPose);
         delete wantedPose;
     }
-    else if (!controls->autoBalancePressed())
+    else if (!controls->autoBalanceDown())
     {
         trackingTag_ = false;
         double xStrafe, yStrafe;
@@ -274,32 +276,32 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
  */
 void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
 {
-    // if (turn == 0)
-    // {
-    //     if (!isHoldingYaw_)
-    //     {
-    //         holdingYaw_ = yaw_;
-    //         isHoldingYaw_ = true;
-    //     }
-    //     else if(abs(holdingYaw_ = yaw_) > 15)
-    //     {
-    //         holdingYaw_ = yaw_;
-    //     }
+    if (turn == 0)
+    {
+        if (!isHoldingYaw_)
+        {
+            holdingYaw_ = yaw_;
+            isHoldingYaw_ = true;
+        }
+        else if (abs(holdingYaw_ - yaw_) > 15)
+        {
+            holdingYaw_ = yaw_;
+        }
 
-    //     double yawError = (holdingYaw_ = yaw_);
-    //     if (abs(yawError) < 1)
-    //     {
-    //         turn = 0;
-    //     }
-    //     else
-    //     {
-    //         turn = -(yawError) * 0.01;
-    //     }
-    // }
-    // else
-    // {
-    //     isHoldingYaw_ = false;
-    // }
+        double yawError = (holdingYaw_ - yaw_);
+        if (abs(yawError) < 1)
+        {
+            turn = 0;
+        }
+        else
+        {
+            turn = -(yawError)*0.02;
+        }
+    }
+    else
+    {
+        isHoldingYaw_ = false;
+    }
 
     calcModules(xSpeed, ySpeed, /*0, 0,*/ turn, /*0,*/ false);
 
@@ -366,13 +368,13 @@ void SwerveDrive::drivePose(SwervePose pose)
         {
             // adjust x because x path done
             double xError = (pose.getX() - robotX_);
-            if (abs(xError) < 0.03)
+            if (abs(xError) < 0.015)
             {
                 xVel = 0;
             }
             else
             {
-                xVel = (pose.getX() - robotX_) * SwerveConstants::klP * 1;
+                xVel = (pose.getX() - robotX_) * SwerveConstants::klP * 1.0;
             }
         }
         else
@@ -385,13 +387,13 @@ void SwerveDrive::drivePose(SwervePose pose)
         {
             // adjust y because y path done
             double yError = (pose.getY() - robotY_);
-            if (abs(yError) < 0.03)
+            if (abs(yError) < 0.015)
             {
                 yVel = 0;
             }
             else
             {
-                yVel = (pose.getY() - robotY_) * SwerveConstants::klP * 6.0; // more
+                yVel = (pose.getY() - robotY_) * SwerveConstants::klP * 1.0; // more
             }
         }
         else
@@ -404,13 +406,13 @@ void SwerveDrive::drivePose(SwervePose pose)
         {
             // adjust yaw because yaw path done
             double yawError = (pose.getYaw() - yaw_);
-            if (abs(yawError) < 1)
+            if (abs(yawError) < 0.5)
             {
                 yawVel = 0;
             }
             else
             {
-                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 4.0; // 166.67
+                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 6.0; // 166.67
             }
         }
         else
@@ -653,6 +655,20 @@ void SwerveDrive::calcOdometry()
     // Euler's integration
     robotX_ += xyVel.first * dT_;
     robotY_ += xyVel.second * dT_;
+
+    if (foundTag_)
+    {
+        pair<double, double> xy = {robotX_, robotY_};
+        pair<pair<double, double>, pair<double, double>> pose{xy, xyVel};
+
+        prevPoses_.insert(pair<double, pair<pair<double, double>, pair<double, double>>>{time, pose});
+
+        map<double, pair<pair<double, double>, pair<double, double>>>::iterator it;
+        for (it = prevPoses_.begin(); it->first < (time - SwerveConstants::POSE_HISTORY_LENGTH); prevPoses_.erase(it++))
+            ;
+
+        frc::SmartDashboard::PutNumber("Prev Pose Count", prevPoses_.size());
+    }
 }
 
 /**
@@ -663,6 +679,7 @@ void SwerveDrive::reset()
     robotX_ = 0;
     robotY_ = 0;
     foundTag_ = false;
+    prevPoses_.clear();
 }
 
 double SwerveDrive::getX()
@@ -728,7 +745,7 @@ void SwerveDrive::setPos(pair<double, double> xy)
 /**
  * Using april tags to update field odometry
  */
-void SwerveDrive::updateAprilTagFieldXY()
+void SwerveDrive::updateAprilTagFieldXY(double tilt)
 {
     //-1 is no april tag
     double defaultVal[] = {-1};
@@ -764,16 +781,12 @@ void SwerveDrive::updateAprilTagFieldXY()
         return;
     }
 
-    frc::SmartDashboard::PutNumber("TEST Z ANG", testTagZAng);
+    // frc::SmartDashboard::PutNumber("TEST Z ANG", testTagZAng);
     testTagZAng *= -(pi / 180.0);
 
     // frc::SmartDashboard::PutNumber("Tag x", tagX);
     // frc::SmartDashboard::PutNumber("Tag y", tagY);
     // frc::SmartDashboard::PutNumber("Tag ZAng", tagZAng);
-
-    // Rotate the tag by the seen angle to orient displacement to field orient
-    double orientedTagX = tagX * cos(testTagZAng) + tagY * sin(testTagZAng);
-    double orientedTagY = tagX * -sin(testTagZAng) + tagY * cos(testTagZAng);
 
     if (uniqueVal == prevUniqueVal_)
     {
@@ -798,6 +811,15 @@ void SwerveDrive::updateAprilTagFieldXY()
         return;
     }
     prevTag_ = tagID; // Set the past known tag to be this tag
+
+    if(abs(tilt) > 5)
+    {
+        return;
+    }
+
+    // Rotate the tag by the seen angle to orient displacement to field orient
+    double orientedTagX = tagX * cos(testTagZAng) + tagY * sin(testTagZAng);
+    double orientedTagY = tagX * -sin(testTagZAng) + tagY * cos(testTagZAng);
 
     // Get xy of field tag position
     double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0];
@@ -848,11 +870,36 @@ void SwerveDrive::updateAprilTagFieldXY()
         //      robotX_ += (-robotX_ + aprilTagX) * 0.01;
         //      robotY_ += (-robotY_ + aprilTagY) * 0.01;
         //  }
-        pair<double, double> xyVel = getXYVel();
-        double vel = sqrt(xyVel.first * xyVel.first + xyVel.second * xyVel.second);
 
-        robotX_ += (-robotX_ + aprilTagX) * (0.1 / (1 + 1 * vel));
-        robotY_ += (-robotY_ + aprilTagY) * (0.1 / (1 + 1 * vel));
+        //pair<double, double> xyVel = getXYVel();
+        //double vel = sqrt(xyVel.first * xyVel.first + xyVel.second * xyVel.second);
+
+        // robotX_ += (-robotX_ + aprilTagX) * (0.1 / (1 + 1 * vel));
+        // robotY_ += (-robotY_ + aprilTagY) * (0.1 / (1 + 1 * vel));
+
+        double time = timer_.GetFPGATimestamp().value();
+        auto historicalPose = prevPoses_.lower_bound(time - SwerveConstants::CAMERA_DELAY);
+        if (historicalPose != prevPoses_.end() && abs(historicalPose->first - (time - SwerveConstants::CAMERA_DELAY) < 0.007))
+        {
+            frc::SmartDashboard::PutNumber("HX", historicalPose->second.first.first);
+            frc::SmartDashboard::PutNumber("HY", historicalPose->second.first.second);
+            double vel = sqrt(historicalPose->second.second.first * historicalPose->second.second.first + historicalPose->second.second.second * historicalPose->second.second.second);
+
+            double xDiff = aprilTagX - historicalPose->second.first.first;
+            double yDiff = aprilTagY - historicalPose->second.first.second;
+            frc::SmartDashboard::PutNumber("DiffX", xDiff);
+            frc::SmartDashboard::PutNumber("DiffY", yDiff);
+
+            map<double, pair<pair<double, double>, pair<double, double>>>::iterator it;
+            for (it = prevPoses_.begin(); it != prevPoses_.end(); it++)
+            {
+                it->second.first.first += xDiff * 0.5 / (1.0 + 0 * vel);
+                it->second.first.second += yDiff * 0.5 / (1.0 + 0 * vel);
+            }
+
+            robotX_ = prevPoses_.rbegin()->second.first.first;
+            robotY_ = prevPoses_.rbegin()->second.first.second;
+        }
     }
 }
 

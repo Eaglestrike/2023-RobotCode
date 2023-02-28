@@ -18,7 +18,14 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
             Helpers::normalizeAngle(yaw);
             frc::SmartDashboard::PutNumber("yaw", yaw);
             frc::SmartDashboard::PutBoolean("navx alive", navx_->IsConnected());
-            swerveDrive_->periodic(yaw);
+
+            double ang = (navx_->GetYaw() - yawOffset_) * pi / 180.0;                                              // Radians
+            double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
+            double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
+            double tilt = pitch * sin(ang) - roll * cos(ang);
+
+            swerveDrive_->periodic(yaw, tilt);
+
             arm_->periodic();
             cubeIntake_.Periodic();
             arm_->updateIntakeStates(cubeIntake_.getState() == PneumaticsIntake::DEPLOYED, false); // TODO here for cone intake
@@ -47,52 +54,74 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
 
 void Robot::RobotInit()
 {
-    auto1Chooser_.SetDefaultOption("Preloaded Cone", AutoPaths::PRELOADED_CONE);
-    auto1Chooser_.AddOption("Preloaded Cube", AutoPaths::PRELOADED_CUBE);
-    // auto1Chooser_.AddOption("First Cone", AutoPaths::FIRST_CONE);
-    // auto1Chooser_.AddOption("First Cube", AutoPaths::FIRST_CUBE);
+    auto1Chooser_.SetDefaultOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
+    auto1Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
+    auto1Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
+    auto1Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto1Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
+    // auto1Chooser_.AddOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
+    // auto1Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
+    // auto1Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
     // auto1Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
-    // auto1Chooser_.AddOption("Second Cube", AutoPaths::SECOND_CUBE);
+    // auto1Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
+    // auto1Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
+    // auto1Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
     auto1Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto1Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto1Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto1Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     frc::SmartDashboard::PutData("First Auto Stage", &auto1Chooser_);
 
-    auto2Chooser_.SetDefaultOption("First Cube", AutoPaths::FIRST_CUBE);
-    // auto2Chooser_.AddOption("Preloaded Cone", AutoPaths::PRELOADED_CONE);
-    // auto2Chooser_.AddOption("Preloaded Cube", AutoPaths::PRELOADED_CUBE);
-    // auto2Chooser_.AddOption("First Cone", AutoPaths::FIRST_CONE); //this
+    // auto2Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
+    // auto2Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
+    // auto2Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
+    // auto2Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto2Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
+    auto2Chooser_.SetDefaultOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
+    // auto2Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
+    auto2Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
     // auto2Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
-    // auto2Chooser_.AddOption("Second Cube", AutoPaths::SECOND_CUBE);
+    // auto2Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
+    // auto2Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
+    // auto2Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
     auto2Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto2Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto2Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto2Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
-    auto2Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK); //NEW
     frc::SmartDashboard::PutData("Second Auto Stage", &auto2Chooser_);
 
-    auto3Chooser_.SetDefaultOption("AUTO_DOCK", AutoPaths::AUTO_DOCK);
-    // auto3Chooser_.AddOption("Preloaded Cone", AutoPaths::PRELOADED_CONE);
-    // auto3Chooser_.AddOption("Preloaded Cube", AutoPaths::PRELOADED_CUBE);
-    auto3Chooser_.AddOption("First Cone", AutoPaths::FIRST_CONE);
-    auto3Chooser_.AddOption("First Cube", AutoPaths::FIRST_CUBE);
-    // auto3Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE); //this
-    auto3Chooser_.AddOption("Second Cube", AutoPaths::SECOND_CUBE);
+    // auto3Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
+    // auto3Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
+    // auto3Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
+    // auto3Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto3Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
+    auto3Chooser_.AddOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
+    // auto3Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
+    auto3Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
+    // auto3Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
+    auto3Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
+    // auto3Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
+    auto3Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
+    auto3Chooser_.SetDefaultOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto3Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto3Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto3Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
-    auto3Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK); //NEW
     frc::SmartDashboard::PutData("Third Auto Stage", &auto3Chooser_);
 
+    // auto4Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
+    // auto4Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
+    // auto4Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
+    // auto4Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto4Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
+    // auto4Chooser_.AddOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
+    // auto4Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
+    // auto4Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
+    // auto4Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
+    auto4Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
+    // auto4Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
+    auto4Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
+    auto4Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto4Chooser_.SetDefaultOption("Nothing", AutoPaths::NOTHING);
-    // auto4Chooser_.AddOption("Preloaded Cone", AutoPaths::PRELOADED_CONE);
-    // auto4Chooser_.AddOption("Preloaded Cube", AutoPaths::PRELOADED_CUBE);
-    // auto4Chooser_.AddOption("First Cone", AutoPaths::FIRST_CONE);
-    // auto4Chooser_.AddOption("First Cube", AutoPaths::FIRST_CUBE);
-    auto4Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
-    auto4Chooser_.AddOption("Second Cube", AutoPaths::SECOND_CUBE);
-    auto4Chooser_.AddOption("AUTO_DOCK", AutoPaths::AUTO_DOCK);
     auto4Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto4Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     frc::SmartDashboard::PutData("Fourth Auto Stage", &auto4Chooser_);
@@ -166,8 +195,14 @@ void Robot::AutonomousInit()
 {
     arm_->stop();
     arm_->resetIntaking();
-    arm_->zeroArmsToStow();
-    armsZeroed_ = true;
+
+    if (!armsZeroed_)
+    {
+        arm_->zeroArmsToStow();
+        armsZeroed_ = true;
+    }
+
+    arm_->reset();
 
     AutoPaths::Path action1 = auto1Chooser_.GetSelected();
     AutoPaths::Path action2 = auto2Chooser_.GetSelected();
@@ -270,7 +305,7 @@ void Robot::TeleopInit()
 {
     // frc::SmartDashboard::PutNumber("Set Theta", 0);
     // frc::SmartDashboard::PutNumber("Set Phi", 0);
-    // frc::SmartDashboard::PutNumber("Swerve Volts", 0);
+    frc::SmartDashboard::PutNumber("Swerve Volts", 0);
 
     cubeIntaking_ = false;
     coneIntaking_ = false;
@@ -288,14 +323,14 @@ void Robot::TeleopPeriodic()
 
     pair<bool, bool> intakesNeededDown = arm_->intakesNeededDown();
 
-    if (controls_->autoBalancePressed())
+    if (controls_->autoBalanceDown())
     {
         // ang, pitch, roll
         // 0,  - ,  0
         // 90, 0, -
         // 180, +, 0
         // 270, 0, +
-        double ang = (navx_->GetYaw()-yawOffset_) * pi / 180.0;                                                 // Radians
+        double ang = (navx_->GetYaw() - yawOffset_) * pi / 180.0;                                              // Radians
         double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
         double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
         double tilt = pitch * sin(ang) - roll * cos(ang);
@@ -320,19 +355,19 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if (controls_->dPadDownPressed())
+    if (controls_->dPadDownDown() && controls_->lXTriggerDown() && controls_->rXTriggerDown())
     {
         arm_->zeroArms();
         armsZeroed_ = true;
     }
 
-    if (controls_->lXTriggerPressed())
+    if (controls_->lXTriggerDown())
     {
-        arm_->manualControl(controls_->xboxLJoyY() * TwoJointArmConstants::SHOULDER_ARM_MAX_VEL * 0.5, controls_->xboxRJoyY() * TwoJointArmConstants::ELBOW_ARM_MAX_VEL * 0.5);
+        arm_->manualControl(controls_->xboxLJoyY() * abs(controls_->xboxLJoyY()), controls_->xboxRJoyY() * abs(controls_->xboxRJoyY()));
         cubeIntaking_ = false;
         coneIntaking_ = false;
     }
-    else if(armsZeroed_)
+    else if (armsZeroed_)
     {
         // if(controls_->aPressed())
         // {
@@ -348,14 +383,14 @@ void Robot::TeleopPeriodic()
             arm_->stop();
         }
 
-        if (controls_->xPressed())
+        if (controls_->xDown())
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
                 arm_->setPosTo(TwoJointArmProfiles::PLAYER_STATION);
             }
         }
-        else if (controls_->bPressed())
+        else if (controls_->bDown())
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
@@ -381,14 +416,14 @@ void Robot::TeleopPeriodic()
                 }
             }
         }
-        else if (controls_->aPressed())
+        else if (controls_->aDown())
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
                 arm_->setPosTo(TwoJointArmProfiles::STOWED);
             }
         }
-        else if (controls_->yPressed())
+        else if (controls_->yDown())
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
@@ -439,7 +474,7 @@ void Robot::TeleopPeriodic()
             //     cubeIntaking_ = false;
             // }
         }
-        else if (controls_->dPadUpPressed())
+        else if (controls_->dPadUpDown())
         {
             if (cubeIntaking_)
             {
@@ -457,7 +492,7 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if (controls_->lBumperPressed())
+    if (controls_->lBumperDown())
     {
         arm_->stop();
         arm_->resetIntaking();

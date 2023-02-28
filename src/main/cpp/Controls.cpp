@@ -64,7 +64,7 @@ double Controls::getTurn()
     return turn;
 }
 
-bool Controls::lJoyTriggerPressed()
+bool Controls::lJoyTriggerDown()
 {
     return lJoy_.GetTrigger();
 }
@@ -74,22 +74,22 @@ bool Controls::rJoyTriggerPressed()
     return rJoy_.GetTriggerPressed();
 }
 
-bool Controls::aPressed()
+bool Controls::aDown()
 {
     return xbox_.GetRawButton(InputConstants::A_BUTTON);
 }
 
-bool Controls::bPressed()
+bool Controls::bDown()
 {
     return xbox_.GetRawButton(InputConstants::B_BUTTON);
 }
 
-bool Controls::xPressed()
+bool Controls::xDown()
 {
     return xbox_.GetRawButton(InputConstants::X_BUTTON);
 }
 
-bool Controls::yPressed()
+bool Controls::yDown()
 {
     return xbox_.GetRawButton(InputConstants::Y_BUTTON);
 }
@@ -99,7 +99,7 @@ bool Controls::rBumperPressed()
     return xbox_.GetRawButtonPressed(InputConstants::R_BUMPER);
 }
 
-bool Controls::lBumperPressed()
+bool Controls::lBumperDown()
 {
     return xbox_.GetRawButton(InputConstants::L_BUMPER);
 }
@@ -109,12 +109,12 @@ bool Controls::fieldOrient()
     return xbox_.GetRawButton(InputConstants::FIELD_ORIENT_BUTTON);
 }
 
-bool Controls::rXTriggerPressed()
+bool Controls::rXTriggerDown()
 {
     return xbox_.GetRawAxis(InputConstants::XBOX_RTRIGGER) > 0.75;
 }
 
-bool Controls::lXTriggerPressed()
+bool Controls::lXTriggerDown()
 {
     return xbox_.GetRawAxis(InputConstants::XBOX_LTRIGGER) > 0.75;
 }
@@ -139,7 +139,7 @@ bool Controls::rLowerButtonPressed()
     return rJoy_.GetRawButtonPressed(InputConstants::LOWER_BUTTON);
 }
 
-bool Controls::autoBalancePressed()
+bool Controls::autoBalanceDown()
 {
     return rJoy_.GetRawButton(InputConstants::AUTO_BALANCE_BUTTON);
 }
@@ -161,11 +161,11 @@ double Controls::xboxRJoyY()
     return -xbox_.GetRawAxis(InputConstants::XBOX_RJOY_Y);
 }
 
-bool Controls::dPadUpPressed()
+bool Controls::dPadUpDown()
 {
     return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
 }
-bool Controls::dPadDownPressed()
+bool Controls::dPadDownDown()
 {
     return (xbox_.GetPOV() < 190 && xbox_.GetPOV() > 170);
 }
