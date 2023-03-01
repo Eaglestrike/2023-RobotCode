@@ -14,29 +14,29 @@ class Controls
         double getXStrafe();
         double getYStrafe();
         double getTurn();
-        bool lJoyTriggerPressed();
+        bool lJoyTriggerDown();
         bool rJoyTriggerPressed();
         bool outakePressed();
         bool intakePressed();
         bool lLowerButtonPressed();
         bool rLowerButtonPressed();
-        bool autoBalancePressed();
+        bool autoBalanceDown();
 
         double xboxLJoyX();
         double xboxLJoyY();
         double xboxRJoyX();
         double xboxRJoyY();
 
-        bool aPressed();
-        bool bPressed();
-        bool xPressed();
-        bool yPressed();
+        bool aDown();
+        bool bDown();
+        bool xDown();
+        bool yDown();
         bool rBumperPressed();
-        bool lBumperPressed();
-        bool rXTriggerPressed();
-        bool lXTriggerPressed();
-        bool dPadUpPressed();
-        bool dPadDownPressed();
+        bool lBumperDown();
+        bool rXTriggerDown();
+        bool lXTriggerDown();
+        bool dPadUpDown();
+        bool dPadDownDown();
         bool dPadLeftPressed();
         bool dPadRightPressed();
 

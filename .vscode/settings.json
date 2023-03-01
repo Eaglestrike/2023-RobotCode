@@ -29,6 +29,7 @@
     "span": "cpp",
     "regex": "cpp",
     "iostream": "cpp",
-    "cmath": "cpp"
+    "cmath": "cpp",
+    "*.inc": "cpp"
   }
 }

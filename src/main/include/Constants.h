@@ -53,10 +53,13 @@ namespace FieldConstants
     const double BOTTOM_CONE_Y = 0.5128;
     const double TOP_CONE_Y = 4.983;
     const double BOTTOM_CUBE_Y = 1.0716;
+    const double MID_CUBE_Y = 2.748026;
     const double TOP_CUBE_Y = 4.4244;
 
-    const double BLUE_SCORING_X = 1.923 - 0.019 - 0.127; // 1.923
-    const double RED_SCORING_X = 14.617 + 0.019 + 0.127; // 14.617
+
+    const double BLUE_SCORING_X = 1.923 - 0.019 - 0.127 - 0.03; // 1.923
+    const double RED_SCORING_X = 14.617 + 0.019 + 0.127 + 0.03; // 14.617
+
     const double BLUE_PS_X = TAG_XY[3][0] - 0.5;
     const double RED_PS_X = TAG_XY[4][0] + 0.5;
 
@@ -120,11 +123,15 @@ namespace InputConstants
 
 namespace SwerveConstants
 {
-    const double WIDTH = 0.6858;
-    const double LENGTH = 0.6858;
+    const double WIDTH = 0.6858 + 0.152;
+    const double LENGTH = 0.6858 + 0.152;
     const double WHEEL_DIAGONAL = 0.8128;
     const double TREAD_RADIUS = 0.0508;
     const double DRIVE_GEAR_RATIO = 1 / 6.12;
+
+
+    const double POSE_HISTORY_LENGTH = 0.3;
+    const double CAMERA_DELAY = 0.2;
 
     // const double trPosAngle = atan2((SwerveConstants::WIDTH/2), (SwerveConstants::LENGTH/2));
     // const double tlPosAngle = -trPosAngle;
@@ -151,8 +158,8 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = 74.26;  // 75.85
     const double BL_CANCODER_OFFSET = 41.6;   // 43.2
 
-    const double MAX_LA = 1;   // 2.5
-    const double MAX_LV = 3;   // 5 (past year, 3, 4) (1.5, 4, stable but scary)
+    const double MAX_LA = 2;
+    const double MAX_LV = 3;   //(past year: 3, 4) (stable but scary: 1.5, 4) (stable but slow: 1, 3) (2.5, 5 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
 
@@ -200,19 +207,19 @@ namespace TwoJointArmConstants
     const double ELBOW_MIN_ANG = 0;
     const double ELBOW_MAX_ANG = 360;
 
-    const double SHOULDER_ARM_MAX_VEL = 50;
+    const double SHOULDER_ARM_MAX_VEL = 50; //50, 180, 180, 180
     const double ELBOW_ARM_MAX_VEL = 180;
-    const double SHOULDER_ARM_MAX_ACC = 50;
+    const double SHOULDER_ARM_MAX_ACC = 180;
     const double ELBOW_ARM_MAX_ACC = 180;
 
     const int SHOULDER_MASTER_ID = 6;
     const int SHOULDER_SLAVE_ID = 15;
     const int ELBOW_MASTER_ID = 8;
     const int ELBOW_SLAVE_ID = 3;
-    const int SHOULDER_BRAKE_ID = 4;
-    const int ELBOW_BRAKE_ID = 5;
+    const int SHOULDER_BRAKE_ID = 5;
+    const int ELBOW_BRAKE_ID = 4;
     const int SHOULDER_ENCODER_ID = 0;
-    const double SHOULDER_ENCODER_OFFSET = -51;
+    const double SHOULDER_ENCODER_OFFSET = -51 - 1.68;
 
     const double UPPER_ARM_I = 0.206;
     const double FOREARM_I = 0.22; // 0.32, 0.35?
@@ -259,9 +266,9 @@ namespace TwoJointArmConstants
         {
             {0.3526, -0.1769, -18.5, 164.5}, // stowed, -18.5, 164.5
             {0.55296, -0.26022, 13, 145},    // cube intake, 13, 145
-            {0.80425, 0.61041, -18.9, 113},  // player station, -18.9, 113
+            {1.03886, 0.65126, 0, 94},     // player station, 0, 94 {1.03491, 0.60782, 0, 96.4} 
             {1.14708, 0.63964, 8.62, 85.57}, // mid, 2.6, 92
-            {1.49643, 0.92416, 52.4, 10},    // high, 52.4, 10
+            {1.46122, 0.98515, 52, 6.8},     // high, 52, 6.8 {1.49643, 0.92416, 52.4, 10}
             {0.91348, 0.29933, -3, 117},     // cube mid, -3, 117
             {1.31242, 0.68936, 22, 67},      // cube high, 22, 67
             {0.6364, -0.463, 39, 131}        // cone intake, 39, 131
