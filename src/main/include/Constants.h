@@ -204,7 +204,7 @@ namespace TwoJointArmConstants
     const double ELBOW_MIN_ANG = 0;
     const double ELBOW_MAX_ANG = 360;
 
-    const double SHOULDER_ARM_MAX_VEL = 50; //50, 180, 180, 180
+    const double SHOULDER_ARM_MAX_VEL = 50; // 50, 180, 180, 180
     const double ELBOW_ARM_MAX_VEL = 180;
     const double SHOULDER_ARM_MAX_ACC = 180;
     const double ELBOW_ARM_MAX_ACC = 180;
@@ -263,7 +263,7 @@ namespace TwoJointArmConstants
         {
             {0.3526, -0.1769, -18.5, 164.5}, // stowed, -18.5, 164.5
             {0.55296, -0.26022, 13, 145},    // cube intake, 13, 145
-            {1.03886, 0.65126, 0, 94},     // player station, 0, 94 {1.03491, 0.60782, 0, 96.4} 
+            {1.03886, 0.65126, 0, 94},       // player station, 0, 94 {1.03491, 0.60782, 0, 96.4}
             {1.14708, 0.63964, 8.62, 85.57}, // mid, 2.6, 92
             {1.46122, 0.98515, 52, 6.8},     // high, 52, 6.8 {1.49643, 0.92416, 52.4, 10}
             {0.91348, 0.29933, -3, 117},     // cube mid, -3, 117
@@ -306,8 +306,10 @@ namespace MotorIntakeConstants
 
     const double ENCODER_DEPLOYED_TARGET = 512;
 
-    const double DEPLOYER_MAX_VOLTAGE = 0; // TODO measure capped voltage for deployer
-    const double ROLLER_MAX_VOLTAGE = 0;   // TODO measure voltage for cube/cone to actually pass through
+    const double DEPLOYER_MAX_VOLTAGE = 0;   // TODO measure capped voltage for deployer
+    const double ROLLER_INTAKE_VOLTAGE = 0;  // TODO measure voltage for cube/cone to actually pass through
+    const double ROLLER_OUTTAKE_VOLTAGE = 0; // TODO measure voltage for cube/cone to actually pass through
+    const double ROLLER_STALL_CURRENT = 0;   // TODO measure current draw threshold when cone is in intake
 
     const double kP = 0; // TODO tune
     const double kI = 0; // TODO tune
