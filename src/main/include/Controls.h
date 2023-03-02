@@ -40,9 +40,15 @@ class Controls
         bool dPadLeftPressed();
         bool dPadRightPressed();
 
+        bool inchingUpPressed();
+        bool inchingDownPressed();
+        bool inchingLeftPressed();
+        bool inchingRightPressed();
+
         bool fieldOrient();
 
         int checkScoringButtons();
+        int checkLevelButtons();
 
     private:
         frc::Joystick lJoy_;
@@ -50,5 +56,5 @@ class Controls
         frc::Joystick xbox_;
         frc::Joystick buttonBoard_;
 
-        bool dPadLeftDown_, dPadRightDown_, intakeDown_, outakeDown_;
+        bool dPadLeftDown_, dPadRightDown_, intakeDown_, outakeDown_, inchingUpDown_, inchingDownDown_, inchingLeftDown_, inchingRightDown_;
 };

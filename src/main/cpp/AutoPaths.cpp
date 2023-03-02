@@ -40,18 +40,134 @@ void AutoPaths::setPath(Path path)
     }
     case PRELOADED_CONE_MID:
     {
+        double x, y, yaw;
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            x = FieldConstants::BLUE_SCORING_X;
+            yaw = 90;
+            if (mirrored_)
+            {
+                y = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+        else
+        {
+            x = FieldConstants::RED_SCORING_X;
+            yaw = -90;
+            if (!mirrored_)
+            {
+                y = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+
+        swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
     case PRELOADED_CUBE_MID:
     {
+        double x, y, yaw;
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            x = FieldConstants::BLUE_SCORING_X;
+            yaw = 90;
+            if (mirrored_)
+            {
+                y = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+        else
+        {
+            x = FieldConstants::RED_SCORING_X;
+            yaw = -90;
+            if (!mirrored_)
+            {
+                y = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+
+        swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
     case PRELOADED_CONE_HIGH:
     {
+        double x, y, yaw;
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            x = FieldConstants::BLUE_SCORING_X;
+            yaw = 90;
+            if (mirrored_)
+            {
+                y = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+        else
+        {
+            x = FieldConstants::RED_SCORING_X;
+            yaw = -90;
+            if (!mirrored_)
+            {
+                y = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+
+        swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
     case PRELOADED_CUBE_HIGH:
     {
+        double x, y, yaw;
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            x = FieldConstants::BLUE_SCORING_X;
+            yaw = 90;
+            if (mirrored_)
+            {
+                y = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+        else
+        {
+            x = FieldConstants::RED_SCORING_X;
+            yaw = -90;
+            if (!mirrored_)
+            {
+                y = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+            else
+            {
+                y = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+            }
+        }
+
+        swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
     case FIRST_CONE_MID:
@@ -506,7 +622,7 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
     {
     case PRELOADED_CONE_MID:
     {
-        armPosition_ = TwoJointArmProfiles::MID;
+        armPosition_ = TwoJointArmProfiles::PLAYER_STATION; //MID THING
         forward_ = true;
         break;
     }
@@ -605,12 +721,12 @@ void AutoPaths::periodic()
     bool pointOver = false;
     if (path_ == PRELOADED_CONE_MID || path_ == PRELOADED_CUBE_MID || path_ == PRELOADED_CONE_HIGH || path_ == PRELOADED_CUBE_HIGH)
     {
+        //swerveDrive_->drive(0, 0, 0); 
         if (nextPointReady_)
         {
             pathSet_ = false;
             nextPointReady_ = false;
             ++actionNum_;
-            swerveDrive_->drive(0, 0, 0); //HERE
             startTimer();
             return;
         }
@@ -963,11 +1079,11 @@ void AutoPaths::periodic()
         wheelSpeed_ = 0;
         cubeIntaking_ = false;
         coneIntaking_ = false;
-        armPosition_ = TwoJointArmProfiles::MID;
+        armPosition_ = TwoJointArmProfiles::PLAYER_STATION; //MID THING
 
-        if (arm_->getPosition() == TwoJointArmProfiles::MID && arm_->getState() == TwoJointArm::HOLDING_POS)
+        if (arm_->getPosition() == TwoJointArmProfiles::PLAYER_STATION && arm_->getState() == TwoJointArm::HOLDING_POS) //MID THING
         {
-            wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
+            //wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
             clawOpen_ = true;
             if (!placingTimerStarted_)
             {
@@ -1034,7 +1150,7 @@ void AutoPaths::periodic()
 
         if (arm_->getPosition() == TwoJointArmProfiles::HIGH && arm_->getState() == TwoJointArm::HOLDING_POS)
         {
-            wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
+            //wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
             clawOpen_ = true;
             if (!placingTimerStarted_)
             {
@@ -1122,7 +1238,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
+            wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.2)
             {
@@ -1181,7 +1297,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
+            wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.2)
             {
@@ -1235,7 +1351,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
+            wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.5)
             {
@@ -1302,7 +1418,7 @@ void AutoPaths::periodic()
         }
         else
         {
-            // wheelSpeed_ = ClawConstants::INTAKING_SPEED;
+            wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.5)
             {
