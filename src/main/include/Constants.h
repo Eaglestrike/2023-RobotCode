@@ -131,6 +131,7 @@ namespace SwerveConstants
     const double DRIVE_GEAR_RATIO = 1 / 6.12;
     const double MAX_TELE_VEL = 5.672;
 
+
     const double POSE_HISTORY_LENGTH = 0.3;
     const double CAMERA_DELAY = 0.2;
 
@@ -332,5 +333,6 @@ namespace PneumaticsIntakeConstants
     const int RIGHT_SOLENOID_ID = 7;
     const int ROLLER_MOTOR_ID = 13;
 
-    const double ROLLER_MAX_VOLTAGE = -5;
+    const double ROLLER_INTAKE_VOLTAGE = -5;
+    const double ROLLER_OUTTAKE_VOLTAGE = 5;
 } // namespace PneumaticsIntakeConstants
