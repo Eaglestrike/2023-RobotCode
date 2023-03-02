@@ -118,14 +118,6 @@ void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
     //6, 
     //6.5, 
 
-    //turn
-    //0.
-    //1, 
-    //1.5, 
-    //2, 
-    //2.5, 
-    //3, 
-
     units::volt_t turnVolts{calcAngPID(angle)};
     turnMotor_.SetVoltage(turnVolts);
 
@@ -149,6 +141,7 @@ void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
         driveMotor_.SetVoltage(driveVolts);
     }
 
+    //Turn with arm
     //0.74, 0
     //0.8, 0.03
     //1, 0.125
@@ -194,21 +187,33 @@ double SwerveModule::calcAngPID(double setAngle)
 
 double SwerveModule::calcDrivePID(double driveSpeed)
 {
-    double velocity = (driveSpeed * GeneralConstants::MAX_RPM * GeneralConstants::TICKS_PER_ROTATION) / 600;
-    double error = velocity - driveMotor_.GetSelectedSensorVelocity(); //This is probably wrong
+    // double velocity = (driveSpeed * GeneralConstants::MAX_RPM * GeneralConstants::TICKS_PER_ROTATION) / 600;
+    // double error = velocity - driveMotor_.GetSelectedSensorVelocity(); //This is probably wrong
 
-    dIntegralError_ += error * dT_;
-    double deltaError = (error - dPrevError_) / dT_;
-    dPrevError_ = error;
+    // dIntegralError_ += error * dT_;
+    // double deltaError = (error - dPrevError_) / dT_;
+    // dPrevError_ = error;
 
-    if(abs(deltaError) < 40 && error > 100) //COULDO get value, also test if needed
-    {
-        deltaError = 0;
-        dIntegralError_ = 0;
-    }
+    // if(abs(deltaError) < 40 && error > 100) //COULDO get value, also test if needed
+    // {
+    //     deltaError = 0;
+    //     dIntegralError_ = 0;
+    // }
+
     double feedForward = GeneralConstants::MAX_VOLTAGE * driveSpeed;
+    // double feedForward;
+    // if(driveSpeed == 0)
+    // {
+    //     feedForward = 0;
+    // }
+    // else
+    // {
+    //     feedForward = ((driveSpeed * SwerveConstants::MAX_TELE_VEL) - SwerveConstants::klVI) / SwerveConstants::klV;
+    // }
+    
 
-    double power = (dkP_*error) + (dkI_*aIntegralError_) + (dkD_*deltaError) + feedForward;
+    //double power = (dkP_*error) + (dkI_*aIntegralError_) + (dkD_*deltaError) + feedForward;
+    double power = feedForward;
 
     return clamp(power, -(double)GeneralConstants::MAX_VOLTAGE, (double)GeneralConstants::MAX_VOLTAGE);
 

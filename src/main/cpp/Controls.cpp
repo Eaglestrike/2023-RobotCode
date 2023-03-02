@@ -210,6 +210,82 @@ bool Controls::dPadRightPressed()
     //return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
 }
 
+bool Controls::inchingUpPressed()
+{
+    bool down = ((rJoy_.GetPOV() < 10 && rJoy_.GetPOV() >= 0) || (rJoy_.GetPOV() <= 360 && rJoy_.GetPOV() > 350));
+    if (down && !inchingUpDown_)
+    {
+        inchingUpDown_ = true;
+        return true;
+    }
+    else if (inchingUpDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        inchingUpDown_ = false;
+        return false;
+    }
+}
+
+bool Controls::inchingDownPressed()
+{
+    bool down = (rJoy_.GetPOV() < 190 && rJoy_.GetPOV() > 170);
+    if (down && !inchingDownDown_)
+    {
+        inchingDownDown_ = true;
+        return true;
+    }
+    else if (inchingDownDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        inchingDownDown_ = false;
+        return false;
+    }
+}
+
+bool Controls::inchingLeftPressed()
+{
+    bool down = (rJoy_.GetPOV() < 280 && rJoy_.GetPOV() > 260);
+    if (down && !inchingLeftDown_)
+    {
+        inchingLeftDown_ = true;
+        return true;
+    }
+    else if (inchingLeftDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        inchingLeftDown_ = false;
+        return false;
+    }
+}
+
+bool Controls::inchingRightPressed()
+{
+    bool down = (rJoy_.GetPOV() < 100 && rJoy_.GetPOV() > 80);
+    if (down && !inchingRightDown_)
+    {
+        inchingRightDown_ = true;
+        return true;
+    }
+    else if (inchingRightDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        inchingRightDown_ = false;
+        return false;
+    }
+}
+
 int Controls::checkScoringButtons()
 {
     if (buttonBoard_.GetRawButton(InputConstants::B1))
@@ -247,6 +323,26 @@ int Controls::checkScoringButtons()
     else if (buttonBoard_.GetRawButton(InputConstants::B9))
     {
         return 9;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+int Controls::checkLevelButtons()
+{
+    if(buttonBoard_.GetRawButton(InputConstants::L1))
+    {
+        return 1;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::L2))
+    {
+        return 2;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::L3))
+    {
+        return 3;
     }
     else
     {
