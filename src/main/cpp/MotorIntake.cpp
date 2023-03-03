@@ -1,6 +1,6 @@
 #include "MotorIntake.h"
 
-MotorIntake::MotorIntake()
+MotorIntake::MotorIntake(bool showSmartDashboard) : m_showSmartDashboard{showSmartDashboard}
 {
   m_pid.SetTolerance(units::radian_t{MotorIntakeConstants::POS_ERR_TOLERANCE},
                      units::radians_per_second_t{MotorIntakeConstants::VEL_ERR_TOLERANCE});
@@ -18,8 +18,6 @@ void MotorIntake::Deploy()
 
 /**
  * Causes the intake to come up
- *
- * Does the same as Idle()
  */
 void MotorIntake::Stow()
 {
@@ -176,6 +174,10 @@ void MotorIntake::m_RollerStateMachine()
  */
 void MotorIntake::Periodic()
 {
+  m_PutCurrentConeIntakeState();
+  m_PutCurrentDeployerState();
+  m_PutCurrentRollerState();
+
   m_DeployerStateMachine();
   m_RollerStateMachine();
 
@@ -242,6 +244,8 @@ void MotorIntake::Spit()
 
 /**
  * Call this to store the intake with no cone inside.
+ *
+ * Functionally does the same as Stow()
  */
 void MotorIntake::Idle()
 {
@@ -283,4 +287,84 @@ units::radian_t MotorIntake::m_getEncoderRadians()
 {
   double pos = m_deployerMotor.GetEncoder().GetPosition();
   return Helpers::convertStepsToRadians(pos, MotorIntakeConstants::DEPLOYER_STEPS_PER_REV);
+}
+
+void MotorIntake::m_PutCurrentDeployerState()
+{
+  if (!m_showSmartDashboard)
+  {
+    return;
+  }
+
+  std::string stateStr;
+  switch (m_deployerState)
+  {
+  case STOWED:
+    stateStr = "Stowed";
+  case DEPLOYED:
+    stateStr = "Deployed";
+  case STOWING:
+    stateStr = "Stowing";
+  case DEPLOYING:
+    stateStr = "Deploying";
+  default:
+    // this shouldn't happen. If it does it's problematic
+    stateStr = "UNKNOWN";
+  }
+
+  frc::SmartDashboard::PutString("Cone Intake Deployer", stateStr);
+}
+
+void MotorIntake::m_PutCurrentRollerState()
+{
+  if (!m_showSmartDashboard)
+  {
+    return;
+  }
+
+  std::string stateStr;
+  switch (m_rollerState)
+  {
+  case INTAKE:
+    stateStr = "Intake";
+  case OUTTAKE:
+    stateStr = "Outtake";
+  case STOP:
+    stateStr = "Stop";
+  default:
+    // this shouldn't happen. If it does it's problematic
+    stateStr = "UNKNOWN";
+  }
+
+  frc::SmartDashboard::PutString("Cone Intake Roller", stateStr);
+}
+
+void MotorIntake::m_PutCurrentConeIntakeState()
+{
+  if (!m_showSmartDashboard)
+  {
+    return;
+  }
+
+  std::string stateStr;
+  switch (m_intakeState)
+  {
+  case IDLE:
+    stateStr = "Idle (stowed)";
+  case IDLING:
+    stateStr = "Idling (stowing)";
+  case CONSUMING:
+    stateStr = "Intaking";
+  case CONSUMED:
+    stateStr = "Stored";
+  case SPITTING:
+    stateStr = "Spitting";
+  case INTAKE_DOWN:
+    stateStr = "Cone Is Outside";
+  default:
+    // this shouldn't happen. If it does it's problematic
+    stateStr = "UNKNOWN";
+  }
+
+  frc::SmartDashboard::PutString("Cone Intake", stateStr);
 }

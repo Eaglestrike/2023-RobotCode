@@ -8,12 +8,14 @@
 #define _USE_MATH_DEFINES
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #include <ctre/Phoenix.h>
 #include <frc/controller/ProfiledPIDController.h>
 #include <frc/fmt/Units.h>
 #include <frc/Timer.h>
 #include <frc/trajectory/TrapezoidProfile.h>
+#include <frc/smartdashboard/SmartDashboard.h>
 #include <rev/CANSparkMax.h>
 #include <units/angle.h>
 #include <units/angular_acceleration.h>
@@ -26,7 +28,10 @@
 /**
  * Intake that is deployed by a motor (rather than pneumatics)
  *
- * Potentially used with the cone intake
+ * This should be used with the cone intake.
+ *
+ * @note The roller is stopped if the deployer is not down, so if smartdashboard says "Intake"
+ * or "Outtake" even though it is not spinning, first check if the deployer is not down.
  */
 class MotorIntake
 {
@@ -59,7 +64,7 @@ public:
     INTAKE_DOWN // the intake is down and the rollers are spinning to spit out the cone
   };
 
-  MotorIntake();
+  MotorIntake(bool = true);
 
   void RobotInit();
   void Periodic();
@@ -84,13 +89,16 @@ public:
   void ResetAcceleration();
 
 private:
+  // state machines
   DeployerState m_deployerState{STOWED};
   RollerState m_rollerState{INTAKE};
   ConeIntakeState m_intakeState{IDLE};
 
+  // motors
   rev::CANSparkMax m_deployerMotor{MotorIntakeConstants::DEPLOYER_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless}; // for deploying the intake
   WPI_TalonFX m_rollerMotor{MotorIntakeConstants::ROLLER_MOTOR_ID};                                                   // for spinning the rollers
 
+  // motion profiled pid controller
   frc::ProfiledPIDController<units::radians> m_pid{
       MotorIntakeConstants::kP,
       MotorIntakeConstants::kI,
@@ -103,12 +111,20 @@ private:
   units::radians_per_second_t m_lastSpeed{units::radians_per_second_t{0}};
   units::second_t m_lastTime{frc::Timer::GetFPGATimestamp()};
 
+  // if info should be shown on smartdashboard or not
+  bool m_showSmartDashboard;
+
+  // util methods
   units::radian_t m_getEncoderRadians();
+
+  bool m_MotorsNotNeeded();
 
   void m_DeployerStateMachine();
   void m_RollerStateMachine();
 
-  bool m_MotorsNotNeeded();
+  void m_PutCurrentDeployerState();
+  void m_PutCurrentRollerState();
+  void m_PutCurrentConeIntakeState();
 };
 
 #endif
