@@ -19,7 +19,7 @@ void MotorIntake::Deploy()
 /**
  * Causes the intake to come up
  *
- * (USE Idle() or Consume() INSTEAD OF THIS TO STOW THE INTAKE)
+ * Does the same as Idle()
  */
 void MotorIntake::Stow()
 {
@@ -40,7 +40,7 @@ MotorIntake::RollerState MotorIntake::getRollerState()
 
 void MotorIntake::ResetEncoderPosition()
 {
-  m_deployerMotor.SetSelectedSensorPosition(0);
+  m_deployerMotor.GetEncoder().SetPosition(0);
 }
 
 /**
@@ -71,7 +71,7 @@ void MotorIntake::Reset()
  */
 void MotorIntake::ResetPID()
 {
-  m_pid.Reset(units::radian_t(m_deployerMotor.GetSelectedSensorPosition()));
+  m_pid.Reset(units::radian_t(m_deployerMotor.GetEncoder().GetPosition()));
 }
 
 /**
@@ -190,16 +190,16 @@ void MotorIntake::Periodic()
   case CONSUMING:
   {
     // wait for the deployer to deploy
-    // then wait for cone to be in deployer
-    // then wait for deployer to stow the cone
     if (m_deployerState == DEPLOYED)
     {
+      // wait for cone to be in deployer
       if (m_rollerMotor.GetSupplyCurrent() >= MotorIntakeConstants::ROLLER_STALL_CURRENT)
       {
         m_deployerState = STOWING;
         m_rollerState = STOP;
       }
     }
+    // once cone is in deployer, wait for deployer to stow the cone
     if (m_deployerState == STOWED)
     {
       m_intakeState = CONSUMED;
@@ -281,6 +281,6 @@ bool MotorIntake::IntakeDown()
 
 units::radian_t MotorIntake::m_getEncoderRadians()
 {
-  double pos = m_deployerMotor.GetSelectedSensorPosition();
-  return Helpers::convertStepsToRadians(pos, 2048);
+  double pos = m_deployerMotor.GetEncoder().GetPosition();
+  return Helpers::convertStepsToRadians(pos, MotorIntakeConstants::DEPLOYER_STEPS_PER_REV);
 }

@@ -14,6 +14,7 @@
 #include <frc/fmt/Units.h>
 #include <frc/Timer.h>
 #include <frc/trajectory/TrapezoidProfile.h>
+#include <rev/CANSparkMax.h>
 #include <units/angle.h>
 #include <units/angular_acceleration.h>
 #include <units/angular_velocity.h>
@@ -87,8 +88,8 @@ private:
   RollerState m_rollerState{INTAKE};
   ConeIntakeState m_intakeState{IDLE};
 
-  WPI_TalonFX m_deployerMotor{MotorIntakeConstants::DEPLOYER_MOTOR_ID}; // for deploying the intake
-  WPI_TalonFX m_rollerMotor{MotorIntakeConstants::ROLLER_MOTOR_ID};     // for spinning the rollers
+  rev::CANSparkMax m_deployerMotor{MotorIntakeConstants::DEPLOYER_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless}; // for deploying the intake
+  WPI_TalonFX m_rollerMotor{MotorIntakeConstants::ROLLER_MOTOR_ID};                                                   // for spinning the rollers
 
   frc::ProfiledPIDController<units::radians> m_pid{
       MotorIntakeConstants::kP,

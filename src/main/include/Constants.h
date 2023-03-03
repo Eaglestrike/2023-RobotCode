@@ -306,7 +306,8 @@ namespace MotorIntakeConstants
 
     const double ENCODER_DEPLOYED_TARGET = 512;
 
-    const double DEPLOYER_MAX_VOLTAGE = 0;   // TODO measure capped voltage for deployer
+    const double DEPLOYER_MAX_VOLTAGE = 0; // TODO measure capped voltage for deployer
+    const double DEPLOYER_STEPS_PER_REV = 42;
     const double ROLLER_INTAKE_VOLTAGE = 0;  // TODO measure voltage for cube/cone to actually pass through
     const double ROLLER_OUTTAKE_VOLTAGE = 0; // TODO measure voltage for cube/cone to actually pass through
     const double ROLLER_STALL_CURRENT = 0;   // TODO measure current draw threshold when cone is in intake
