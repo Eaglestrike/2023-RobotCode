@@ -7,7 +7,9 @@
 
 using namespace std;
 
-#define pi M_PI
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950288419716939937510582097494459230
+#endif
 
 namespace GeneralConstants
 {
@@ -22,7 +24,7 @@ namespace GeneralConstants
     const double MAX_VOLTAGE = 12;
 
     const double RESISTANCE = MAX_VOLTAGE / STALL_CURRENT;
-    const double Kv = ((FREE_SPEED * 2 * pi) / 60) / (MAX_VOLTAGE - FREE_CURRENT * RESISTANCE);
+    const double Kv = ((FREE_SPEED * 2 * M_PI) / 60) / (MAX_VOLTAGE - FREE_CURRENT * RESISTANCE);
 
     const double CONE_M = 0.652;
 
@@ -58,8 +60,8 @@ namespace FieldConstants
 
     const double BLUE_SCORING_X = 1.8;  // 1.923 - 0.019 - 0.127 - 0.02
     const double RED_SCORING_X = 14.74; // 14.617 + 0.019 + 0.127 + 0.02
-    const double BLUE_PS_X = TAG_XY[3][0] - 0.5;
-    const double RED_PS_X = TAG_XY[4][0] + 0.5;
+    const double BLUE_PS_X = TAG_XY[3][0] - 0.7;
+    const double RED_PS_X = TAG_XY[4][0] + 0.7;
 
     const double AUTO_DOCK_Y = 2.748;
     const double BLUE_AUTO_DOCK_X = 3.825875; // 2.412
@@ -119,6 +121,10 @@ namespace InputConstants
     const int L3 = 10;
     const int L2 = 11;
     const int L1 = 12;
+    const int BB_RIGHT = 13;
+    const int BB_DOWN = 14;
+    const int BB_UP = 15;
+    const int BB_LEFT = 16;
 
 }
 
@@ -132,7 +138,7 @@ namespace SwerveConstants
     const double MAX_TELE_VEL = 5.672;
 
     const double POSE_HISTORY_LENGTH = 0.3;
-    const double CAMERA_DELAY = 0.2;
+    const double CAMERA_DELAY = 0.1;
 
     const double INCHING_DIST = 0.0254;
 
@@ -220,7 +226,7 @@ namespace TwoJointArmConstants
     const int SHOULDER_BRAKE_ID = 5;
     const int ELBOW_BRAKE_ID = 4;
     const int SHOULDER_ENCODER_ID = 0;
-    const double SHOULDER_ENCODER_OFFSET = -51 - 1.68 - .4;
+    const double SHOULDER_ENCODER_OFFSET = 130;
 
     const double UPPER_ARM_I = 0.206;
     const double FOREARM_I = 0.22; // 0.32, 0.35?
@@ -244,9 +250,9 @@ namespace TwoJointArmConstants
     const double ekD_ = 0;
     const double ekP_ = 0.15;
 
-    const double SHOULDER_TO_ELBOW_RATIO = 30.0 / 54.0;   // 30:54
+    const double SHOULDER_TO_ELBOW_RATIO = (30.0 / 48.0);   // 30:54 now 30:48
     const double MOTOR_TO_SHOULDER_RATIO = 1.0 / 243.911; // 1:194.4 (243.911), 1:100
-    const double MOTOR_TO_ELBOW_RATIO = 1.0 / 43.556;     // 1:40.5 (43.556) for motor to shoulder area, 1:72.9 for motor to elbow joint
+    const double MOTOR_TO_ELBOW_RATIO = 1.0 / 43.556;     // 1:40.5 (43.556) for motor to shoulder area, 1:72.9 for motor to elbow joint with 54 tooth
 
     const double HIGH_CUBE_OUTAKE_VOLTS = -1;
     const double MID_CUBE_OUTAKE_VOLTS = -1;
@@ -265,10 +271,10 @@ namespace TwoJointArmConstants
 
     const double ARM_POSITIONS[8][4] =
         {
-            {0.3526, -0.1769, -18.5, 164.5}, // stowed, -18.5, 175 {0.3526, -0.1769, -18.5, 164.5}GOOD AND NOT PAINFUL {0.13813, -0.3308, 11, 169}CONE PAIN
+            {0.01263, -0.31761, 1, 179}, // stowed, -18.5, 175 {0.3526, -0.1769, -18.5, 164.5}GOOD AND NOT PAINFUL {0.13813, -0.3308, 11, 169}CONE PAIN {0.01263, -0.31761, 1, 179} UP AND DOWN PAIN
             {0.55296, -0.26022, 13, 145},    // cube intake, 13, 145
-            {1.14135, 0.67622, 8, 84.24},    // player station, 8, 84.24 {1.06559, 0.67622, 2, 90.6}
-            {1.14708, 0.63964, 8.62, 85.57}, // mid, 2.6, 92 WTF
+            {1.14135, 0.67622, 8, 84.24},     // player station and mid, 8, 84.24 {1.06559, 0.67622, 2, 90.6}
+            {-0.55296, -0.26022, -13, 215}, // cube intake other side, or just special paths!
             {1.44532, 1.00479, 50, 8.8},     // high, 50, 8.8
             {0.98065, 0.45392, -2, 107},     // cube mid, -1.44, 107 {0.91348, 0.29933, -3, 117}
             {1.32466, 0.81345, 24, 57.6},    // cube high, 24, 57.6 {1.31242, 0.68936, 22, 67}
@@ -287,7 +293,7 @@ namespace TwoJointArmConstants
     const double ANGLE_ERROR_THRESHOLD = 3;
     const double ANGLE_POS_KNOWN_THRESHOLD = 10;
 
-    const double STALL_SAFETY = 50;
+    const double STALL_SAFETY = 75;
 
     const double SWINGTHROUGH_CLEARANCE = 15;
 

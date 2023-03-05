@@ -39,6 +39,7 @@ class Controls
         bool dPadDownDown();
         bool dPadLeftPressed();
         bool dPadRightPressed();
+        bool bbUpDown();
 
         bool inchingUpPressed();
         bool inchingDownPressed();

@@ -239,7 +239,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
         bool inchDown = controls->inchingDownPressed();
         bool inchLeft = controls->inchingLeftPressed();
         bool inchRight = controls->inchingRightPressed();
-        if (abs(xStrafe) < 0.005 && abs(yStrafe) < 0.005 && abs(turn) < 0.005)
+        if (abs(xStrafe) < 0.005 && abs(yStrafe) < 0.005 && abs(turn) < 0.02)
         {
             if (!inching_)
             {
@@ -341,7 +341,7 @@ void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
             holdingYaw_ = yaw_;
             isHoldingYaw_ = true;
         }
-        else if (abs(holdingYaw_ - yaw_) > 15)
+        else if (abs(holdingYaw_ - yaw_) > 5)
         {
             holdingYaw_ = yaw_;
         }
@@ -549,7 +549,7 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     // https://www.first1684.com/uploads/2/0/1/6/20161347/chimiswerve_whitepaper__2_.pdf
     // https://www.desmos.com/calculator/bxk1qdap5l incomplete desmos
     // Robot's angle in radians
-    double angle = yaw_ * (pi / 180);
+    double angle = yaw_ * (M_PI / 180);
 
     // Rotate the velocities by the robot's rotation (Robot-Orient the velocity) i.e. decompose vectors
     double newX = xSpeed * cos(angle) + ySpeed * sin(angle);
@@ -563,8 +563,8 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     if (inVolts)
     {
         // Convert to radians, then multiply by the radius to get tangential speed & accelerations
-        turn = (turn * pi / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
-        // turnAcc = (turnAcc * pi / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
+        turn = (turn * M_PI / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
+        // turnAcc = (turnAcc * M_PI / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
     }
 
     // Scale the velocity and acceleration
@@ -602,17 +602,17 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
 
     if (xSpeed != 0 || ySpeed != 0 || turn != 0)
     {
-        trAngle_ = -atan2(B, C) * 180 / pi;
-        tlAngle_ = -atan2(B, D) * 180 / pi;
-        brAngle_ = -atan2(A, C) * 180 / pi;
-        blAngle_ = -atan2(A, D) * 180 / pi;
+        trAngle_ = -atan2(B, C) * 180 / M_PI;
+        tlAngle_ = -atan2(B, D) * 180 / M_PI;
+        brAngle_ = -atan2(A, C) * 180 / M_PI;
+        blAngle_ = -atan2(A, D) * 180 / M_PI;
     }
     else
     {
-        trAngle_ = 0;
-        tlAngle_ = 0;
-        brAngle_ = 0;
-        blAngle_ = 0;
+        trAngle_ = 90;
+        tlAngle_ = 90;
+        brAngle_ = 90;
+        blAngle_ = 90;
     }
 
     double maxSpeed;
@@ -741,10 +741,10 @@ void SwerveDrive::calcOdometry()
  */
 void SwerveDrive::reset()
 {
-    robotX_ = 0;
-    robotY_ = 0;
-    foundTag_ = false;
-    prevPoses_.clear();
+    // robotX_ = 0;
+    // robotY_ = 0;
+    // foundTag_ = false;
+    // prevPoses_.clear();
     isHoldingYaw_ = false;
     inching_ = false;
 }
@@ -765,14 +765,14 @@ double SwerveDrive::getY()
 pair<double, double> SwerveDrive::getXYVel()
 {
     // Get robot oriented x,y velocities of each swerve module
-    double frX = -topRight_->getDriveVelocity() * sin(topRight_->getAngle() * pi / 180);
-    double frY = topRight_->getDriveVelocity() * cos(topRight_->getAngle() * pi / 180);
-    double flX = -topLeft_->getDriveVelocity() * sin(topLeft_->getAngle() * pi / 180);
-    double flY = topLeft_->getDriveVelocity() * cos(topLeft_->getAngle() * pi / 180);
-    double brX = -bottomRight_->getDriveVelocity() * sin(bottomRight_->getAngle() * pi / 180);
-    double brY = bottomRight_->getDriveVelocity() * cos(bottomRight_->getAngle() * pi / 180);
-    double blX = -bottomLeft_->getDriveVelocity() * sin(bottomLeft_->getAngle() * pi / 180);
-    double blY = bottomLeft_->getDriveVelocity() * cos(bottomLeft_->getAngle() * pi / 180);
+    double frX = -topRight_->getDriveVelocity() * sin(topRight_->getAngle() * M_PI / 180);
+    double frY = topRight_->getDriveVelocity() * cos(topRight_->getAngle() * M_PI / 180);
+    double flX = -topLeft_->getDriveVelocity() * sin(topLeft_->getAngle() * M_PI / 180);
+    double flY = topLeft_->getDriveVelocity() * cos(topLeft_->getAngle() * M_PI / 180);
+    double brX = -bottomRight_->getDriveVelocity() * sin(bottomRight_->getAngle() * M_PI / 180);
+    double brY = bottomRight_->getDriveVelocity() * cos(bottomRight_->getAngle() * M_PI / 180);
+    double blX = -bottomLeft_->getDriveVelocity() * sin(bottomLeft_->getAngle() * M_PI / 180);
+    double blY = bottomLeft_->getDriveVelocity() * cos(bottomLeft_->getAngle() * M_PI / 180);
 
     // Average robot-oriented velocties
     double avgX = (frX + flX + brX + blX) / 4;
@@ -781,7 +781,7 @@ pair<double, double> SwerveDrive::getXYVel()
     // cout << timer_.GetFPGATimestamp().value() << ", " << sqrt(avgX * avgX + avgY * avgY) << endl;
 
     // Angle in radians
-    double angle = yaw_ * pi / 180;
+    double angle = yaw_ * M_PI / 180;
 
     // Unrotate the velocties to field-oriented
     double rotatedX = avgX * cos(angle) + avgY * -sin(angle);
@@ -831,6 +831,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     // double tagZAng = -data.at(4);
     int tagID = data.at(1);
     int uniqueVal = data.at(6);
+    double delay = data.at(5) / 1000.0;
 
     double testTagZAng;
     if (tagID <= 4 && tagID > 0)
@@ -849,7 +850,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     }
 
     // frc::SmartDashboard::PutNumber("TEST Z ANG", testTagZAng);
-    testTagZAng *= -(pi / 180.0);
+    testTagZAng *= -(M_PI / 180.0);
 
     // frc::SmartDashboard::PutNumber("Tag x", tagX);
     // frc::SmartDashboard::PutNumber("Tag y", tagY);
@@ -945,7 +946,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
         // robotY_ += (-robotY_ + aprilTagY) * (0.1 / (1 + 1 * vel));
 
         double time = timer_.GetFPGATimestamp().value();
-        auto historicalPose = prevPoses_.lower_bound(time - SwerveConstants::CAMERA_DELAY);
+        auto historicalPose = prevPoses_.lower_bound(time - SwerveConstants::CAMERA_DELAY - delay);
         if (historicalPose != prevPoses_.end() && abs(historicalPose->first - (time - SwerveConstants::CAMERA_DELAY) < 0.007))
         {
             frc::SmartDashboard::PutNumber("HX", historicalPose->second.first.first);
@@ -977,7 +978,7 @@ pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
         return {0, 0};
     }
 
-    if (robotX_ > 3.919857 && robotX_ < 12.621893) // If robot is not near community nor loading station
+    if (robotX_ > 3.919857 + 1 && robotX_ < 12.621893 - 1) // If robot is not near community nor loading station
     {
         return {0, 0};
     }
@@ -995,7 +996,7 @@ pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
             wantedX = FieldConstants::BLUE_PS_X;
             if (robotY_ > FieldConstants::TAG_XY[4][1])
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.6;
+                wantedY = FieldConstants::TAG_XY[4][1] + 0.6; 
             }
             else
             {
