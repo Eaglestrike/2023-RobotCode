@@ -73,7 +73,7 @@ double SwervePose::angTo(SwervePose endPose)
     double dy = endPose.getY() - y_;
     if(dx != 0 || dy != 0)
     {
-        return 90 - (atan2(dy, dx) * 180 / pi);
+        return 90 - (atan2(dy, dx) * 180 / M_PI);
     }
     else
     {

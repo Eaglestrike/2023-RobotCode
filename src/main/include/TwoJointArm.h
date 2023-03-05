@@ -41,11 +41,10 @@ class TwoJointArm
         void setPosTo(TwoJointArmProfiles::Positions setPosition);
         void toggleForward();
         void toggleForwardCubeIntake();
-        void manualControl(double thetaVel, double phiVel);
+        void toggleForwardExtendedToCubeIntake();
+        void manualControl(double thetaVel, double phiVel, bool gravity);
         void stop();
         void resetIntaking();
-        void switchDirections();
-        void switchDirectionsCubeIntake();
         void intake();
         void placeCone();
         void placeCube();
@@ -148,6 +147,10 @@ class TwoJointArm
         void homeNew();
 
         void setBrakes(bool shoulder, bool elbow);
+
+        void switchDirections();
+        void switchDirectionsCubeIntake();
+        void swingthroughExtendedToCubeIntake();
 
         // double setPhiPos_, setThetaPos_; //HERE
 };

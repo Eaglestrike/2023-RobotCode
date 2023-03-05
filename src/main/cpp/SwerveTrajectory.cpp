@@ -115,13 +115,13 @@ SwervePose SwerveTrajectory::getPose(double time)
         return endPose_;
     }
 
-    x = startPose_.getX() + sin(ang * pi / 180) * linDist;
-    xVel = sin(ang * pi / 180) * linVel;
-    xAcc = sin(ang * pi / 180) * linAcc;
+    x = startPose_.getX() + sin(ang * M_PI / 180) * linDist;
+    xVel = sin(ang * M_PI / 180) * linVel;
+    xAcc = sin(ang * M_PI / 180) * linAcc;
 
-    y = startPose_.getY() + cos(ang * pi / 180) * linDist;
-    yVel = cos(ang * pi / 180) * linVel;
-    yAcc = cos(ang * pi / 180) * linAcc;
+    y = startPose_.getY() + cos(ang * M_PI / 180) * linDist;
+    yVel = cos(ang * M_PI / 180) * linVel;
+    yAcc = cos(ang * M_PI / 180) * linAcc;
 
     return SwervePose(x, y, yaw, xVel, yVel, yawVel, xAcc, yAcc, yawAcc);
 }

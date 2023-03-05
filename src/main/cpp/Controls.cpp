@@ -210,6 +210,11 @@ bool Controls::dPadRightPressed()
     //return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
 }
 
+bool Controls::bbUpDown()
+{
+    return buttonBoard_.GetRawButton(InputConstants::BB_UP);
+}
+
 bool Controls::inchingUpPressed()
 {
     bool down = ((rJoy_.GetPOV() < 10 && rJoy_.GetPOV() >= 0) || (rJoy_.GetPOV() <= 360 && rJoy_.GetPOV() > 350));
