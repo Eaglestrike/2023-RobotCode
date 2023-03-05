@@ -184,7 +184,7 @@ void MotorIntake::ResetEncoderPosition()
  * Resets intake. This includes:
  *
  * - resetting the encoder position
- * - resetting the state so that the robot thinks the arm is stowed
+ * - resetting the state so that the robot thinks the intake is stowed
  *
  * Note that this does not move any motor positions.
  *
