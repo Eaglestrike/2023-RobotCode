@@ -5,7 +5,8 @@
  *
  * @param showSmartDashboard Set true if state machines should be shown to SmartDashboard
  */
-MotorIntake::MotorIntake(bool showSmartDashboard) : m_showSmartDashboard{showSmartDashboard}
+MotorIntake::MotorIntake(bool showSmartDashboard, bool showConstants)
+    : m_showSmartDashboard{showSmartDashboard}, m_showConstants{showConstants}
 {
   m_pid.SetTolerance(units::radian_t{MotorIntakeConstants::POS_ERR_TOLERANCE},
                      units::radians_per_second_t{MotorIntakeConstants::VEL_ERR_TOLERANCE});
@@ -17,6 +18,11 @@ MotorIntake::MotorIntake(bool showSmartDashboard) : m_showSmartDashboard{showSma
 void MotorIntake::RobotInit()
 {
   Reset();
+
+  if (m_showConstants)
+  {
+    m_PutConstants();
+  }
 }
 
 /**
@@ -39,13 +45,15 @@ void MotorIntake::Periodic()
     {
       m_intakeState = IDLE;
     }
+
+    break;
   case CONSUMING:
   {
     // wait for the deployer to deploy
     if (m_deployerState == DEPLOYED)
     {
       // wait for cone to be in deployer
-      if (m_rollerMotor.GetSupplyCurrent() >= MotorIntakeConstants::ROLLER_STALL_CURRENT)
+      if (m_rollerMotor.GetSupplyCurrent() >= m_rollerStallCurrent)
       {
         m_deployerState = STOWING;
         m_rollerState = STOP;
@@ -56,6 +64,8 @@ void MotorIntake::Periodic()
     {
       m_intakeState = CONSUMED;
     }
+
+    break;
   }
   case SPITTING:
   {
@@ -65,6 +75,8 @@ void MotorIntake::Periodic()
     {
       m_intakeState = INTAKE_DOWN;
     }
+
+    break;
   }
   default:
     m_rollerState = STOP;
@@ -235,11 +247,10 @@ void MotorIntake::m_DeployerStateMachine()
   case DEPLOYING:
   {
     // calculate motion-profiled PID for deploying
-    double pidVal = m_pid.Calculate(m_getEncoderRadians(),
-                                    Helpers::convertStepsToRadians(MotorIntakeConstants::ENCODER_DEPLOYED_TARGET, 2048));
-    double voltage = std::clamp(pidVal, -MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE, MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE);
+    double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_deployerGoal});
+    double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
 
-    m_deployerMotor.SetVoltage(units::volt_t{voltage});
+    m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
     if (m_pid.AtGoal())
     {
@@ -252,9 +263,9 @@ void MotorIntake::m_DeployerStateMachine()
   {
     // calculate motion-profiled PID for stowing
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{0});
-    double voltage = std::clamp(pidVal, -MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE, MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE);
+    double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
 
-    m_deployerMotor.SetVoltage(units::volt_t{voltage});
+    m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
     if (m_pid.AtGoal())
     {
@@ -269,7 +280,7 @@ void MotorIntake::m_DeployerStateMachine()
 void MotorIntake::m_RollerStateMachine()
 {
   if (m_deployerState != DEPLOYED || m_MotorsNotNeeded() ||
-      m_rollerMotor.GetSupplyCurrent() >= MotorIntakeConstants::ROLLER_STALL_CURRENT)
+      m_rollerMotor.GetSupplyCurrent() >= m_rollerStallCurrent)
   {
     m_rollerMotor.SetVoltage(units::volt_t(0));
     return;
@@ -278,11 +289,14 @@ void MotorIntake::m_RollerStateMachine()
   switch (m_rollerState)
   {
   case INTAKE:
-    m_rollerMotor.SetVoltage(units::volt_t(MotorIntakeConstants::ROLLER_INTAKE_VOLTAGE));
+    m_rollerMotor.SetVoltage(units::volt_t(m_rollerIntakeVoltage));
+    break;
   case OUTTAKE:
-    m_rollerMotor.SetVoltage(units::volt_t(MotorIntakeConstants::ROLLER_OUTTAKE_VOLTAGE));
+    m_rollerMotor.SetVoltage(units::volt_t(m_rollerOuttakeVoltage));
+    break;
   case STOP:
     m_rollerMotor.SetVoltage(units::volt_t(0));
+    break;
   default:
     m_rollerMotor.SetVoltage(units::volt_t(0));
   }
@@ -306,12 +320,16 @@ void MotorIntake::m_PutCurrentDeployerState()
   {
   case STOWED:
     stateStr = "Stowed";
+    break;
   case DEPLOYED:
     stateStr = "Deployed";
+    break;
   case STOWING:
     stateStr = "Stowing";
+    break;
   case DEPLOYING:
     stateStr = "Deploying";
+    break;
   default:
     // this shouldn't happen. If it does it's problematic
     stateStr = "UNKNOWN";
@@ -332,10 +350,13 @@ void MotorIntake::m_PutCurrentRollerState()
   {
   case INTAKE:
     stateStr = "Intake";
+    break;
   case OUTTAKE:
     stateStr = "Outtake";
+    break;
   case STOP:
     stateStr = "Stop";
+    break;
   default:
     // this shouldn't happen. If it does it's problematic
     stateStr = "UNKNOWN";
@@ -356,20 +377,64 @@ void MotorIntake::m_PutCurrentConeIntakeState()
   {
   case IDLE:
     stateStr = "Idle (stowed)";
+    break;
   case IDLING:
     stateStr = "Idling (stowing)";
+    break;
   case CONSUMING:
     stateStr = "Intaking";
+    break;
   case CONSUMED:
     stateStr = "Stored";
+    break;
   case SPITTING:
     stateStr = "Spitting";
+    break;
   case INTAKE_DOWN:
     stateStr = "Cone Is Outside";
+    break;
   default:
     // this shouldn't happen. If it does it's problematic
     stateStr = "UNKNOWN";
   }
 
   frc::SmartDashboard::PutString("Cone Intake", stateStr);
+}
+
+void MotorIntake::m_PutConstants()
+{
+  frc::SmartDashboard::PutNumber("Cone Intake Target", m_deployerGoal);
+  frc::SmartDashboard::PutNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
+  frc::SmartDashboard::PutNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
+  frc::SmartDashboard::PutNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
+  frc::SmartDashboard::PutNumber("Cone Intake Roller Stall I", m_rollerStallCurrent);
+  frc::SmartDashboard::PutNumber("Cone Intake kP", m_kP);
+  frc::SmartDashboard::PutNumber("Cone Intake kI", m_kI);
+  frc::SmartDashboard::PutNumber("Cone Intake kD", m_kD);
+  frc::SmartDashboard::PutNumber("Cone Intake Max Vel", m_maxVel);
+  frc::SmartDashboard::PutNumber("Cone Intake Max Acc", m_maxAcc);
+  frc::SmartDashboard::PutNumber("Cone Intake Pos Tol", m_posErrTolerance);
+  frc::SmartDashboard::PutNumber("Cone Intake Vel Tol", m_velErrTolerance);
+}
+
+void MotorIntake::m_SetConstants()
+{
+  m_deployerGoal = frc::SmartDashboard::GetNumber("Cone Intake Target", m_deployerGoal);
+  m_deployerMaxVoltage = frc::SmartDashboard::GetNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
+  m_rollerIntakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
+  m_rollerOuttakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
+  m_rollerStallCurrent = frc::SmartDashboard::GetNumber("Cone Intake Roller Stall I", m_rollerStallCurrent);
+  m_kP = frc::SmartDashboard::GetNumber("Cone Intake kP", m_kP);
+  m_kI = frc::SmartDashboard::GetNumber("Cone Intake kI", m_kI);
+  m_kD = frc::SmartDashboard::GetNumber("Cone Intake kD", m_kD);
+  m_maxVel = frc::SmartDashboard::GetNumber("Cone Intake Max Vel", m_maxVel);
+  m_maxAcc = frc::SmartDashboard::GetNumber("Cone Intake Max Acc", m_maxAcc);
+  m_posErrTolerance = frc::SmartDashboard::GetNumber("Cone Intake Pos Tol", m_posErrTolerance);
+  m_velErrTolerance = frc::SmartDashboard::GetNumber("Cone Intake Vel Tol", m_velErrTolerance);
+
+  m_constraints.maxVelocity = units::radians_per_second_t{m_maxVel};
+  m_constraints.maxAcceleration = units::radians_per_second_squared_t{m_maxAcc};
+  m_pid.SetConstraints(m_constraints);
+  m_pid.SetTolerance(units::radian_t{m_posErrTolerance}, units::radians_per_second_t{m_velErrTolerance});
+  m_pid.SetPID(m_kP, m_kI, m_kD);
 }

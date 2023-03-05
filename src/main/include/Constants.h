@@ -7,7 +7,7 @@
 
 using namespace std;
 
-#define pi 3.1415
+#define pi M_PI
 
 namespace GeneralConstants
 {
@@ -56,7 +56,7 @@ namespace FieldConstants
     const double MID_CUBE_Y = 2.748026;
     const double TOP_CUBE_Y = 4.4244;
 
-    const double BLUE_SCORING_X = 1.8; // 1.923 - 0.019 - 0.127 - 0.02
+    const double BLUE_SCORING_X = 1.8;  // 1.923 - 0.019 - 0.127 - 0.02
     const double RED_SCORING_X = 14.74; // 14.617 + 0.019 + 0.127 + 0.02
     const double BLUE_PS_X = TAG_XY[3][0] - 0.5;
     const double RED_PS_X = TAG_XY[4][0] + 0.5;
@@ -130,7 +130,6 @@ namespace SwerveConstants
     const double TREAD_RADIUS = 0.0508;
     const double DRIVE_GEAR_RATIO = 1 / 6.12;
     const double MAX_TELE_VEL = 5.672;
-
 
     const double POSE_HISTORY_LENGTH = 0.3;
     const double CAMERA_DELAY = 0.2;
@@ -209,7 +208,7 @@ namespace TwoJointArmConstants
     const double ELBOW_MIN_ANG = 0;
     const double ELBOW_MAX_ANG = 360;
 
-    const double SHOULDER_ARM_MAX_VEL = 100; //50, 180, 180, 180
+    const double SHOULDER_ARM_MAX_VEL = 100; // 50, 180, 180, 180
     const double ELBOW_ARM_MAX_VEL = 270;
     const double SHOULDER_ARM_MAX_ACC = 270;
     const double ELBOW_ARM_MAX_ACC = 200;
@@ -240,8 +239,8 @@ namespace TwoJointArmConstants
     const double ELBOW_KV = 40.8737;      // 43.4462
     const double ELBOW_KVI = -22.7796;    //-29.9439
 
-    const double skD_ = 0.05; //0.05, 0.05, 0, 0.15
-    const double skP_ = 0.1; //Unstable but works 0, 0.5, 0, 0.5
+    const double skD_ = 0.05; // 0.05, 0.05, 0, 0.15
+    const double skP_ = 0.1;  // Unstable but works 0, 0.5, 0, 0.5
     const double ekD_ = 0;
     const double ekP_ = 0.15;
 
@@ -268,11 +267,11 @@ namespace TwoJointArmConstants
         {
             {0.3526, -0.1769, -18.5, 164.5}, // stowed, -18.5, 175 {0.3526, -0.1769, -18.5, 164.5}GOOD AND NOT PAINFUL {0.13813, -0.3308, 11, 169}CONE PAIN
             {0.55296, -0.26022, 13, 145},    // cube intake, 13, 145
-            {1.14135, 0.67622, 8, 84.24},     // player station, 8, 84.24 {1.06559, 0.67622, 2, 90.6}
+            {1.14135, 0.67622, 8, 84.24},    // player station, 8, 84.24 {1.06559, 0.67622, 2, 90.6}
             {1.14708, 0.63964, 8.62, 85.57}, // mid, 2.6, 92 WTF
             {1.44532, 1.00479, 50, 8.8},     // high, 50, 8.8
             {0.98065, 0.45392, -2, 107},     // cube mid, -1.44, 107 {0.91348, 0.29933, -3, 117}
-            {1.32466, 0.81345, 24, 57.6},      // cube high, 24, 57.6 {1.31242, 0.68936, 22, 67}
+            {1.32466, 0.81345, 24, 57.6},    // cube high, 24, 57.6 {1.31242, 0.68936, 22, 67}
             {0.6364, -0.463, 39, 131}        // cone intake, 39, 131
     };
 
@@ -309,7 +308,7 @@ namespace MotorIntakeConstants
     const int DEPLOYER_MOTOR_ID = 0; // TODO get value
     const int ROLLER_MOTOR_ID = 0;   // TODO get value
 
-    const double ENCODER_DEPLOYED_TARGET = 512;
+    const double DEPLOYER_GOAL = M_PI / 2; // TODO measure deployed target - deployed target, in radians
 
     const double DEPLOYER_MAX_VOLTAGE = 0; // TODO measure capped voltage for deployer
     const double DEPLOYER_STEPS_PER_REV = 42;
@@ -321,8 +320,8 @@ namespace MotorIntakeConstants
     const double kI = 0; // TODO tune
     const double kD = 0; // TODO tune
 
-    const double MAX_VELOCITY = pi / 2; // TODO tune - radians per second
-    const double MAX_ACCELERATION = pi; // TODO tune - radians per second squared
+    const double MAX_VELOCITY = M_PI / 2; // TODO tune - radians per second
+    const double MAX_ACCELERATION = M_PI; // TODO tune - radians per second squared
 
     const double POS_ERR_TOLERANCE = 0.01; // TODO tune - error tolerance, in radians
     const double VEL_ERR_TOLERANCE = 0.1;  // TODO tune - error tolerance, in radians/s
