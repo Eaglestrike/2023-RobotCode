@@ -18,11 +18,7 @@ MotorIntake::MotorIntake(bool showSmartDashboard, bool showConstants)
 void MotorIntake::RobotInit()
 {
   Reset();
-
-  if (m_showConstants)
-  {
-    m_PutConstants();
-  }
+  PutConstants();
 }
 
 /**
@@ -81,6 +77,15 @@ void MotorIntake::Periodic()
   default:
     m_rollerState = STOP;
   }
+}
+
+/**
+ * Disabled code (stops both motors)
+ */
+void MotorIntake::DisabledInit()
+{
+  m_rollerMotor.SetVoltage(units::volt_t{0});
+  m_deployerMotor.SetVoltage(units::volt_t{0});
 }
 
 /**
@@ -156,6 +161,60 @@ MotorIntake::RollerState MotorIntake::getRollerState()
 }
 
 /**
+ * Puts constants to SmartDashboard if showConstants is set to true.
+ */
+void MotorIntake::PutConstants()
+{
+  if (!m_showConstants)
+  {
+    return;
+  }
+
+  frc::SmartDashboard::PutNumber("Cone Intake Target", m_deployerGoal);
+  frc::SmartDashboard::PutNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
+  frc::SmartDashboard::PutNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
+  frc::SmartDashboard::PutNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
+  frc::SmartDashboard::PutNumber("Cone Intake Roller Stall I", m_rollerStallCurrent);
+  frc::SmartDashboard::PutNumber("Cone Intake kP", m_kP);
+  frc::SmartDashboard::PutNumber("Cone Intake kI", m_kI);
+  frc::SmartDashboard::PutNumber("Cone Intake kD", m_kD);
+  frc::SmartDashboard::PutNumber("Cone Intake Max Vel", m_maxVel);
+  frc::SmartDashboard::PutNumber("Cone Intake Max Acc", m_maxAcc);
+  frc::SmartDashboard::PutNumber("Cone Intake Pos Tol", m_posErrTolerance);
+  frc::SmartDashboard::PutNumber("Cone Intake Vel Tol", m_velErrTolerance);
+}
+
+/**
+ * Sets constants as variables if showConstants is set to true.
+ */
+void MotorIntake::SetConstants()
+{
+  if (!m_showConstants)
+  {
+    return;
+  }
+
+  m_deployerGoal = frc::SmartDashboard::GetNumber("Cone Intake Target", m_deployerGoal);
+  m_deployerMaxVoltage = frc::SmartDashboard::GetNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
+  m_rollerIntakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
+  m_rollerOuttakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
+  m_rollerStallCurrent = frc::SmartDashboard::GetNumber("Cone Intake Roller Stall I", m_rollerStallCurrent);
+  m_kP = frc::SmartDashboard::GetNumber("Cone Intake kP", m_kP);
+  m_kI = frc::SmartDashboard::GetNumber("Cone Intake kI", m_kI);
+  m_kD = frc::SmartDashboard::GetNumber("Cone Intake kD", m_kD);
+  m_maxVel = frc::SmartDashboard::GetNumber("Cone Intake Max Vel", m_maxVel);
+  m_maxAcc = frc::SmartDashboard::GetNumber("Cone Intake Max Acc", m_maxAcc);
+  m_posErrTolerance = frc::SmartDashboard::GetNumber("Cone Intake Pos Tol", m_posErrTolerance);
+  m_velErrTolerance = frc::SmartDashboard::GetNumber("Cone Intake Vel Tol", m_velErrTolerance);
+
+  m_constraints.maxVelocity = units::radians_per_second_t{m_maxVel};
+  m_constraints.maxAcceleration = units::radians_per_second_squared_t{m_maxAcc};
+  m_pid.SetConstraints(m_constraints);
+  m_pid.SetTolerance(units::radian_t{m_posErrTolerance}, units::radians_per_second_t{m_velErrTolerance});
+  m_pid.SetPID(m_kP, m_kI, m_kD);
+}
+
+/**
  * Causes the intake to go down
  */
 void MotorIntake::Deploy()
@@ -195,6 +254,14 @@ void MotorIntake::Reset()
   ResetEncoderPosition();
   ResetPID();
   ResetAcceleration();
+  ResetStates();
+}
+
+/**
+ * Resets the state machines of the intake, deployer, and roller
+ */
+void MotorIntake::ResetStates()
+{
   m_deployerState = STOWED;
   m_rollerState = STOP;
   m_intakeState = IDLE;
@@ -399,42 +466,4 @@ void MotorIntake::m_PutCurrentConeIntakeState()
   }
 
   frc::SmartDashboard::PutString("Cone Intake", stateStr);
-}
-
-void MotorIntake::m_PutConstants()
-{
-  frc::SmartDashboard::PutNumber("Cone Intake Target", m_deployerGoal);
-  frc::SmartDashboard::PutNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
-  frc::SmartDashboard::PutNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
-  frc::SmartDashboard::PutNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
-  frc::SmartDashboard::PutNumber("Cone Intake Roller Stall I", m_rollerStallCurrent);
-  frc::SmartDashboard::PutNumber("Cone Intake kP", m_kP);
-  frc::SmartDashboard::PutNumber("Cone Intake kI", m_kI);
-  frc::SmartDashboard::PutNumber("Cone Intake kD", m_kD);
-  frc::SmartDashboard::PutNumber("Cone Intake Max Vel", m_maxVel);
-  frc::SmartDashboard::PutNumber("Cone Intake Max Acc", m_maxAcc);
-  frc::SmartDashboard::PutNumber("Cone Intake Pos Tol", m_posErrTolerance);
-  frc::SmartDashboard::PutNumber("Cone Intake Vel Tol", m_velErrTolerance);
-}
-
-void MotorIntake::m_SetConstants()
-{
-  m_deployerGoal = frc::SmartDashboard::GetNumber("Cone Intake Target", m_deployerGoal);
-  m_deployerMaxVoltage = frc::SmartDashboard::GetNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
-  m_rollerIntakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
-  m_rollerOuttakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
-  m_rollerStallCurrent = frc::SmartDashboard::GetNumber("Cone Intake Roller Stall I", m_rollerStallCurrent);
-  m_kP = frc::SmartDashboard::GetNumber("Cone Intake kP", m_kP);
-  m_kI = frc::SmartDashboard::GetNumber("Cone Intake kI", m_kI);
-  m_kD = frc::SmartDashboard::GetNumber("Cone Intake kD", m_kD);
-  m_maxVel = frc::SmartDashboard::GetNumber("Cone Intake Max Vel", m_maxVel);
-  m_maxAcc = frc::SmartDashboard::GetNumber("Cone Intake Max Acc", m_maxAcc);
-  m_posErrTolerance = frc::SmartDashboard::GetNumber("Cone Intake Pos Tol", m_posErrTolerance);
-  m_velErrTolerance = frc::SmartDashboard::GetNumber("Cone Intake Vel Tol", m_velErrTolerance);
-
-  m_constraints.maxVelocity = units::radians_per_second_t{m_maxVel};
-  m_constraints.maxAcceleration = units::radians_per_second_squared_t{m_maxAcc};
-  m_pid.SetConstraints(m_constraints);
-  m_pid.SetTolerance(units::radian_t{m_posErrTolerance}, units::radians_per_second_t{m_velErrTolerance});
-  m_pid.SetPID(m_kP, m_kI, m_kD);
 }

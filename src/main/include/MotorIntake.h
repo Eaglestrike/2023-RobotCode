@@ -68,6 +68,7 @@ public:
 
   void RobotInit();
   void Periodic();
+  void DisabledInit();
 
   void Consume();
   void Spit();
@@ -80,10 +81,14 @@ public:
   DeployerState getDeployerState();
   RollerState getRollerState();
 
+  void PutConstants();
+  void SetConstants();
+
   void Deploy();
   void Stow();
 
   void Reset();
+  void ResetStates();
   void ResetEncoderPosition();
   void ResetPID();
   void ResetAcceleration();
@@ -141,9 +146,6 @@ private:
   void m_PutCurrentDeployerState();
   void m_PutCurrentRollerState();
   void m_PutCurrentConeIntakeState();
-
-  void m_PutConstants();
-  void m_SetConstants();
 };
 
 #endif
