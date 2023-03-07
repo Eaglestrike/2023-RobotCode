@@ -32,6 +32,8 @@
  *
  * @note The roller is stopped if the deployer is not down, so if smartdashboard says "Intake"
  * or "Outtake" even though it is not spinning, first check if the deployer is not down.
+ *
+ * @warning Check if IsStored(), IntakeDown(), or IsIdle() is true before moving the arm.
  */
 class MotorIntake
 {
