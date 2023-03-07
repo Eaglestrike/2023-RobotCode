@@ -122,6 +122,16 @@ void MotorIntake::Idle()
 }
 
 /**
+ * If the arm can pass through the cone intake.
+ *
+ * @warning Use this method before moving the arm!!
+ */
+bool MotorIntake::IsClearForArm()
+{
+  return m_deployerState == STOWED || m_deployerState == DEPLOYED;
+}
+
+/**
  * If the cone is currently stored in the robot.
  */
 bool MotorIntake::IsStored()

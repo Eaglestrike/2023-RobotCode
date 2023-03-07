@@ -33,7 +33,7 @@
  * @note The roller is stopped if the deployer is not down, so if smartdashboard says "Intake"
  * or "Outtake" even though it is not spinning, first check if the deployer is not down.
  *
- * @warning Check if IsStored(), IntakeDown(), or IsIdle() is true before moving the arm.
+ * @warning Check if IsClearForArm() is true before moving the arm!!!!!!!!!!
  */
 class MotorIntake
 {
@@ -76,6 +76,7 @@ public:
   void Spit();
   void Idle();
 
+  bool IsClearForArm();
   bool IsStored();
   bool IntakeDown();
   bool IsIdle();
