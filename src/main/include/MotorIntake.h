@@ -74,8 +74,16 @@ public:
   void Periodic();
   void DisabledInit();
 
-  void Consume();
+  void Ground();
+  void Middle();
+  void Stow();
+  void WaitForCone();
   void Spit();
+
+  // TODO implement handoff to arm
+  void HandoffToArm();
+
+  void Consume();
   void Idle();
 
   bool IsClearForArm();
@@ -89,10 +97,6 @@ public:
   void PutDebug();
   void PutConstants();
   void SetConstants();
-
-  void Ground();
-  void Middle();
-  void Stow();
 
   void Reset();
   void ResetStates();

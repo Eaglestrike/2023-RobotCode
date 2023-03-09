@@ -37,51 +37,6 @@ void MotorIntake::Periodic()
 
   m_DeployerStateMachine();
   m_RollerStateMachine();
-
-  switch (m_intakeState)
-  {
-  case IDLING:
-    // wait until the deployer is fully stowed
-    if (m_deployerState == STOWED)
-    {
-      m_intakeState = IDLE;
-    }
-
-    break;
-  case CONSUMING:
-  {
-    // wait for the deployer to deploy
-    if (m_deployerState == GROUND)
-    {
-      // wait for cone to be in deployer
-      if (m_rollerMotor.GetSupplyCurrent() >= m_rollerStallCurrent)
-      {
-        m_deployerState = STOWING;
-        m_rollerState = STOP;
-      }
-    }
-    // once cone is in deployer, wait for deployer to stow the cone
-    if (m_deployerState == STOWED)
-    {
-      m_intakeState = CONSUMED;
-    }
-
-    break;
-  }
-  case SPITTING:
-  {
-    // wait for deployer to deploy
-    // then roll motors
-    if (m_deployerState == GROUND)
-    {
-      m_intakeState = INTAKE_DOWN;
-    }
-
-    break;
-  }
-  default:
-    m_rollerState = STOP;
-  }
 }
 
 /**
@@ -104,20 +59,11 @@ void MotorIntake::Consume()
 }
 
 /**
- * Call this to start the cone outtaking procedure for the arm to pick up
- * (or for potentially unjamming the cone).
- */
-void MotorIntake::Spit()
-{
-  m_intakeState = SPITTING;
-  m_rollerState = OUTTAKE;
-  m_deployerState = GROUNDING;
-}
-
-/**
  * Call this to store the intake with no cone inside.
  *
  * Functionally does the same as Stow()
+ *
+ * @deprecated do not use
  */
 void MotorIntake::Idle()
 {
@@ -133,11 +79,13 @@ void MotorIntake::Idle()
  */
 bool MotorIntake::IsClearForArm()
 {
-  return m_deployerState == STOWED || m_deployerState == GROUND;
+  return m_deployerState == GROUND;
 }
 
 /**
  * If the cone is currently stored in the robot.
+ *
+ * @deprecated do not use
  */
 bool MotorIntake::IsStored()
 {
@@ -151,6 +99,8 @@ bool MotorIntake::IsStored()
  * however, a delay might be needed
  *
  * TODO Test delay
+ *
+ * @deprecated do not use
  */
 bool MotorIntake::IntakeDown()
 {
@@ -159,6 +109,8 @@ bool MotorIntake::IntakeDown()
 
 /**
  * If the cone intake is stowed without a cone inside.
+ *
+ * @deprecated do not use
  */
 bool MotorIntake::IsIdle()
 {
@@ -273,6 +225,33 @@ void MotorIntake::Stow()
   ResetAcceleration();
 }
 
+/**
+ *
+ */
+void MotorIntake::Spit()
+{
+  ResetPID();
+  ResetAcceleration();
+  m_deployerState = GROUNDING;
+  m_rollerState = OUTTAKE;
+}
+
+/**
+ * Waits for cone on the ground.
+ *
+ * Deploys the intake and then spins the rollers for cone to come in.
+ */
+void MotorIntake::WaitForCone()
+{
+  ResetPID();
+  ResetAcceleration();
+  m_deployerState = STOWING;
+  m_rollerState = INTAKE;
+}
+
+/**
+ * Resets encoder position.
+ */
 void MotorIntake::ResetEncoderPosition()
 {
   m_deployerMotor.GetEncoder().SetPosition(0);
@@ -327,19 +306,8 @@ void MotorIntake::ResetAcceleration()
   m_lastSpeed = units::radians_per_second_t{0};
 }
 
-bool MotorIntake::m_MotorsNotNeeded()
-{
-  return m_intakeState == IDLE || m_intakeState == CONSUMED;
-}
-
 void MotorIntake::m_DeployerStateMachine()
 {
-  // if (m_MotorsNotNeeded())
-  // {
-  //   m_deployerMotor.SetVoltage(units::volt_t{0});
-  //   return;
-  // }
-
   switch (m_deployerState)
   {
   case STOWED:
@@ -406,9 +374,14 @@ void MotorIntake::m_DeployerStateMachine()
 
 void MotorIntake::m_RollerStateMachine()
 {
-  if (m_deployerState != GROUND || m_MotorsNotNeeded() ||
-      m_rollerMotor.GetSupplyCurrent() >= m_rollerStallCurrent)
+  if (m_rollerMotor.GetSupplyCurrent() >= m_rollerStallCurrent)
   {
+    m_rollerMotor.SetVoltage(units::volt_t(0));
+    return;
+  }
+  if (m_deployerState == STOWED || m_deployerState == STOWING)
+  {
+    // roller shouldn't be needed if stowing or stowed
     m_rollerMotor.SetVoltage(units::volt_t(0));
     return;
   }
@@ -449,19 +422,19 @@ void MotorIntake::m_PutCurrentDeployerState()
     stateStr = "Stowed";
     break;
   case GROUND:
-    stateStr = "Deployed";
+    stateStr = "On ground";
     break;
   case STOWING:
     stateStr = "Stowing";
     break;
   case GROUNDING:
-    stateStr = "Deploying";
+    stateStr = "Going to ground";
     break;
   case MIDDLING:
-    stateStr = "Middling";
+    stateStr = "Going to intake";
     break;
   case MIDDLE:
-    stateStr = "Middle";
+    stateStr = "Intake pos";
     break;
   default:
     // this shouldn't happen. If it does it's problematic
