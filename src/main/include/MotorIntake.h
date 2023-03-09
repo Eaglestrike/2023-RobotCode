@@ -66,7 +66,7 @@ public:
     INTAKE_DOWN // the intake is down and the rollers are spinning to spit out the cone
   };
 
-  MotorIntake(bool = true, bool = false);
+  MotorIntake(bool = true, bool = false, bool = false);
 
   void RobotInit();
   void Periodic();
@@ -84,6 +84,7 @@ public:
   DeployerState getDeployerState();
   RollerState getRollerState();
 
+  void PutDebug(); 
   void PutConstants();
   void SetConstants();
 
@@ -123,6 +124,7 @@ private:
   // if info should be shown on smartdashboard or not
   bool m_showSmartDashboard;
   bool m_showConstants;
+  bool m_showDebug;
 
   // constants
   double m_deployerGoal = MotorIntakeConstants::DEPLOYER_GOAL;

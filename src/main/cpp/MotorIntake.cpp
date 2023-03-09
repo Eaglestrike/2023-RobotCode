@@ -4,9 +4,11 @@
  * Constructor
  *
  * @param showSmartDashboard Set true if state machines should be shown to SmartDashboard
+ * @param showConstants If constants should be shown and set.
+ * @param debug If debug smartdashboard should be shown.
  */
-MotorIntake::MotorIntake(bool showSmartDashboard, bool showConstants)
-    : m_showSmartDashboard{showSmartDashboard}, m_showConstants{showConstants}
+MotorIntake::MotorIntake(bool showSmartDashboard, bool showConstants, bool showDebug)
+    : m_showSmartDashboard{showSmartDashboard}, m_showConstants{showConstants}, m_showDebug{showDebug}
 {
   m_pid.SetTolerance(units::radian_t{MotorIntakeConstants::POS_ERR_TOLERANCE},
                      units::radians_per_second_t{MotorIntakeConstants::VEL_ERR_TOLERANCE});
@@ -19,6 +21,9 @@ void MotorIntake::RobotInit()
 {
   Reset();
   PutConstants();
+  m_PutCurrentConeIntakeState();
+  m_PutCurrentDeployerState();
+  m_PutCurrentRollerState();
 }
 
 /**
@@ -222,6 +227,19 @@ void MotorIntake::SetConstants()
   m_pid.SetConstraints(m_constraints);
   m_pid.SetTolerance(units::radian_t{m_posErrTolerance}, units::radians_per_second_t{m_velErrTolerance});
   m_pid.SetPID(m_kP, m_kI, m_kD);
+}
+
+/**
+ * Put debug info on smartdashboard if showDebug is true
+ */
+void MotorIntake::PutDebug()
+{
+  if (!m_showDebug)
+  {
+    return;
+  }
+
+  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotor.GetEncoder().GetPosition());
 }
 
 /**
