@@ -57,7 +57,8 @@ public:
     OUTTAKE, // roller spins such that it's outtaking
   };
 
-  // overall state machine
+  /// overall state machine
+  /// @deprecated unused
   enum ConeIntakeState
   {
     IDLE,       // stored in the robot with no cone inside

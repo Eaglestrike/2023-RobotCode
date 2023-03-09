@@ -49,30 +49,6 @@ void MotorIntake::DisabledInit()
 }
 
 /**
- * Call this to start the cone intaking procedure.
- */
-void MotorIntake::Consume()
-{
-  m_intakeState = CONSUMING;
-  m_rollerState = INTAKE;
-  m_deployerState = GROUNDING;
-}
-
-/**
- * Call this to store the intake with no cone inside.
- *
- * Functionally does the same as Stow()
- *
- * @deprecated do not use
- */
-void MotorIntake::Idle()
-{
-  m_intakeState = IDLING;
-  m_deployerState = STOWING;
-  m_rollerState = STOP;
-}
-
-/**
  * If the arm can pass through the cone intake.
  *
  * @warning Use this method before moving the arm!!
@@ -83,38 +59,62 @@ bool MotorIntake::IsClearForArm()
 }
 
 /**
- * If the cone is currently stored in the robot.
- *
- * @deprecated do not use
+ * Causes the intake to go down and stops rollers
  */
-bool MotorIntake::IsStored()
+void MotorIntake::Ground()
 {
-  return m_intakeState == CONSUMED;
+  m_deployerState = GROUNDING;
+  m_rollerState = STOP;
+  ResetPID();
+  ResetAcceleration();
 }
 
 /**
- * If the intake is down and currently spitting out the cone.
+ * Causes intake to go to middle position to prepare for cone to be grabbed
  *
- * This method can be used to detect if the cone is ready to intake;
- * however, a delay might be needed
- *
- * TODO Test delay
- *
- * @deprecated do not use
+ * Also stops the rollers
  */
-bool MotorIntake::IntakeDown()
+void MotorIntake::Middle()
 {
-  return m_intakeState == INTAKE_DOWN;
+  m_deployerState = MIDDLING;
+  m_rollerState = STOP;
+  ResetPID();
+  ResetAcceleration();
 }
 
 /**
- * If the cone intake is stowed without a cone inside.
- *
- * @deprecated do not use
+ * Causes the intake to come up and stops rollers
  */
-bool MotorIntake::IsIdle()
+void MotorIntake::Stow()
 {
-  return m_intakeState == IDLE;
+  ResetPID();
+  ResetAcceleration();
+  m_deployerState = STOWING;
+  m_rollerState = STOP;
+}
+
+/**
+ * Deploys and outtakes cone
+ */
+void MotorIntake::Spit()
+{
+  ResetPID();
+  ResetAcceleration();
+  m_deployerState = GROUNDING;
+  m_rollerState = OUTTAKE;
+}
+
+/**
+ * Waits for cone on the ground.
+ *
+ * Deploys the intake and then spins the rollers for cone to come in.
+ */
+void MotorIntake::WaitForCone()
+{
+  ResetPID();
+  ResetAcceleration();
+  m_deployerState = GROUNDING;
+  m_rollerState = INTAKE;
 }
 
 MotorIntake::DeployerState MotorIntake::getDeployerState()
@@ -125,6 +125,64 @@ MotorIntake::DeployerState MotorIntake::getDeployerState()
 MotorIntake::RollerState MotorIntake::getRollerState()
 {
   return m_rollerState;
+}
+
+/**
+ * Resets encoder position.
+ */
+void MotorIntake::ResetEncoderPosition()
+{
+  m_deployerMotor.GetEncoder().SetPosition(0);
+}
+
+/**
+ * Resets intake. This includes:
+ *
+ * - resetting the encoder position
+ * - resetting the state so that the robot thinks the intake is stowed
+ *
+ * @note This does not move any motor positions (idk what past me meant by this).
+ * @note Call this when cone intake is up (in stowed position)
+ *
+ * This should be called on init (the RobotInit() method for this class does that for you).
+ */
+void MotorIntake::Reset()
+{
+  ResetEncoderPosition();
+  ResetPID();
+  ResetAcceleration();
+  ResetStates();
+}
+
+/**
+ * Resets the state machines of the intake, deployer, and roller
+ */
+void MotorIntake::ResetStates()
+{
+  m_deployerState = STOWED;
+  m_rollerState = STOP;
+  m_intakeState = IDLE;
+}
+
+/**
+ * Resets the PID
+ *
+ * If using this along with ResetEncoderPosition(), call
+ * ResetPID() AFTER ResetEncoderPosition()
+ */
+void MotorIntake::ResetPID()
+{
+  m_pid.Reset(units::radian_t(m_deployerMotor.GetEncoder().GetPosition()));
+}
+
+/**
+ * Resets acceleration calculations (currently unused; may use in the future
+ * in case we need feedforward calculations)
+ */
+void MotorIntake::ResetAcceleration()
+{
+  m_lastTime = frc::Timer::GetFPGATimestamp();
+  m_lastSpeed = units::radians_per_second_t{0};
 }
 
 /**
@@ -198,130 +256,29 @@ void MotorIntake::PutDebug()
   frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotor.GetEncoder().GetPosition());
 }
 
-/**
- * Causes the intake to go down
- */
-void MotorIntake::Ground()
-{
-  m_deployerState = GROUNDING;
-  ResetPID();
-  ResetAcceleration();
-}
-
-void MotorIntake::Middle()
-{
-  m_deployerState = MIDDLING;
-  ResetPID();
-  ResetAcceleration();
-}
-
-/**
- * Causes the intake to come up
- */
-void MotorIntake::Stow()
-{
-  m_deployerState = STOWING;
-  ResetPID();
-  ResetAcceleration();
-}
-
-/**
- *
- */
-void MotorIntake::Spit()
-{
-  ResetPID();
-  ResetAcceleration();
-  m_deployerState = GROUNDING;
-  m_rollerState = OUTTAKE;
-}
-
-/**
- * Waits for cone on the ground.
- *
- * Deploys the intake and then spins the rollers for cone to come in.
- */
-void MotorIntake::WaitForCone()
-{
-  ResetPID();
-  ResetAcceleration();
-  m_deployerState = STOWING;
-  m_rollerState = INTAKE;
-}
-
-/**
- * Resets encoder position.
- */
-void MotorIntake::ResetEncoderPosition()
-{
-  m_deployerMotor.GetEncoder().SetPosition(0);
-}
-
-/**
- * Resets intake. This includes:
- *
- * - resetting the encoder position
- * - resetting the state so that the robot thinks the intake is stowed
- *
- * Note that this does not move any motor positions.
- *
- * This should be called on init (the RobotInit() method for this class does that for you).
- */
-void MotorIntake::Reset()
-{
-  ResetEncoderPosition();
-  ResetPID();
-  ResetAcceleration();
-  ResetStates();
-}
-
-/**
- * Resets the state machines of the intake, deployer, and roller
- */
-void MotorIntake::ResetStates()
-{
-  m_deployerState = STOWED;
-  m_rollerState = STOP;
-  m_intakeState = IDLE;
-}
-
-/**
- * Resets the PID
- *
- * If using this along with ResetEncoderPosition(), call
- * ResetPID() AFTER ResetEncoderPosition()
- */
-void MotorIntake::ResetPID()
-{
-  m_pid.Reset(units::radian_t(m_deployerMotor.GetEncoder().GetPosition()));
-}
-
-/**
- * Resets acceleration calculations (currently unused; may use in the future
- * in case we need feedforward calculations)
- */
-void MotorIntake::ResetAcceleration()
-{
-  m_lastTime = frc::Timer::GetFPGATimestamp();
-  m_lastSpeed = units::radians_per_second_t{0};
-}
-
 void MotorIntake::m_DeployerStateMachine()
 {
   switch (m_deployerState)
   {
   case STOWED:
-    m_deployerMotor.SetVoltage(units::volt_t{0}); // TODO might need gravity constant
+    // still apply pid if stowed so it is not moved/disturbed
+  case STOWING:
+  {
+    // calculate motion-profiled PID for stowing
+    double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_stowedGoal});
+    double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+
+    m_deployerMotor.SetVoltage(units::volt_t(voltage));
+
+    if (m_pid.AtGoal())
+    {
+      m_deployerState = STOWED;
+    }
 
     break;
+  }
   case GROUND:
-    m_deployerMotor.SetVoltage(units::volt_t{0}); // TODO might need gravity constant
-
-    break;
-  case MIDDLE:
-    m_deployerMotor.SetVoltage(units::volt_t{0}); // TODO might need gravity constant
-
-    break;
+    // still apply pid if on the ground so it is not moved/disturbed
   case GROUNDING:
   {
     // calculate motion-profiled PID for deploying
@@ -334,28 +291,14 @@ void MotorIntake::m_DeployerStateMachine()
     {
       m_deployerState = GROUND;
     }
-
     break;
   }
+  case MIDDLE:
+    // still apply pid if in the middle so it is not moved/disturbed
   case MIDDLING:
   {
     // calculate motion-profiled PID for stowing
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_middleGoal});
-    double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
-
-    m_deployerMotor.SetVoltage(units::volt_t(voltage));
-
-    if (m_pid.AtGoal())
-    {
-      m_deployerState = STOWED;
-    }
-
-    break;
-  }
-  case STOWING:
-  {
-    // calculate motion-profiled PID for stowing
-    double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_stowedGoal});
     double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
 
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
@@ -376,12 +319,6 @@ void MotorIntake::m_RollerStateMachine()
 {
   if (m_rollerMotor.GetSupplyCurrent() >= m_rollerStallCurrent)
   {
-    m_rollerMotor.SetVoltage(units::volt_t(0));
-    return;
-  }
-  if (m_deployerState == STOWED || m_deployerState == STOWING)
-  {
-    // roller shouldn't be needed if stowing or stowed
     m_rollerMotor.SetVoltage(units::volt_t(0));
     return;
   }
@@ -505,4 +442,65 @@ void MotorIntake::m_PutCurrentConeIntakeState()
   }
 
   frc::SmartDashboard::PutString("Cone Intake", stateStr);
+}
+
+/**
+ * Call this to start the cone intaking procedure.
+ *
+ * @deprecated do not use
+ */
+void MotorIntake::Consume()
+{
+  m_intakeState = CONSUMING;
+  m_rollerState = INTAKE;
+  m_deployerState = GROUNDING;
+}
+
+/**
+ * Call this to store the intake with no cone inside.
+ *
+ * Functionally does the same as Stow()
+ *
+ * @deprecated do not use
+ */
+void MotorIntake::Idle()
+{
+  m_intakeState = IDLING;
+  m_deployerState = STOWING;
+  m_rollerState = STOP;
+}
+
+/**
+ * If the cone is currently stored in the robot.
+ *
+ * @deprecated do not use
+ */
+bool MotorIntake::IsStored()
+{
+  return m_intakeState == CONSUMED;
+}
+
+/**
+ * If the intake is down and currently spitting out the cone.
+ *
+ * This method can be used to detect if the cone is ready to intake;
+ * however, a delay might be needed
+ *
+ * TODO Test delay
+ *
+ * @deprecated do not use
+ */
+bool MotorIntake::IntakeDown()
+{
+  return m_intakeState == INTAKE_DOWN;
+}
+
+/**
+ * If the cone intake is stowed without a cone inside.
+ *
+ * @deprecated do not use
+ */
+bool MotorIntake::IsIdle()
+{
+  return m_intakeState == IDLE;
 }
