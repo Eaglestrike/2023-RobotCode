@@ -2,10 +2,11 @@
 
 Controls::Controls() : lJoy_{InputConstants::LJOY_PORT}, rJoy_{InputConstants::RJOY_PORT}, xbox_{InputConstants::XBOX_PORT}, buttonBoard_{InputConstants::BUTTON_BOARD_PORT}
 {
+    dPadUpDown_ = false;
     dPadLeftDown_ = false;
     dPadRightDown_ = false;
-    intakeDown_ = false;
-    outakeDown_ = false;
+    // intakeDown_ = false;
+    // outakeDown_ = false;
 }
 
 void Controls::periodic()
@@ -161,9 +162,26 @@ double Controls::xboxRJoyY()
     return -xbox_.GetRawAxis(InputConstants::XBOX_RJOY_Y);
 }
 
-bool Controls::dPadUpDown()
+bool Controls::dPadUpPressed()
 {
-    return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
+    bool down = ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
+    if (down && !dPadUpDown_)
+    {
+        dPadUpDown_ = true;
+        return true;
+    }
+    else if (dPadUpDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        dPadUpDown_ = false;
+        return false;
+    }
+
+
+    // return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
 }
 bool Controls::dPadDownDown()
 {
@@ -348,6 +366,26 @@ int Controls::checkLevelButtons()
     else if(buttonBoard_.GetRawButton(InputConstants::L3))
     {
         return 3;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::BB_DOWN))
+    {
+        return 0;
+    }
+    else
+    {
+        return -1;
+    }
+}
+
+int Controls::checkPSButtons()
+{
+    if(buttonBoard_.GetRawButton(InputConstants::BB_LEFT))
+    {
+        return 1;
+    }
+    else if(buttonBoard_.GetRawButton(InputConstants::BB_RIGHT))
+    {
+        return 2;
     }
     else
     {

@@ -58,8 +58,8 @@ namespace FieldConstants
     const double MID_CUBE_Y = 2.748026;
     const double TOP_CUBE_Y = 4.4244;
 
-    const double BLUE_SCORING_X = 1.8; // 1.923 - 0.019 - 0.127 - 0.02
-    const double RED_SCORING_X = 14.74; // 14.617 + 0.019 + 0.127 + 0.02
+    const double BLUE_SCORING_X = 1.8+0.068; // 1.923 - 0.019 - 0.127 - 0.02
+    const double RED_SCORING_X = 14.74-0.068; // 14.617 + 0.019 + 0.127 + 0.02
     const double BLUE_PS_X = TAG_XY[3][0] - 0.7;
     const double RED_PS_X = TAG_XY[4][0] + 0.7;
 
@@ -109,22 +109,22 @@ namespace InputConstants
     const int FIELD_ORIENT_BUTTON = 8;
 
     const int BUTTON_BOARD_PORT = 3;
-    const int B1 = 1;
-    const int B2 = 4;
-    const int B3 = 7;
-    const int B4 = 2;
-    const int B5 = 5;
-    const int B6 = 8;
-    const int B7 = 3;
-    const int B8 = 6;
-    const int B9 = 9;
-    const int L3 = 10;
-    const int L2 = 11;
-    const int L1 = 12;
-    const int BB_RIGHT = 13;
-    const int BB_DOWN = 14;
-    const int BB_UP = 15;
-    const int BB_LEFT = 16;
+    const int B1 = 1; //1
+    const int B2 = 4; //4
+    const int B3 = 7; //7
+    const int B4 = 2; //2
+    const int B5 = 5; //5
+    const int B6 = 8; //8
+    const int B7 = 3; //3
+    const int B8 = 4; //6
+    const int B9 = 2; //9
+    const int L3 = 1; //10
+    const int L2 = 8; //11
+    const int L1 = 7; //12
+    const int BB_RIGHT = 6; //13
+    const int BB_DOWN = 14; //14
+    const int BB_UP = 9; //15
+    const int BB_LEFT = 5; //16
 
 }
 
@@ -169,20 +169,20 @@ namespace SwerveConstants
     const double BL_CANCODER_OFFSET = 41.6;   // 43.2
 
     const double MAX_LA = 2;
-    const double MAX_LV = 3;   //(past year: 3, 4) (stable but scary: 1.5, 4) (stable but slow: 1, 3) (2.5, 5 for three piece)
+    const double MAX_LV = 4;   //(past year: 3, 4) (stable but scary: 1.5, 4) (stable but slow: 1, 3) (2.5, 5 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
 
     const double klV = 0.502636; // If you increase pd, check auto lineup
     const double klVI = -0.359672;
     const double klA = 4.11;
-    const double klP = 1;
+    const double klP = 1.5;
     const double klD = 0.05;
 
     const double kaV = 34.2064;
     const double kaVI = -25.4095;
     const double kaA = 0;
-    const double kaP = 1; // 0.008
+    const double kaP = 2; // 0.008
     const double kaD = 0;
 
     const double CLAW_MID_OFFSET = 0.05 + 0.0254 * 2.5; // 0.0889
@@ -195,10 +195,10 @@ namespace SwerveConstants
 
 namespace TwoJointArmConstants
 {
-    const double UPPER_ARM_LENGTH = 0.7239; // 0.7239 for real
-    const double FOREARM_LENGTH = 0.6985;   // 0.6985 for real
+    const double UPPER_ARM_LENGTH = 0.7493; // 0.7493 for 29.5
+    const double FOREARM_LENGTH = 0.7239;   // 0.7239 for 28.5
     const double EE_LENGTH = 0.3429;        // 0.3429 for 13.5
-    const double MOUNTING_HEIGHT = 0.4318;
+    const double MOUNTING_HEIGHT = 0.4318; //0.4318 for 17
     const double CUBE_INTAKE_PIVOT_TO_SHOULDER_HEGHT = 0.3622548;
     const double CUBE_INTAKE_LENGTH = 0.403195028;
     const double CUBE_INTAKE_TO_SHOULDER_X = 0.29856176;
@@ -241,10 +241,10 @@ namespace TwoJointArmConstants
     const double SHOULDER_I = UPPER_ARM_I + UPPER_ARM_M * UPPER_ARM_COM_DIST * UPPER_ARM_COM_DIST;
     const double ELBOW_I = FOREARM_I + FOREARM_M * FOREARM_COM_DIST * FOREARM_COM_DIST;
 
-    const double SHOULDER_KV = 13.6377;   // 13.6664
-    const double SHOULDER_KVI = -8.54262; //-10.6125
-    const double ELBOW_KV = 40.8737;      // 43.4462
-    const double ELBOW_KVI = -22.7796;    //-29.9439
+    const double SHOULDER_KV = 13.7273; 
+    const double SHOULDER_KVI = -8.95455; 
+    const double ELBOW_KV = 45.3989;
+    const double ELBOW_KVI = -25.9533;
 
     const double skD_ = 0.05; //0.05, 0.05, 0, 0.15
     const double skP_ = 0.1; //Unstable but works 0, 0.5, 0, 0.5
@@ -252,44 +252,37 @@ namespace TwoJointArmConstants
     const double ekP_ = 0.15;
 
     const double SHOULDER_TO_ELBOW_RATIO = (30.0 / 48.0);   // 30:54 now 30:48
-    const double MOTOR_TO_SHOULDER_RATIO = 1.0 / 243.911; // 1:194.4 (243.911), 1:100
+    const double MOTOR_TO_SHOULDER_RATIO = 1.0 / 243.911; // 1:194.4 (243.911)
     const double MOTOR_TO_ELBOW_RATIO = 1.0 / 43.556;     // 1:40.5 (43.556) for motor to shoulder area, 1:72.9 for motor to elbow joint with 54 tooth
 
     const double HIGH_CUBE_OUTAKE_VOLTS = -1;
     const double MID_CUBE_OUTAKE_VOLTS = -1;
 
-    // const double ARM_POSITIONS[8][4] =
-    // {
-    //     {0.181286, -0.35166, 9.72, 167.11}, //stowed, -18.5, 164.5
-    //     {0.52316, -0.31130, 14.72, 146.74}, //cube intake, 15, 140
-    //     {0.61308, 0.508, -38.66, 131.74}, //player station, -16, 109
-    //     {1.15245, 0.3682, 11.3, 97.38}, //mid, 2.6, 92
-    //     {1.6045, 0.7533, 54.93, 16.63}, //high, 41, 22
-    //     {0.82036, 0.2747, -12.35, 126.27}, //cube mid, -3, 117
-    //     {1.26966, 0.5426368, 17.14, 80.9}, //cube high, 22, 67
-    //     {0.52316, -0.31130, 14.72, 146.74} //cone intake,
-    // };
-
-    const double ARM_POSITIONS[8][4] =
+    const double ARM_POSITIONS[10][4] =
         {
-            {0.01263, -0.31761, 1, 179}, // stowed, -18.5, 175 {0.3526, -0.1769, -18.5, 164.5}GOOD AND NOT PAINFUL {0.13813, -0.3308, 11, 169}CONE PAIN {0.01263, -0.31761, 1, 179} UP AND DOWN PAIN
-            {0.55296, -0.26022, 13, 145},    // cube intake, 13, 145
-            {1.14135, 0.67622, 8, 84.24},     // player station and mid, 8, 84.24 {1.06559, 0.67622, 2, 90.6}
-            {-0.55296, -0.26022, -13, 215}, // cube intake other side, or just special paths!
-            {1.44532, 1.00479, 50, 8.8},     // high, 50, 8.8
-            {0.98065, 0.45392, -2, 107},     // cube mid, -1.44, 107 {0.91348, 0.29933, -3, 117}
-            {1.32466, 0.81345, 24, 57.6},      // cube high, 24, 57.6 {1.31242, 0.68936, 22, 67}
-            {0.6364, -0.463, 39, 131}        // cone intake, 39, 131
+            {0.0, -0.3175, 0, 179.999999}, // stowed, 0, 180
+            {0.63102, -0.26025, 16.2, 140.5},    // cube intake, 16.2, 140.5
+            {1.1607, 0.59354, 8, 90},     // mid, 8, 90 {1.15488, 0.55676, 8, 92}
+            {-0.63102, -0.26025, -16.2, 219.5}, // cube intake other side, or just special paths!
+            {1.54007, 0.92549, 49, 17},     // high, 49, 17
+            {1.02963, 0.36889, 2.5, 108.35},     // cube mid, 2.5, 108.35
+            {1.38, 0.7587, 24.96, 60.78},      // cube high, 24.96, 60.78
+            {1.10306, 0.04506, 20.5, 107.5},        // ground, 20.5, 107.5
+            {0.76201, 0.55449, -23.3, 120.5}, //ramming player station, -23.3, 120.5
+            //{0.72371, -0.49738, 43, 125.5} //Cone intake, 43, 125.5 from the ground
+            {0.27128, -0.22694, -18.5, 170} //Cone intake maybe from store idk
     };
 
     const int STOWED_NUM = 0;
     const int CUBE_INTAKE_NUM = 1;
-    const int PLAYER_STATION_NUM = 2;
-    const int MID_NUM = 3;
+    const int MID_NUM = 2;
+    const int SPECIAL_NUM = 3;
     const int HIGH_NUM = 4;
     const int CUBE_MID_NUM = 5;
     const int CUBE_HIGH_NUM = 6;
-    const int CONE_INTAKE_NUM = 7;
+    const int GROUND_NUM = 7;
+    const int RAMMING_PLAYER_STATION_NUM = 8;
+    const int CONE_INTAKE_NUM = 9;
 
     const double ANGLE_ERROR_THRESHOLD = 3;
     const double ANGLE_POS_KNOWN_THRESHOLD = 10;
@@ -339,6 +332,6 @@ namespace PneumaticsIntakeConstants
     const int RIGHT_SOLENOID_ID = 7;
     const int ROLLER_MOTOR_ID = 13;
 
-    const double ROLLER_INTAKE_VOLTAGE = -5;
-    const double ROLLER_OUTTAKE_VOLTAGE = 5;
+    const double ROLLER_INTAKE_VOLTAGE = -2.5;
+    const double ROLLER_OUTTAKE_VOLTAGE = 2.5;
 } // namespace PneumaticsIntakeConstants

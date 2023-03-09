@@ -29,6 +29,7 @@ class AutoPaths
             SECOND_CONE_DOCK,
             SECOND_CUBE_DOCK,
             AUTO_DOCK,
+            TAXI_DOCK_DUMB,
             NOTHING,
             DRIVE_BACK_DUMB,
             WAIT_5_SECONDS
@@ -70,7 +71,7 @@ class AutoPaths
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
         double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_;
-        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_;
+        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_;
 
         //vector<SwervePath> swervePaths_;
         int actionNum_;

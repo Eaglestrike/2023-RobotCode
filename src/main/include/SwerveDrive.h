@@ -22,7 +22,7 @@ class SwerveDrive
         void setYaw(double yaw);
         
         void periodic(double yaw, double tilt);
-        void teleopPeriodic(Controls* controls, bool forward, bool panic);
+        void teleopPeriodic(Controls* controls, bool forward, bool panic, int scoringLevel);
         void drive(double xSpeed, double ySpeed, double turn);
         void drivePose(SwervePose pose);
         void adjustPos(SwervePose pose);
@@ -39,7 +39,7 @@ class SwerveDrive
         void setPos(pair<double, double> xy);
 
         void updateAprilTagFieldXY(double tilt);
-        pair<double, double> checkScoringPos();
+        pair<double, double> checkScoringPos(int scoringLevel);
         void setScoringPos(int scoringPos);
         int getScoringPos();
         
@@ -64,7 +64,7 @@ class SwerveDrive
 
         double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_, holdingYaw_;
 
-        bool trackingTag_, foundTag_, isHoldingYaw_, inching_;
+        bool trackingTag_, trackingPlayerStation_, foundTag_, isHoldingYaw_/*, inching_*/;
         int setTagPos_, prevTag_, prevUniqueVal_;
 
         map<double, pair<pair<double, double>, pair<double, double>>> prevPoses_;

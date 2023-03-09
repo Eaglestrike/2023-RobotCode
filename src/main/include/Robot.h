@@ -56,6 +56,6 @@ private:
 
 
     bool cubeIntaking_, coneIntaking_, armsZeroed_;
-    int scoringLevel_;
+    int scoringLevel_, psType_;
 
 };

@@ -15,6 +15,9 @@ AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(
     cubeIntaking_ = false;
     coneIntaking_ = false;
     placingTimerStarted_ = false;
+    comingDownChargingStation_ = false;
+    taxied_ = false;
+    dumbAutoDocking_ = false;
 }
 
 void AutoPaths::setPath(Path path)
@@ -223,12 +226,12 @@ void AutoPaths::setPath(Path path)
             yaw2 = 90;
             if (mirrored_)
             {
-                y1 = FieldConstants::TOP_PIECE_Y;
+                y1 = FieldConstants::TOP_PIECE_Y - SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
             else
             {
-                y1 = FieldConstants::BOTTOM_PIECE_Y;
+                y1 = FieldConstants::BOTTOM_PIECE_Y - SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
         }
@@ -240,12 +243,12 @@ void AutoPaths::setPath(Path path)
             yaw2 = -90;
             if (!mirrored_)
             {
-                y1 = FieldConstants::TOP_PIECE_Y - 0.305;
+                y1 = FieldConstants::TOP_PIECE_Y + SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::TOP_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
             else
             {
-                y1 = FieldConstants::BOTTOM_PIECE_Y - 0.305;
+                y1 = FieldConstants::BOTTOM_PIECE_Y + SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::BOTTOM_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
         }
@@ -516,38 +519,40 @@ void AutoPaths::setPath(Path path)
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
             x1 = FieldConstants::BLUE_PIECE_X;
-            x2 = FieldConstants::BLUE_AUTO_DOCK_X;
-            yaw2 = 90;
+            x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.3;
             if (mirrored_)
             {
                 yaw1 = 45;
+                yaw2 = 0;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
             }
             else
             {
                 yaw1 = 135;
+                yaw2 = 180;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
             }
         }
         else
         {
             x1 = FieldConstants::RED_PIECE_X;
-            x2 = FieldConstants::RED_AUTO_DOCK_X;
-            yaw2 = -90;
+            x2 = FieldConstants::RED_AUTO_DOCK_X + 0.3;
             if (!mirrored_)
             {
                 yaw1 = -45;
+                yaw2 = 0;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
             }
             else
             {
                 yaw1 = -135;
+                yaw2 = -180;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
             }
         }
 
         swervePoints_.push_back(SwervePose(x1, y1, yaw1, 0));
-        swervePoints_.push_back(SwervePose(x2, y2, yaw2, 0));
+        swervePoints_.push_back(SwervePose(x2, y2, yaw2, 0.5));
 
         break;
     }
@@ -567,6 +572,10 @@ void AutoPaths::setPath(Path path)
             // yaw = -90;
         }
         swervePoints_.push_back(SwervePose(x, y, yaw, 0.5));
+        break;
+    }
+    case TAXI_DOCK_DUMB:
+    {
         break;
     }
     case NOTHING:
@@ -618,11 +627,15 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
     coneIntaking_ = false;
     placingTimerStarted_ = false;
 
+    comingDownChargingStation_ = false;
+    taxied_ = false;
+    dumbAutoDocking_ = false;
+
     switch (a1)
     {
     case PRELOADED_CONE_MID:
     {
-        armPosition_ = TwoJointArmProfiles::PLAYER_STATION; // MID THING
+        armPosition_ = TwoJointArmProfiles::MID; // MID THING
         forward_ = true;
         break;
     }
@@ -645,6 +658,12 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
         break;
     }
     case AUTO_DOCK:
+    {
+        armPosition_ = TwoJointArmProfiles::STOWED;
+        forward_ = true;
+        break;
+    }
+    case TAXI_DOCK_DUMB:
     {
         armPosition_ = TwoJointArmProfiles::STOWED;
         forward_ = true;
@@ -732,7 +751,7 @@ void AutoPaths::periodic()
         }
     }
     else */
-    if (path_ != DRIVE_BACK_DUMB && path_ != NOTHING && path_ != WAIT_5_SECONDS)
+    if (path_ != DRIVE_BACK_DUMB && path_ != NOTHING && path_ != WAIT_5_SECONDS && path_ != TAXI_DOCK_DUMB)
     {
         SwervePose *pose = nullptr;
         for (size_t i = pointNum_; i < swervePoints_.size(); ++i)
@@ -838,22 +857,22 @@ void AutoPaths::periodic()
                         {
                             if (mirrored_)
                             {
-                                setY = FieldConstants::TOP_CONE_Y;
+                                setY = FieldConstants::TOP_CONE_Y + 0.1;
                             }
                             else
                             {
-                                setY = FieldConstants::BOTTOM_CONE_Y;
+                                setY = FieldConstants::BOTTOM_CONE_Y - 0.1;
                             }
                         }
                         else
                         {
                             if (mirrored_)
                             {
-                                setY = FieldConstants::BOTTOM_CONE_Y;
+                                setY = FieldConstants::BOTTOM_CONE_Y - 0.1;
                             }
                             else
                             {
-                                setY = FieldConstants::TOP_CONE_Y;
+                                setY = FieldConstants::TOP_CONE_Y + 0.1;
                             }
                         }
                         yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
@@ -866,7 +885,7 @@ void AutoPaths::periodic()
                     // frc::SmartDashboard::PutBoolean("PATH", pathGenerated_);
                     // frc::SmartDashboard::PutNumber("TIME", timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_);
                     tuple<double, double, double> yProfile = yTraj_.getProfile();
-                    if ((!curveSecondStageGenerated_) && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 2.3 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0)
+                    if ((!curveSecondStageGenerated_) && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0)
                     {
                         // frc::SmartDashboard::PutNumber("F", 1);
                         double setY = swervePoints_[i].getY();
@@ -913,7 +932,7 @@ void AutoPaths::periodic()
             else if (path_ == AUTO_DOCK)
             {
                 double heldX = (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) ? FieldConstants::BLUE_SCORING_X + 0.05 : FieldConstants::RED_SCORING_X - 0.05;
-                tuple<double, double, double> xProfile = {0, 0, heldX}; //swerveDrive_->getX()
+                tuple<double, double, double> xProfile = {0, 0, heldX}; // swerveDrive_->getX()
                 tuple<double, double, double> yProfile = yTraj_.getProfile();
                 tuple<double, double, double> yawProfile = yawTraj_.getProfile();
                 if (curveSecondStageGenerated_)
@@ -1006,7 +1025,10 @@ void AutoPaths::periodic()
 
         if (pose != nullptr)
         {
-            swerveDrive_->drivePose(*pose);
+            if (!pointOver || pointNum_ != 1 || path_ != SECOND_CUBE_DOCK)
+            {
+                swerveDrive_->drivePose(*pose);
+            }
             delete pose;
         }
     }
@@ -1109,9 +1131,9 @@ void AutoPaths::periodic()
         wheelSpeed_ = 0;
         cubeIntaking_ = false;
         coneIntaking_ = false;
-        armPosition_ = TwoJointArmProfiles::PLAYER_STATION; // MID THING
+        armPosition_ = TwoJointArmProfiles::MID;
 
-        if (arm_->getPosition() == TwoJointArmProfiles::PLAYER_STATION && arm_->getState() == TwoJointArm::HOLDING_POS) // MID THING
+        if (arm_->getPosition() == TwoJointArmProfiles::MID && arm_->getState() == TwoJointArm::HOLDING_POS) // MID THING
         {
             // wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
             clawOpen_ = true;
@@ -1261,6 +1283,7 @@ void AutoPaths::periodic()
             forward_ = false;
             cubeIntaking_ = true;
             clawOpen_ = true;
+            wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             if (pointOver)
             {
                 nextPointReady_ = true;
@@ -1274,13 +1297,13 @@ void AutoPaths::periodic()
             {
                 cubeIntaking_ = false;
                 forward_ = true;
-                if (arm_->isForward())
-                {
-                    if (arm_->getPosition() != TwoJointArmProfiles::CUBE_HIGH)
-                    {
-                        armPosition_ = TwoJointArmProfiles::CUBE_HIGH;
-                    }
-                }
+                // if (arm_->isForward())
+                // {
+                //     if (arm_->getPosition() != TwoJointArmProfiles::CUBE_HIGH)
+                //     {
+                armPosition_ = TwoJointArmProfiles::CUBE_HIGH;
+                //     }
+                // }
             }
             else
             {
@@ -1337,7 +1360,7 @@ void AutoPaths::periodic()
 
             if (pointOver)
             {
-                double ang = (yaw_)*M_PI / 180.0;                                                     // Radians
+                double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                 double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                 double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                 double tilt = pitch * sin(ang) - roll * cos(ang);
@@ -1429,6 +1452,10 @@ void AutoPaths::periodic()
         // }
         // break;
     }
+    case SECOND_CUBE_HIGH:
+    {
+        break;
+    }
     case SECOND_CONE_DOCK:
     {
         break;
@@ -1441,6 +1468,7 @@ void AutoPaths::periodic()
             forward_ = false;
             cubeIntaking_ = true;
             clawOpen_ = true;
+            wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             if (pointOver)
             {
                 nextPointReady_ = true;
@@ -1459,10 +1487,11 @@ void AutoPaths::periodic()
 
             if (pointOver)
             {
-                double ang = (yaw_)*M_PI / 180.0;                                                     // Radians
+                double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                 double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                 double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                 double tilt = pitch * sin(ang) - roll * cos(ang);
+                // frc::SmartDashboard::PutNumber("F", tilt);
                 if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
                 {
                     tilt = 0.0;
@@ -1481,7 +1510,7 @@ void AutoPaths::periodic()
         wheelSpeed_ = 0;
         if (pointOver)
         {
-            double ang = (yaw_)*M_PI / 180.0;                                                     // Radians
+            double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
             double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
             double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
             double tilt = pitch * sin(ang) - roll * cos(ang);
@@ -1491,6 +1520,78 @@ void AutoPaths::periodic()
             }
             double output = -SwerveConstants::AUTOKTILT * tilt;
             swerveDrive_->drive(output, 0, 0);
+        }
+        break;
+    }
+    case TAXI_DOCK_DUMB:
+    {
+        forward_ = true;
+        clawOpen_ = false;
+        wheelSpeed_ = 0;
+        armPosition_ = TwoJointArmProfiles::STOWED;
+
+        double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
+        double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+        double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+        double tilt = pitch * sin(ang) - roll * cos(ang);
+
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            if (tilt > 5)
+            {
+                comingDownChargingStation_ = true;
+            }
+        }
+        else
+        {
+            if (tilt < -5)
+            {
+                comingDownChargingStation_ = true;
+            }
+        }
+
+        if (!comingDownChargingStation_)
+        {
+            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            {
+                swerveDrive_->drive(0.5, 0, 0);
+            }
+            else
+            {
+                swerveDrive_->drive(-0.5, 0, 0);
+            }
+        }
+        else if (comingDownChargingStation_ && !taxied_)
+        {
+            taxied_ = (abs(tilt) < 3);
+        }
+        else
+        {
+            if (!dumbAutoDocking_)
+            {
+                if (abs(tilt) > 10)
+                {
+                    dumbAutoDocking_ = true;
+                }
+                else
+                {
+                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    {
+                        swerveDrive_->drive(-0.5, 0, 0);
+                    }
+                    else
+                    {
+                        swerveDrive_->drive(0.5, 0, 0);
+                    }
+                }
+            }
+
+
+            if(dumbAutoDocking_)
+            {
+                double output = -SwerveConstants::AUTOKTILT * tilt;
+                swerveDrive_->drive(output, 0, 0);
+            }
         }
         break;
     }
@@ -1745,11 +1846,29 @@ pair<double, double> AutoPaths::initPos()
         double x;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x = FieldConstants::BLUE_AUTO_DOCK_X;
+            // x = FieldConstants::BLUE_AUTO_DOCK_X;
+            x = FieldConstants::BLUE_SCORING_X;
         }
         else
         {
-            x = FieldConstants::RED_AUTO_DOCK_X;
+            // x = FieldConstants::RED_AUTO_DOCK_X;
+            x = FieldConstants::RED_SCORING_X;
+        }
+        return {x, y};
+    }
+    case TAXI_DOCK_DUMB:
+    {
+        double y = FieldConstants::AUTO_DOCK_Y;
+        double x;
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            // x = FieldConstants::BLUE_AUTO_DOCK_X;
+            x = FieldConstants::BLUE_SCORING_X;
+        }
+        else
+        {
+            // x = FieldConstants::RED_AUTO_DOCK_X;
+            x = FieldConstants::RED_SCORING_X;
         }
         return {x, y};
     }

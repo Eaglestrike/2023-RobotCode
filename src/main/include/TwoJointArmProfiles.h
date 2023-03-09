@@ -14,11 +14,13 @@ public:
 	{
 		STOWED,
 		CUBE_INTAKE,
-		PLAYER_STATION,
+		MID,
 		SPECIAL,
 		HIGH,
 		CUBE_MID,
 		CUBE_HIGH,
+		GROUND,
+		RAMMING_PLAYER_STATION,
 		CONE_INTAKE
 	};
 	TwoJointArmProfiles();

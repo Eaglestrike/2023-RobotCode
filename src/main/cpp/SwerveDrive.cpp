@@ -8,6 +8,7 @@ SwerveDrive::SwerveDrive()
     // autoX_ = 0;
     // autoY_ = 0;
     trackingTag_ = false;
+    trackingPlayerStation_ = false;
     foundTag_ = false;
     setTagPos_ = 1;
     tagFollowingStartTime_ = 0;
@@ -15,7 +16,7 @@ SwerveDrive::SwerveDrive()
     prevUniqueVal_ = -1;
     holdingYaw_ = 0;
     isHoldingYaw_ = false;
-    inching_ = false;
+    // inching_ = false;
 
     // aprilTagX_ = 0;
     // aprilTagY_ = 0;
@@ -38,19 +39,19 @@ void SwerveDrive::periodic(double yaw, double tilt)
     updateAprilTagFieldXY(tilt);
 }
 
-void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
+void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, int scoringLevel)
 {
     frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
-    // frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
+    frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
 
     // frc::SmartDashboard::PutBoolean("LJT", controls->lJoyTriggerDown());
     if (controls->lJoyTriggerDown())
     {
         if (!trackingTag_)
         {
-            pair<double, double> scoringPos = checkScoringPos();
-            frc::SmartDashboard::PutNumber("SX", scoringPos.first);
-            frc::SmartDashboard::PutNumber("SY", scoringPos.second);
+            pair<double, double> scoringPos = checkScoringPos(scoringLevel);
+            // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
+            // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
             if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
             {
                 double xStrafe, yStrafe;
@@ -79,72 +80,91 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
             double wantedY = scoringPos.second;
             double wantedYaw;
             bool playerStation = false;
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            // {
+            //     if (forward)
+            //     {
+            //         wantedYaw = 90.0;
+            //         if (scoringPos.first > 6.0)
+            //         {
+            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+            //             wantedYaw *= -1;
+            //             playerStation = true;
+            //         }
+            //         else
+            //         {
+            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         wantedYaw = -90.0;
+            //         if (scoringPos.first > 6.0)
+            //         {
+            //             wantedYaw *= -1;
+            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+            //             playerStation = true;
+            //         }
+            //         else
+            //         {
+            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+            //         }
+            //     }
+            // }
+            // else
+            // {
+            //     if (forward)
+            //     {
+            //         wantedYaw = -90.0;
+            //         if (scoringPos.first < 6.0)
+            //         {
+            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+            //             wantedYaw *= -1;
+            //             playerStation = true;
+            //         }
+            //         else
+            //         {
+            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+            //         }
+            //     }
+            //     else
+            //     {
+            //         wantedYaw = 90.0;
+            //         if (scoringPos.first < 6.0)
+            //         {
+            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+            //             wantedYaw *= -1;
+            //             playerStation = true;
+            //         }
+            //         else
+            //         {
+            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+            //         }
+            //     }
+            // }
+
+            if (yaw_ > 0)
             {
-                if (forward)
-                {
-                    wantedYaw = 90.0;
-                    if (scoringPos.first > 6.0)
-                    {
-                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
-                        wantedYaw *= -1;
-                        playerStation = true;
-                    }
-                    else
-                    {
-                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-                    }
-                }
-                else
-                {
-                    wantedYaw = -90.0;
-                    if (scoringPos.first > 6.0)
-                    {
-                        wantedYaw *= -1;
-                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-                        playerStation = true;
-                    }
-                    else
-                    {
-                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
-                    }
-                }
+                wantedYaw = 90;
             }
             else
             {
-                if (forward)
-                {
-                    wantedYaw = -90.0;
-                    if (scoringPos.first < 6.0)
-                    {
-                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-                        wantedYaw *= -1;
-                        playerStation = true;
-                    }
-                    else
-                    {
-                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
-                    }
-                }
-                else
-                {
-                    wantedYaw = 90.0;
-                    if (scoringPos.first < 6.0)
-                    {
-                        wantedY += SwerveConstants::CLAW_MID_OFFSET;
-                        wantedYaw *= -1;
-                        playerStation = true;
-                    }
-                    else
-                    {
-                        wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-                    }
-                }
+                wantedYaw = -90;
             }
+            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            {
+                playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0);
+            }
+            else
+            {
+                playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0);
+            }
+            wantedY += (wantedYaw == 90) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
+            trackingPlayerStation_ = playerStation;
 
             if (playerStation)
             {
-                if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::PLAYER_STATION_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::PLAYER_STATION_NUM][0]))
+                if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
                 {
                     double xStrafe, yStrafe;
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
@@ -199,25 +219,58 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
         tuple<double, double, double> xProfile = xTagTraj_.getProfile();
         tuple<double, double, double> yProfile = yTagTraj_.getProfile();
         tuple<double, double, double> yawProfile = yawTagTraj_.getProfile();
-        if (get<0>(xProfile) == 0 && get<0>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(xProfile) == 0 && get<1>(yProfile) == 0 && get<1>(yawProfile) == 0)
-        {
-            if (abs(robotX_ - get<2>(xProfile)) > 0.08 || abs(robotY_ - get<2>(yProfile)) > 0.08)
-            {
-                trackingTag_ = false;
-                return;
-            }
-        }
 
-        SwervePose *wantedPose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
-        // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
-        // frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
-        // frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
-        drivePose(*wantedPose);
-        delete wantedPose;
+        if (trackingPlayerStation_)
+        {
+            if (get<0>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yProfile) == 0 && get<1>(yawProfile) == 0)
+            {
+                if (abs(robotY_ - get<2>(yProfile)) > 0.08)
+                {
+                    trackingTag_ = false;
+                    trackingPlayerStation_ = false;
+                    return;
+                }
+            }
+            double xStrafe;
+            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            {
+                xStrafe = controls->getYStrafe() * 5;
+            }
+            else
+            {
+                xStrafe = -controls->getYStrafe() * 5;
+            }
+            SwervePose *wantedPose = new SwervePose(getX(), get<2>(yProfile), get<2>(yawProfile), xStrafe, get<1>(yProfile), get<1>(yawProfile), 0, get<0>(yProfile), get<0>(yawProfile));
+            // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
+            // frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
+            // frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
+            drivePose(*wantedPose);
+            delete wantedPose;
+        }
+        else
+        {
+            if (get<0>(xProfile) == 0 && get<0>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(xProfile) == 0 && get<1>(yProfile) == 0 && get<1>(yawProfile) == 0)
+            {
+                if (abs(robotX_ - get<2>(xProfile)) > 0.08 || abs(robotY_ - get<2>(yProfile)) > 0.08)
+                {
+                    trackingTag_ = false;
+                    trackingPlayerStation_ = false;
+                    return;
+                }
+            }
+
+            SwervePose *wantedPose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
+            // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
+            // frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
+            // frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
+            drivePose(*wantedPose);
+            delete wantedPose;
+        }
     }
     else if (!controls->autoBalanceDown())
     {
         trackingTag_ = false;
+        trackingPlayerStation_ = false;
         double xStrafe, yStrafe;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
@@ -239,93 +292,105 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic)
         bool inchDown = controls->inchingDownPressed();
         bool inchLeft = controls->inchingLeftPressed();
         bool inchRight = controls->inchingRightPressed();
-        if (abs(xStrafe) < 0.005 && abs(yStrafe) < 0.005 && abs(turn) < 0.02)
-        {
-            if (!inching_)
-            {
-                if (inchUp)
-                {
-                    inching_ = true;
-                    pair<double, double> vel = getXYVel();
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-                    }
-                    else
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-                    }
-                }
-                else if (inchDown)
-                {
-                    inching_ = true;
-                    pair<double, double> vel = getXYVel();
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-                    }
-                    else
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-                    }
-                }
-                else if (inchLeft)
-                {
-                    inching_ = true;
-                    pair<double, double> vel = getXYVel();
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_ + SwerveConstants::INCHING_DIST, vel.second);
-                    }
-                    else
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_ - SwerveConstants::INCHING_DIST, vel.second);
-                    }
-                }
-                else if (inchRight)
-                {
-                    inching_ = true;
-                    pair<double, double> vel = getXYVel();
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_ - SwerveConstants::INCHING_DIST, vel.second);
-                    }
-                    else
-                    {
-                        xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-                        yTagTraj_.generateTrajectory(robotY_, robotY_ + SwerveConstants::INCHING_DIST, vel.second);
-                    }
-                }
-                else
-                {
-                    drive(0, 0, 0);
-                }
-            }
-            else
-            {
-                tuple<double, double, double> xProfile = xTagTraj_.getProfile();
-                tuple<double, double, double> yProfile = yTagTraj_.getProfile();
-                SwervePose wantedPose(get<2>(xProfile), get<2>(yProfile), yaw_, get<1>(xProfile), get<1>(yProfile), 0, get<0>(xProfile), get<0>(yProfile), 0);
-                drivePose(wantedPose);
 
-                if (get<0>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(xProfile) == 0 && get<1>(yProfile) == 0)
-                {
-                    inching_ = false;
-                }
-            }
-        }
-        else
+        if(inchUp || inchDown || inchLeft || inchRight)
         {
-            inching_ = false;
-            drive(xStrafe, yStrafe, turn);
+            xStrafe *= 0.1;
+            yStrafe *= 0.1;
+            turn *= 0.1;
         }
+
+        drive(xStrafe, yStrafe, turn);
+
+        // if (abs(xStrafe) < 0.005 && abs(yStrafe) < 0.005 && abs(turn) < 0.02)
+        // {
+        //     if (!inching_)
+        //     {
+        //         if (inchUp)
+        //         {
+        //             inching_ = true;
+        //             pair<double, double> vel = getXYVel();
+        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
+        //             }
+        //             else
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
+        //             }
+        //         }
+        //         else if (inchDown)
+        //         {
+        //             inching_ = true;
+        //             pair<double, double> vel = getXYVel();
+        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
+        //             }
+        //             else
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
+        //             }
+        //         }
+        //         else if (inchLeft)
+        //         {
+        //             inching_ = true;
+        //             pair<double, double> vel = getXYVel();
+        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ + SwerveConstants::INCHING_DIST, vel.second);
+        //             }
+        //             else
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ - SwerveConstants::INCHING_DIST, vel.second);
+        //             }
+        //         }
+        //         else if (inchRight)
+        //         {
+        //             inching_ = true;
+        //             pair<double, double> vel = getXYVel();
+        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ - SwerveConstants::INCHING_DIST, vel.second);
+        //             }
+        //             else
+        //             {
+        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
+        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ + SwerveConstants::INCHING_DIST, vel.second);
+        //             }
+        //         }
+        //         else
+        //         {
+        //             drive(0, 0, 0);
+        //         }
+        //     }
+        //     else
+        //     {
+        //         tuple<double, double, double> xProfile = xTagTraj_.getProfile();
+        //         tuple<double, double, double> yProfile = yTagTraj_.getProfile();
+        //         SwervePose wantedPose(get<2>(xProfile), get<2>(yProfile), yaw_, get<1>(xProfile), get<1>(yProfile), 0, get<0>(xProfile), get<0>(yProfile), 0);
+        //         drivePose(wantedPose);
+
+        //         if (get<0>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(xProfile) == 0 && get<1>(yProfile) == 0)
+        //         {
+        //             inching_ = false;
+        //         }
+        //     }
+        // }
+        // else
+        // {
+        //     inching_ = false;
+        //     drive(xStrafe, yStrafe, turn);
+        // }
+
+        
     }
 }
 
@@ -347,11 +412,7 @@ void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
         }
 
         double yawError = (holdingYaw_ - yaw_);
-        if (abs(yawError) < 1)
-        {
-            turn = 0;
-        }
-        else
+        if (abs(yawError) > 0.5 && (abs(xSpeed) > 0.1 || abs(ySpeed) > 0.1))
         {
             turn = -(yawError)*0.02;
         }
@@ -470,7 +531,7 @@ void SwerveDrive::drivePose(SwervePose pose)
             }
             else
             {
-                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 6.0;
+                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 0.5;
             }
         }
         else
@@ -732,7 +793,7 @@ void SwerveDrive::calcOdometry()
         for (it = prevPoses_.begin(); it->first < (time - SwerveConstants::POSE_HISTORY_LENGTH); prevPoses_.erase(it++))
             ;
 
-        frc::SmartDashboard::PutNumber("Prev Pose Count", prevPoses_.size());
+        // frc::SmartDashboard::PutNumber("Prev Pose Count", prevPoses_.size());
     }
 }
 
@@ -746,7 +807,7 @@ void SwerveDrive::reset()
     // foundTag_ = false;
     // prevPoses_.clear();
     isHoldingYaw_ = false;
-    inching_ = false;
+    // inching_ = false;
 }
 
 double SwerveDrive::getX()
@@ -858,7 +919,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
 
     if (uniqueVal == prevUniqueVal_)
     {
-        if (robotX_ > 3.919857 && robotX_ < 12.621893) // If robot is not near community nor loading station
+        if (robotX_ > 3.919857 + 2 && robotX_ < 12.621893 - 2) // If robot is not near community nor loading station
         {
             // foundTag_ = false;
         }
@@ -916,10 +977,9 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     frc::SmartDashboard::PutNumber("AT X", aprilTagX);
     frc::SmartDashboard::PutNumber("AT Y", aprilTagY);
 
-    if (robotX_ > 3.919857 - 0.5 && robotX_ < 12.621893 + 0.5) // If robot is not near community nor loading station
+    if (aprilTagX < 0 || aprilTagY < 0 || aprilTagX > FieldConstants::FIELD_LENGTH || aprilTagY > FieldConstants::FIELD_WIDTH) // If rbot is out of bounds
     {
-        // foundTag_ = false;
-        // return;
+        return;
     }
 
     // 1st check = set it regardless
@@ -949,14 +1009,14 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
         auto historicalPose = prevPoses_.lower_bound(time - SwerveConstants::CAMERA_DELAY - delay);
         if (historicalPose != prevPoses_.end() && abs(historicalPose->first - (time - SwerveConstants::CAMERA_DELAY) < 0.007))
         {
-            frc::SmartDashboard::PutNumber("HX", historicalPose->second.first.first);
-            frc::SmartDashboard::PutNumber("HY", historicalPose->second.first.second);
+            // frc::SmartDashboard::PutNumber("HX", historicalPose->second.first.first);
+            // frc::SmartDashboard::PutNumber("HY", historicalPose->second.first.second);
             double vel = sqrt(historicalPose->second.second.first * historicalPose->second.second.first + historicalPose->second.second.second * historicalPose->second.second.second);
 
             double xDiff = aprilTagX - historicalPose->second.first.first;
             double yDiff = aprilTagY - historicalPose->second.first.second;
-            frc::SmartDashboard::PutNumber("DiffX", xDiff);
-            frc::SmartDashboard::PutNumber("DiffY", yDiff);
+            // frc::SmartDashboard::PutNumber("DiffX", xDiff);
+            // frc::SmartDashboard::PutNumber("DiffY", yDiff);
 
             map<double, pair<pair<double, double>, pair<double, double>>>::iterator it;
             for (it = prevPoses_.begin(); it != prevPoses_.end(); it++)
@@ -971,14 +1031,14 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     }
 }
 
-pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
+pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
 {
     if (!foundTag_) // If tag not found
     {
         return {0, 0};
     }
 
-    if (robotX_ > 3.919857 + 1 && robotX_ < 12.621893 - 1) // If robot is not near community nor loading station
+    if (robotX_ > 3.919857 + 2 && robotX_ < 12.621893 - 2) // If robot is not near community nor loading station
     {
         return {0, 0};
     }
@@ -996,7 +1056,7 @@ pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
             wantedX = FieldConstants::BLUE_PS_X;
             if (robotY_ > FieldConstants::TAG_XY[4][1])
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.6; 
+                wantedY = FieldConstants::TAG_XY[4][1] + 0.6;
             }
             else
             {
@@ -1007,6 +1067,10 @@ pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
         else
         {
             wantedX = FieldConstants::BLUE_SCORING_X;
+            if(scoringLevel == 1)
+            {
+                wantedX += 0.5;
+            }
             wantedY = (9 - setTagPos_) * 0.5588 + 0.512826;
         }
     }
@@ -1027,6 +1091,10 @@ pair<double, double> SwerveDrive::checkScoringPos() // TODO get better values
         else
         {
             wantedX = FieldConstants::RED_SCORING_X;
+            if(scoringLevel == 1)
+            {
+                wantedX -= 0.5;
+            }
             wantedY = (setTagPos_ - 1) * 0.5588 + 0.512826;
         }
     }
