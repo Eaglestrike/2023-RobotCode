@@ -41,10 +41,12 @@ public:
   // deployer state machine
   enum DeployerState
   {
-    STOWED,    // if fully in
-    DEPLOYED,  // if fully out
-    STOWING,   // if currently stopping
-    DEPLOYING, // if currently deploying
+    STOWED,    // if at position in frame perimeter
+    GROUND,    // if currently at "ground" position (for intaking cone)
+    MIDDLE,    // if currently at the middle position for intaking
+    MIDDLING,  // if going to the middle position
+    STOWING,   // if currently going to frame perimeter
+    GROUNDING, // if currently going to the "ground" position
   };
 
   // roller state machine
@@ -84,11 +86,12 @@ public:
   DeployerState getDeployerState();
   RollerState getRollerState();
 
-  void PutDebug(); 
+  void PutDebug();
   void PutConstants();
   void SetConstants();
 
-  void Deploy();
+  void Ground();
+  void Middle();
   void Stow();
 
   void Reset();
@@ -127,7 +130,9 @@ private:
   bool m_showDebug;
 
   // constants
-  double m_deployerGoal = MotorIntakeConstants::DEPLOYER_GOAL;
+  double m_groundGoal = MotorIntakeConstants::GROUND_GOAL;
+  double m_stowedGoal = MotorIntakeConstants::STOWED_GOAL;
+  double m_middleGoal = MotorIntakeConstants::MIDDLE_GOAL;
   double m_deployerMaxVoltage = MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE;
   double m_rollerIntakeVoltage = MotorIntakeConstants::ROLLER_INTAKE_VOLTAGE;
   double m_rollerOuttakeVoltage = MotorIntakeConstants::ROLLER_OUTTAKE_VOLTAGE;

@@ -250,7 +250,7 @@ namespace TwoJointArmConstants
     const double ekD_ = 0;
     const double ekP_ = 0.15;
 
-    const double SHOULDER_TO_ELBOW_RATIO = (30.0 / 48.0);   // 30:54 now 30:48
+    const double SHOULDER_TO_ELBOW_RATIO = (30.0 / 48.0); // 30:54 now 30:48
     const double MOTOR_TO_SHOULDER_RATIO = 1.0 / 243.911; // 1:194.4 (243.911), 1:100
     const double MOTOR_TO_ELBOW_RATIO = 1.0 / 43.556;     // 1:40.5 (43.556) for motor to shoulder area, 1:72.9 for motor to elbow joint with 54 tooth
 
@@ -271,14 +271,14 @@ namespace TwoJointArmConstants
 
     const double ARM_POSITIONS[8][4] =
         {
-            {0.01263, -0.31761, 1, 179}, // stowed, -18.5, 175 {0.3526, -0.1769, -18.5, 164.5}GOOD AND NOT PAINFUL {0.13813, -0.3308, 11, 169}CONE PAIN {0.01263, -0.31761, 1, 179} UP AND DOWN PAIN
-            {0.55296, -0.26022, 13, 145},    // cube intake, 13, 145
-            {1.14135, 0.67622, 8, 84.24},     // player station and mid, 8, 84.24 {1.06559, 0.67622, 2, 90.6}
+            {0.01263, -0.31761, 1, 179},    // stowed, -18.5, 175 {0.3526, -0.1769, -18.5, 164.5}GOOD AND NOT PAINFUL {0.13813, -0.3308, 11, 169}CONE PAIN {0.01263, -0.31761, 1, 179} UP AND DOWN PAIN
+            {0.55296, -0.26022, 13, 145},   // cube intake, 13, 145
+            {1.14135, 0.67622, 8, 84.24},   // player station and mid, 8, 84.24 {1.06559, 0.67622, 2, 90.6}
             {-0.55296, -0.26022, -13, 215}, // cube intake other side, or just special paths!
-            {1.44532, 1.00479, 50, 8.8},     // high, 50, 8.8
-            {0.98065, 0.45392, -2, 107},     // cube mid, -1.44, 107 {0.91348, 0.29933, -3, 117}
-            {1.32466, 0.81345, 24, 57.6},    // cube high, 24, 57.6 {1.31242, 0.68936, 22, 67}
-            {0.6364, -0.463, 39, 131}        // cone intake, 39, 131
+            {1.44532, 1.00479, 50, 8.8},    // high, 50, 8.8
+            {0.98065, 0.45392, -2, 107},    // cube mid, -1.44, 107 {0.91348, 0.29933, -3, 117}
+            {1.32466, 0.81345, 24, 57.6},   // cube high, 24, 57.6 {1.31242, 0.68936, 22, 67}
+            {0.6364, -0.463, 39, 131}       // cone intake, 39, 131
     };
 
     const int STOWED_NUM = 0;
@@ -314,7 +314,9 @@ namespace MotorIntakeConstants
     const int DEPLOYER_MOTOR_ID = 0; // TODO get value
     const int ROLLER_MOTOR_ID = 0;   // TODO get value
 
-    const double DEPLOYER_GOAL = M_PI / 2; // TODO measure deployed target - deployed target, in radians
+    const double GROUND_GOAL = M_PI / 2; // TODO measure deployed target - deployed target, in radians
+    const double STOWED_GOAL = 0;        // stowed target should be zero position but this is here if that needs to be changed
+    const double MIDDLE_GOAL = M_PI / 4; // TODO measure middle target - middle target, in radians
 
     const double DEPLOYER_MAX_VOLTAGE = 0; // TODO measure capped voltage for deployer
     const double DEPLOYER_STEPS_PER_REV = 42;
