@@ -113,6 +113,7 @@ private:
 
   // motors
   rev::CANSparkMax m_deployerMotor{MotorIntakeConstants::DEPLOYER_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless}; // for deploying the intake
+  rev::SparkMaxRelativeEncoder m_deployerMotorEncoder{m_deployerMotor.GetEncoder()};
   WPI_TalonFX m_rollerMotor{MotorIntakeConstants::ROLLER_MOTOR_ID};                                                   // for spinning the rollers
 
   // motion profiled pid controller

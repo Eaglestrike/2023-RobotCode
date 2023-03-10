@@ -311,8 +311,8 @@ namespace ClawConstants
 
 namespace MotorIntakeConstants
 {
-    const int DEPLOYER_MOTOR_ID = 0; // TODO get value
-    const int ROLLER_MOTOR_ID = 0;   // TODO get value
+    const int DEPLOYER_MOTOR_ID = 24; // TODO get value
+    const int ROLLER_MOTOR_ID = 11;   // TODO get value
 
     const double GROUND_GOAL = M_PI / 2; // TODO measure deployed target - deployed target, in radians
     const double STOWED_GOAL = 0;        // stowed target should be zero position but this is here if that needs to be changed

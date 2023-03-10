@@ -132,7 +132,7 @@ MotorIntake::RollerState MotorIntake::getRollerState()
  */
 void MotorIntake::ResetEncoderPosition()
 {
-  m_deployerMotor.GetEncoder().SetPosition(0);
+  m_deployerMotorEncoder.SetPosition(0);
 }
 
 /**
@@ -172,7 +172,7 @@ void MotorIntake::ResetStates()
  */
 void MotorIntake::ResetPID()
 {
-  m_pid.Reset(units::radian_t(m_deployerMotor.GetEncoder().GetPosition()));
+  m_pid.Reset(units::radian_t(m_deployerMotorEncoder.GetPosition()));
 }
 
 /**
@@ -253,7 +253,7 @@ void MotorIntake::PutDebug()
     return;
   }
 
-  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotor.GetEncoder().GetPosition());
+  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotorEncoder.GetCountsPerRevolution());
 }
 
 void MotorIntake::m_DeployerStateMachine()
@@ -341,7 +341,7 @@ void MotorIntake::m_RollerStateMachine()
 
 units::radian_t MotorIntake::m_getEncoderRadians()
 {
-  double pos = m_deployerMotor.GetEncoder().GetPosition();
+  double pos = m_deployerMotorEncoder.GetPosition();
   return Helpers::convertStepsToRadians(pos, MotorIntakeConstants::DEPLOYER_STEPS_PER_REV);
 }
 
