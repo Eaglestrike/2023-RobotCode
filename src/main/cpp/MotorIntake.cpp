@@ -132,7 +132,8 @@ MotorIntake::RollerState MotorIntake::getRollerState()
  */
 void MotorIntake::ResetEncoderPosition()
 {
-  m_deployerMotorEncoder.SetPosition(0);
+  // m_deployerMotorEncoder.SetPosition(0);
+  m_deployerMotor.SetSelectedSensorPosition(0);
 }
 
 /**
@@ -172,7 +173,8 @@ void MotorIntake::ResetStates()
  */
 void MotorIntake::ResetPID()
 {
-  m_pid.Reset(units::radian_t(m_deployerMotorEncoder.GetPosition()));
+  // m_pid.Reset(units::radian_t(m_deployerMotorEncoder.GetPosition()));
+  m_pid.Reset(units::radian_t(m_deployerMotor.GetSelectedSensorPosition()));
 }
 
 /**
@@ -195,9 +197,9 @@ void MotorIntake::PutConstants()
     return;
   }
 
-  frc::SmartDashboard::PutNumber("Cone Intake Target", m_groundGoal);
-  frc::SmartDashboard::PutNumber("Cone Intake Middle", m_middleGoal);
-  frc::SmartDashboard::PutNumber("Cone Intake Stowed", m_stowedGoal);
+  frc::SmartDashboard::PutNumber("Cone Intake Ground Tgt", m_groundGoal);
+  frc::SmartDashboard::PutNumber("Cone Intake Middle Tgt", m_middleGoal);
+  frc::SmartDashboard::PutNumber("Cone Intake Stowed Tgt", m_stowedGoal);
   frc::SmartDashboard::PutNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
   frc::SmartDashboard::PutNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
   frc::SmartDashboard::PutNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
@@ -221,9 +223,9 @@ void MotorIntake::SetConstants()
     return;
   }
 
-  m_groundGoal = frc::SmartDashboard::GetNumber("Cone Intake Ground", m_groundGoal);
-  m_middleGoal = frc::SmartDashboard::GetNumber("Cone Intake Middle", m_middleGoal);
-  m_stowedGoal = frc::SmartDashboard::GetNumber("Cone Intake Stowed", m_stowedGoal);
+  m_groundGoal = frc::SmartDashboard::GetNumber("Cone Intake Ground Tgt", m_groundGoal);
+  m_middleGoal = frc::SmartDashboard::GetNumber("Cone Intake Middle Tgt", m_middleGoal);
+  m_stowedGoal = frc::SmartDashboard::GetNumber("Cone Intake Stowed Tgt", m_stowedGoal);
   m_deployerMaxVoltage = frc::SmartDashboard::GetNumber("Cone Intake Deployer Max V", m_deployerMaxVoltage);
   m_rollerIntakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Intake V", m_rollerIntakeVoltage);
   m_rollerOuttakeVoltage = frc::SmartDashboard::GetNumber("Cone Intake Roller Outtake V", m_rollerOuttakeVoltage);
@@ -253,7 +255,8 @@ void MotorIntake::PutDebug()
     return;
   }
 
-  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotorEncoder.GetCountsPerRevolution());
+  // frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotorEncoder.GetCountsPerRevolution());
+  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotor.GetSelectedSensorPosition());
 }
 
 void MotorIntake::m_DeployerStateMachine()
@@ -267,6 +270,14 @@ void MotorIntake::m_DeployerStateMachine()
     // calculate motion-profiled PID for stowing
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_stowedGoal});
     double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+
+    if (m_showDebug)
+    {
+      frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
+      frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_stowedGoal);
+      frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
+    }
 
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
@@ -285,6 +296,14 @@ void MotorIntake::m_DeployerStateMachine()
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_groundGoal});
     double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
 
+    if (m_showDebug)
+    {
+      frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
+      frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_groundGoal);
+      frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
+    }
+
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
     if (m_pid.AtGoal())
@@ -300,6 +319,14 @@ void MotorIntake::m_DeployerStateMachine()
     // calculate motion-profiled PID for stowing
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_middleGoal});
     double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+
+    if (m_showDebug)
+    {
+      frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
+      frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_middleGoal);
+      frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
+    }
 
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
@@ -341,7 +368,7 @@ void MotorIntake::m_RollerStateMachine()
 
 units::radian_t MotorIntake::m_getEncoderRadians()
 {
-  double pos = m_deployerMotorEncoder.GetPosition();
+  double pos = m_deployerMotor.GetSelectedSensorPosition();
   return Helpers::convertStepsToRadians(pos, MotorIntakeConstants::DEPLOYER_STEPS_PER_REV);
 }
 
