@@ -19,7 +19,7 @@ class Controls
         bool outakePressed();
         bool intakePressed();
         bool lLowerButtonPressed();
-        bool rLowerButtonPressed();
+        bool rLowerButton();
         bool autoBalanceDown();
 
         double xboxLJoyX();
@@ -41,10 +41,10 @@ class Controls
         bool dPadRightPressed();
         bool bbUpDown();
 
-        bool inchingUpPressed();
-        bool inchingDownPressed();
-        bool inchingLeftPressed();
-        bool inchingRightPressed();
+        bool inchingUpDown();
+        bool inchingDownDown();
+        bool inchingLeftDown();
+        bool inchingRightDown();
 
         bool fieldOrient();
 

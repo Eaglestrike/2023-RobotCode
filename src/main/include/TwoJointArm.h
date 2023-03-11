@@ -36,7 +36,7 @@ class TwoJointArm
 
         void periodic();
         void zeroArms();
-        void zeroArmsToStow();
+        void zeroArmsToAutoStow();
         void reset();
         void setPosTo(TwoJointArmProfiles::Positions setPosition);
         void specialSetPosTo(TwoJointArmProfiles::Positions setPosition);
@@ -45,10 +45,12 @@ class TwoJointArm
         void toggleForwardExtendedToCubeIntake();
         void manualControl(double thetaVel, double phiVel, bool gravity);
         void stop();
-        void resetIntaking();
-        void intake();
-        void placeCone();
-        void placeCube();
+        // void resetIntaking();
+        // void intake();
+        // void placeCone();
+        // void placeCube();
+
+        void setJointPath(double theta, double phi);
 
         double getTheta();
         double getPhi();
@@ -59,7 +61,7 @@ class TwoJointArm
         bool shoulderBrakeEngaged();
         bool elbowBrakeEngaged();
         bool isForward();
-        bool intaking();
+        // bool intaking();
 
         void checkPos();
 
@@ -105,7 +107,7 @@ class TwoJointArm
         Claw claw_;
 
         frc::Timer timer_, clawTimer_;
-        bool clawTimerStarted_;
+        //bool clawTimerStarted_;
         double taskSpaceStartTime_;
 
         TrajectoryCalc shoulderTraj_, elbowTraj_;
@@ -118,8 +120,8 @@ class TwoJointArm
 
         State state_;
 
-        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, intaking_, gettingCone_, 
-        gotCone_, eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_, switchingToCubeIntake_, ciSwitchFirstStageDone_, cubeIntakeDown_, coneIntakeDown_;
+        bool posUnknown_, shoulderBrakeEngaged_, elbowBrakeEngaged_, forward_, switchingDirections_, /*intaking_, gettingCone_, 
+        gotCone_,*/ eStopped_, cubeIntakeNeededDown_, coneIntakeNeededDown_, switchingToCubeIntake_, ciSwitchFirstStageDone_, cubeIntakeDown_, coneIntakeDown_;
         pair<bool, bool> homing_;
         pair<bool, bool> homingFirstStage_;
         pair<bool, bool> homingSecondStage_;

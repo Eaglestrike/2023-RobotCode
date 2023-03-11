@@ -96,7 +96,7 @@ namespace InputConstants
 
     const int OUTAKE_BUTTON = 4;
     const int INTAKE_BUTTON = 3;
-    const int LOWER_BUTTON = 5; // TODO get value
+    const int LOWER_BUTTON = 2;
     const int AUTO_BALANCE_BUTTON = 4;
 
     const int A_BUTTON = 1;
@@ -110,21 +110,21 @@ namespace InputConstants
 
     const int BUTTON_BOARD_PORT = 3;
     const int B1 = 1; //1
-    const int B2 = 4; //4
-    const int B3 = 7; //7
-    const int B4 = 2; //2
+    const int B2 = 2; //4
+    const int B3 = 3; //7
+    const int B4 = 4; //2
     const int B5 = 5; //5
-    const int B6 = 8; //8
-    const int B7 = 3; //3
-    const int B8 = 4; //6
-    const int B9 = 2; //9
-    const int L3 = 1; //10
-    const int L2 = 8; //11
-    const int L1 = 7; //12
-    const int BB_RIGHT = 6; //13
+    const int B6 = 6; //8
+    const int B7 = 7; //3
+    const int B8 = 8; //6
+    const int B9 = 9; //9
+    const int L3 = 12; //10
+    const int L2 = 11; //11
+    const int L1 = 10; //12
+    const int BB_RIGHT = 16; //13
     const int BB_DOWN = 14; //14
-    const int BB_UP = 9; //15
-    const int BB_LEFT = 5; //16
+    const int BB_UP = 13; //15
+    const int BB_LEFT = 15; //16
 
 }
 
@@ -168,21 +168,21 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = 74.26;  // 75.85
     const double BL_CANCODER_OFFSET = 41.6;   // 43.2
 
-    const double MAX_LA = 2;
-    const double MAX_LV = 4;   //(past year: 3, 4) (stable but scary: 1.5, 4) (stable but slow: 1, 3) (2.5, 5 for three piece)
+    const double MAX_LA = 1;
+    const double MAX_LV = 4;   //(past year: 3, 4) (stable but scary: 2, 4) (stable but slow: 1, 3) (2.5, 5 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
 
     const double klV = 0.502636; // If you increase pd, check auto lineup
     const double klVI = -0.359672;
     const double klA = 4.11;
-    const double klP = 1.5;
+    const double klP = 2.5; //1.5
     const double klD = 0.05;
 
     const double kaV = 34.2064;
     const double kaVI = -25.4095;
     const double kaA = 0;
-    const double kaP = 2; // 0.008
+    const double kaP = 4; // 0.008
     const double kaD = 0;
 
     const double CLAW_MID_OFFSET = 0.05 + 0.0254 * 2.5; // 0.0889
@@ -215,10 +215,10 @@ namespace TwoJointArmConstants
     const double ELBOW_MIN_ANG = 0;
     const double ELBOW_MAX_ANG = 360;
 
-    const double SHOULDER_ARM_MAX_VEL = 100; //50, 180, 180, 180
-    const double ELBOW_ARM_MAX_VEL = 270;
-    const double SHOULDER_ARM_MAX_ACC = 270;
-    const double ELBOW_ARM_MAX_ACC = 200;
+    const double SHOULDER_ARM_MAX_VEL = 90; //100, 270, 270, 200
+    const double ELBOW_ARM_MAX_VEL = 135;
+    const double SHOULDER_ARM_MAX_ACC = 90;
+    const double ELBOW_ARM_MAX_ACC = 90;
 
     const int SHOULDER_MASTER_ID = 6;
     const int SHOULDER_SLAVE_ID = 15;
@@ -258,7 +258,7 @@ namespace TwoJointArmConstants
     const double HIGH_CUBE_OUTAKE_VOLTS = -1;
     const double MID_CUBE_OUTAKE_VOLTS = -1;
 
-    const double ARM_POSITIONS[10][4] =
+    const double ARM_POSITIONS[11][4] =
         {
             {0.0, -0.3175, 0, 179.999999}, // stowed, 0, 180
             {0.63102, -0.26025, 16.2, 140.5},    // cube intake, 16.2, 140.5
@@ -269,8 +269,9 @@ namespace TwoJointArmConstants
             {1.38, 0.7587, 24.96, 60.78},      // cube high, 24.96, 60.78
             {1.10306, 0.04506, 20.5, 107.5},        // ground, 20.5, 107.5
             {0.76201, 0.55449, -23.3, 120.5}, //ramming player station, -23.3, 120.5
+            {0.35105, -0.17901, -18.5, 165}, //Auto stow, -18.5, 170
             //{0.72371, -0.49738, 43, 125.5} //Cone intake, 43, 125.5 from the ground
-            {0.27128, -0.22694, -18.5, 170} //Cone intake maybe from store idk
+            {0, 0, 25.7, 138} //Cone intake maybe from store idk
     };
 
     const int STOWED_NUM = 0;
@@ -282,12 +283,13 @@ namespace TwoJointArmConstants
     const int CUBE_HIGH_NUM = 6;
     const int GROUND_NUM = 7;
     const int RAMMING_PLAYER_STATION_NUM = 8;
-    const int CONE_INTAKE_NUM = 9;
+    const int AUTO_STOW_NUM = 9;
+    const int CONE_INTAKE_NUM = 10;
 
     const double ANGLE_ERROR_THRESHOLD = 3;
     const double ANGLE_POS_KNOWN_THRESHOLD = 10;
 
-    const double STALL_SAFETY = 75;
+    const double STALL_SAFETY = 13000000000000000000000000;
 
     const double SWINGTHROUGH_CLEARANCE = 15;
 

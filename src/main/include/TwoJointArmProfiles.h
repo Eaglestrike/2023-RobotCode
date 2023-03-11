@@ -21,7 +21,8 @@ public:
 		CUBE_HIGH,
 		GROUND,
 		RAMMING_PLAYER_STATION,
-		CONE_INTAKE
+		AUTO_STOW/*,
+		CONE_INTAKE*/
 	};
 	TwoJointArmProfiles();
 

@@ -182,6 +182,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
                     {
                         turn = clamp(turn, -0.075, 0.075);
                     }
+                    trackingTag_ = false;
                     drive(xStrafe, yStrafe, turn);
                     return;
                 }
@@ -234,11 +235,11 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             double xStrafe;
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                xStrafe = controls->getYStrafe() * 5;
+                xStrafe = controls->getYStrafe() * SwerveConstants::MAX_TELE_VEL;
             }
             else
             {
-                xStrafe = -controls->getYStrafe() * 5;
+                xStrafe = -controls->getYStrafe() * SwerveConstants::MAX_TELE_VEL;
             }
             SwervePose *wantedPose = new SwervePose(getX(), get<2>(yProfile), get<2>(yawProfile), xStrafe, get<1>(yProfile), get<1>(yawProfile), 0, get<0>(yProfile), get<0>(yawProfile));
             // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
@@ -288,16 +289,56 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             turn = clamp(turn, -0.075, 0.075);
         }
 
-        bool inchUp = controls->inchingUpPressed();
-        bool inchDown = controls->inchingDownPressed();
-        bool inchLeft = controls->inchingLeftPressed();
-        bool inchRight = controls->inchingRightPressed();
+        bool inchUp = controls->inchingUpDown();
+        bool inchDown = controls->inchingDownDown();
+        bool inchLeft = controls->inchingLeftDown();
+        bool inchRight = controls->inchingRightDown();
 
-        if(inchUp || inchDown || inchLeft || inchRight)
+        if(controls->rLowerButton() || inchUp || inchDown || inchLeft || inchRight)
         {
-            xStrafe *= 0.1;
-            yStrafe *= 0.1;
-            turn *= 0.1;
+            double ang = atan2(yStrafe, xStrafe);
+            double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
+            if(vel != 0)
+            {
+                vel *= 0.60;
+                vel += 0.40;
+            }
+
+            vel *= 0.15;
+            frc::SmartDashboard::PutNumber("VEL", vel);
+
+            xStrafe = vel * cos(ang);
+            yStrafe = vel * sin(ang);
+
+            // xStrafe *= 0.1;
+            // if(xStrafe > 0)
+            // {
+            //     xStrafe += 0.02;
+            // }
+            // else if(xStrafe < 0)
+            // {
+            //     xStrafe -= 0.02;
+            // }
+            
+            // yStrafe *= 0.1;
+            // if(yStrafe > 0)
+            // {
+            //     yStrafe += 0.02;
+            // }
+            // else if(yStrafe < 0)
+            // {
+            //     yStrafe -= 0.02;
+            // }
+            
+            turn *= 0.3;
+            if(turn > 0)
+            {
+                turn += 0.05;
+            }
+            else if(turn < 0)
+            {
+                turn -= 0.05;
+            }
         }
 
         drive(xStrafe, yStrafe, turn);
@@ -487,7 +528,7 @@ void SwerveDrive::drivePose(SwervePose pose)
         {
             // adjust x because x path done
             double xError = (pose.getX() - robotX_);
-            if (abs(xError) < 0.0254)
+            if (abs(xError) < 0.0254 * 1)
             {
                 xVel = 0;
             }
@@ -506,7 +547,7 @@ void SwerveDrive::drivePose(SwervePose pose)
         {
             // adjust y because y path done
             double yError = (pose.getY() - robotY_);
-            if (abs(yError) < 0.0254)
+            if (abs(yError) < 0.0254 * 1)
             {
                 yVel = 0;
             }
@@ -531,7 +572,7 @@ void SwerveDrive::drivePose(SwervePose pose)
             }
             else
             {
-                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 0.5;
+                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 1.5;
             }
         }
         else
@@ -668,13 +709,13 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
         brAngle_ = -atan2(A, C) * 180 / M_PI;
         blAngle_ = -atan2(A, D) * 180 / M_PI;
     }
-    else
-    {
-        trAngle_ = 90;
-        tlAngle_ = 90;
-        brAngle_ = 90;
-        blAngle_ = 90;
-    }
+    // else
+    // {
+    //     trAngle_ = 90;
+    //     tlAngle_ = 90;
+    //     brAngle_ = 90;
+    //     blAngle_ = 90;
+    // }
 
     double maxSpeed;
     if (inVolts)

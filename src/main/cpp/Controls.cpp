@@ -22,11 +22,11 @@ double Controls::getXStrafe()
 
     double x = lJoy_.GetRawAxis(InputConstants::LJOY_X);
     // double x = xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);
-    if (abs(x) < 0.05)
+    if (abs(x) < 0.07)
     {
         return 0;
     }
-    x = (x > 0) ? (x - 0.05) / 0.95 : (x + 0.05) / 0.95;
+    x = (x > 0) ? (x - 0.07) / 0.93 : (x + 0.07) / 0.93;
     return x;
 }
 
@@ -39,11 +39,11 @@ double Controls::getYStrafe()
 
     double y = -lJoy_.GetRawAxis(InputConstants::LJOY_Y);
     // double y = -xbox_.GetRawAxis(InputConstants::XBOX_LJOY_Y);
-    if (abs(y) < 0.05)
+    if (abs(y) < 0.07)
     {
         return 0;
     }
-    y = (y > 0) ? (y - 0.05) / 0.95 : (y + 0.05) / 0.95;
+    y = (y > 0) ? (y - 0.07) / 0.93 : (y + 0.07) / 0.93;
     return y;
 }
 
@@ -56,11 +56,11 @@ double Controls::getTurn()
 
     double turn = rJoy_.GetRawAxis(InputConstants::RJOY_X);
     // double turn = xbox_.GetRawAxis(InputConstants::XBOX_RJOY_X);
-    if (abs(turn) < 0.05)
+    if (abs(turn) < 0.07)
     {
         return 0;
     }
-    turn = (turn > 0) ? ((turn - 0.05) / 0.95) * 0.3 : ((turn + 0.05) / 0.95) * 0.3;
+    turn = (turn > 0) ? ((turn - 0.07) / 0.93) * 0.3 : ((turn + 0.07) / 0.93) * 0.3;
 
     return turn;
 }
@@ -135,9 +135,9 @@ bool Controls::lLowerButtonPressed()
     return lJoy_.GetRawButtonPressed(InputConstants::LOWER_BUTTON);
 }
 
-bool Controls::rLowerButtonPressed()
+bool Controls::rLowerButton()
 {
-    return rJoy_.GetRawButtonPressed(InputConstants::LOWER_BUTTON);
+    return rJoy_.GetRawButton(InputConstants::LOWER_BUTTON);
 }
 
 bool Controls::autoBalanceDown()
@@ -233,80 +233,88 @@ bool Controls::bbUpDown()
     return buttonBoard_.GetRawButton(InputConstants::BB_UP);
 }
 
-bool Controls::inchingUpPressed()
+bool Controls::inchingUpDown()
 {
     bool down = ((rJoy_.GetPOV() < 10 && rJoy_.GetPOV() >= 0) || (rJoy_.GetPOV() <= 360 && rJoy_.GetPOV() > 350));
-    if (down && !inchingUpDown_)
-    {
-        inchingUpDown_ = true;
-        return true;
-    }
-    else if (inchingUpDown_ && down)
-    {
-        return false;
-    }
-    else
-    {
-        inchingUpDown_ = false;
-        return false;
-    }
+    return down;
+
+    // if (down && !inchingUpDown_)
+    // {
+    //     inchingUpDown_ = true;
+    //     return true;
+    // }
+    // else if (inchingUpDown_ && down)
+    // {
+    //     return false;
+    // }
+    // else
+    // {
+    //     inchingUpDown_ = false;
+    //     return false;
+    // }
 }
 
-bool Controls::inchingDownPressed()
+bool Controls::inchingDownDown()
 {
     bool down = (rJoy_.GetPOV() < 190 && rJoy_.GetPOV() > 170);
-    if (down && !inchingDownDown_)
-    {
-        inchingDownDown_ = true;
-        return true;
-    }
-    else if (inchingDownDown_ && down)
-    {
-        return false;
-    }
-    else
-    {
-        inchingDownDown_ = false;
-        return false;
-    }
+    return down;
+    
+    // if (down && !inchingDownDown_)
+    // {
+    //     inchingDownDown_ = true;
+    //     return true;
+    // }
+    // else if (inchingDownDown_ && down)
+    // {
+    //     return false;
+    // }
+    // else
+    // {
+    //     inchingDownDown_ = false;
+    //     return false;
+    // }
 }
 
-bool Controls::inchingLeftPressed()
+bool Controls::inchingLeftDown()
 {
     bool down = (rJoy_.GetPOV() < 280 && rJoy_.GetPOV() > 260);
-    if (down && !inchingLeftDown_)
-    {
-        inchingLeftDown_ = true;
-        return true;
-    }
-    else if (inchingLeftDown_ && down)
-    {
-        return false;
-    }
-    else
-    {
-        inchingLeftDown_ = false;
-        return false;
-    }
+    return down;
+    
+    // if (down && !inchingLeftDown_)
+    // {
+    //     inchingLeftDown_ = true;
+    //     return true;
+    // }
+    // else if (inchingLeftDown_ && down)
+    // {
+    //     return false;
+    // }
+    // else
+    // {
+    //     inchingLeftDown_ = false;
+    //     return false;
+    // }
 }
 
-bool Controls::inchingRightPressed()
+bool Controls::inchingRightDown()
 {
     bool down = (rJoy_.GetPOV() < 100 && rJoy_.GetPOV() > 80);
-    if (down && !inchingRightDown_)
-    {
-        inchingRightDown_ = true;
-        return true;
-    }
-    else if (inchingRightDown_ && down)
-    {
-        return false;
-    }
-    else
-    {
-        inchingRightDown_ = false;
-        return false;
-    }
+    return down;
+    
+    // if (down && !inchingRightDown_)
+    // {
+    //     inchingRightDown_ = true;
+    //     return true;
+    // }
+    // else if (inchingRightDown_ && down)
+    // {
+    //     return false;
+    // }
+    // else
+    // {
+    //     inchingRightDown_ = false;
+    //     return false;
+    // }
 }
 
 int Controls::checkScoringButtons()

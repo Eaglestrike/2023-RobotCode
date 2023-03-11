@@ -12,9 +12,9 @@ void TwoJointArmProfiles::readProfiles()
         return;
     }
 
-	for(int i = STOWED; i <= CONE_INTAKE; ++i)
+	for(int i = STOWED; i <= AUTO_STOW; ++i)
 	{
-		for(int j = STOWED; j <= CONE_INTAKE; ++j)
+		for(int j = STOWED; j <= AUTO_STOW; ++j)
 		{
 			if(i == j)
 			{

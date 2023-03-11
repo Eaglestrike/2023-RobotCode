@@ -519,7 +519,7 @@ void AutoPaths::setPath(Path path)
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
             x1 = FieldConstants::BLUE_PIECE_X;
-            x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.3;
+            x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.7;//0.3
             if (mirrored_)
             {
                 yaw1 = 45;
@@ -536,7 +536,7 @@ void AutoPaths::setPath(Path path)
         else
         {
             x1 = FieldConstants::RED_PIECE_X;
-            x2 = FieldConstants::RED_AUTO_DOCK_X + 0.3;
+            x2 = FieldConstants::RED_AUTO_DOCK_X + 0.7;
             if (!mirrored_)
             {
                 yaw1 = -45;
@@ -1029,8 +1029,9 @@ void AutoPaths::periodic()
             {
                 swerveDrive_->drivePose(*pose);
             }
-            delete pose;
+            // delete pose;
         }
+        delete pose;
     }
     else if (path_ == WAIT_5_SECONDS)
     {
@@ -1321,7 +1322,7 @@ void AutoPaths::periodic()
                     placingTimerStarted_ = true;
                 }
 
-                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.25)
+                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.4)
                 {
                     nextPointReady_ = true;
                     placingTimerStarted_ = false;
