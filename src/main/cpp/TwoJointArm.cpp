@@ -206,6 +206,8 @@ void TwoJointArm::zeroArmsToAutoStow()
     forward_ = true;
 
     position_ = TwoJointArmProfiles::AUTO_STOW;
+    setPosition_ = TwoJointArmProfiles::AUTO_STOW;
+    state_ = HOLDING_POS;
 }
 
 void TwoJointArm::reset()
@@ -223,6 +225,14 @@ void TwoJointArm::reset()
     // gotCone_ = false;
     cubeIntakeNeededDown_ = false;
     coneIntakeNeededDown_ = false;
+
+    homing_ = {false, false};
+    homingFirstStage_ = {false, false};
+    homingSecondStage_ = {false, false};
+    homingRaising_ = false;
+    switchingDirections_ = false;
+    switchingToCubeIntake_ = false;
+    ciSwitchFirstStageDone_ = false;
 }
 
 void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
@@ -243,20 +253,20 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     // {
     //     return;
     // }
-    if(position_ == TwoJointArmProfiles::AUTO_STOW)
-    {
-        if(setPosition == TwoJointArmProfiles::STOWED || setPosition == TwoJointArmProfiles::CUBE_INTAKE || setPosition == TwoJointArmProfiles::GROUND || setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION)
-        {
-            return;
-        }
-    } 
-    if(setPosition == TwoJointArmProfiles::AUTO_STOW)
-    {
-        if(position_ == TwoJointArmProfiles::STOWED || position_ == TwoJointArmProfiles::CUBE_INTAKE || position_ == TwoJointArmProfiles::GROUND || position_ == TwoJointArmProfiles::RAMMING_PLAYER_STATION)
-        {
-            return;
-        }
-    }
+    // if(position_ == TwoJointArmProfiles::AUTO_STOW)
+    // {
+    //     if(setPosition == TwoJointArmProfiles::STOWED || setPosition == TwoJointArmProfiles::CUBE_INTAKE || setPosition == TwoJointArmProfiles::GROUND || setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION)
+    //     {
+    //         return;
+    //     }
+    // } 
+    // if(setPosition == TwoJointArmProfiles::AUTO_STOW)
+    // {
+    //     if(position_ == TwoJointArmProfiles::STOWED || position_ == TwoJointArmProfiles::CUBE_INTAKE || position_ == TwoJointArmProfiles::GROUND || position_ == TwoJointArmProfiles::RAMMING_PLAYER_STATION)
+    //     {
+    //         return;
+    //     }
+    // }
 
     if (state_ == STOPPED)
     {
@@ -1323,9 +1333,9 @@ void TwoJointArm::manualControl(double thetaVel, double phiVel, bool gravity)
     shoulderMaster_.SetVoltage(units::volt_t{thetaVolts});
     elbowMaster_.SetVoltage(units::volt_t{phiVolts});*/
 
-    double volts = frc::SmartDashboard::GetNumber("Test Volts", 3);
-    double thetaVolts = volts * thetaVel;
-    double phiVolts = volts * phiVel;
+    // double volts = frc::SmartDashboard::GetNumber("Test Volts", 3);
+    double thetaVolts = 3 * thetaVel;
+    double phiVolts = 2 * phiVel;
 
     if (gravity)
     {
@@ -1603,7 +1613,7 @@ double TwoJointArm::calcR(double volts)
 
 void TwoJointArm::setShoulderVolts(double volts)
 {
-    frc::SmartDashboard::PutNumber("SC", shoulderMaster_.GetSupplyCurrent());
+    // frc::SmartDashboard::PutNumber("SC", shoulderMaster_.GetSupplyCurrent());
     double theta = getTheta();
     double phi = getPhi();
     pair<double, double> xy = ArmKinematics::angToXY(theta, phi);
@@ -1623,27 +1633,27 @@ void TwoJointArm::setShoulderVolts(double volts)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT - 0.0889 && theta > 0 && volts > 0) // Less than 1.5 inches from ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2/* - 0.0889*/ && theta > 0 && volts > 0) // Less than 6 inches from ground
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT - 0.0889 && theta < 0 && volts < 0) // Less than 1.5 inches from ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2/* - 0.0889*/ && theta < 0 && volts < 0) // Less than 6 inches from ground
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0127 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta > 0 && volts > 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta > 0 && volts > 0) // Running into bellypan
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0127 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta < 0 && volts < 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta < 0 && volts < 0) // Running into bellypan
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.05 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + 0.15 && volts > 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + 0.0254 * 4 && volts > 0) // Running into side of bumper
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.05 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + 0.15) && volts < 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + 0.0254 * 4) && volts < 0) // Running into side of bumper
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
@@ -1681,27 +1691,27 @@ void TwoJointArm::setElbowVolts(double volts)
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT - 0.0889 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Less than 1.5 inches above the ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Less than 6 inches above the ground
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT - 0.0889 && phi + theta > 180 && volts < 0) // Less than 1.5 inches above the ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 && phi + theta > 180 && volts < 0) // Less than 6 inches above the ground
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0127 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Running into bellypan
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0127 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 180 && volts < 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 180 && volts < 0) // Running into bellypan
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.05 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + 0.15 && volts > 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + 0.0254 * 4 && volts > 0) // Running into side of bumper
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.05 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + 0.15) && volts < 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + 0.0254 * 4) && volts < 0) // Running into side of bumper
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }

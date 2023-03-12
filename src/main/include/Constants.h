@@ -121,10 +121,14 @@ namespace InputConstants
     const int L3 = 12; //10
     const int L2 = 11; //11
     const int L1 = 10; //12
-    const int BB_RIGHT = 16; //13
-    const int BB_DOWN = 14; //14
+    const int BB_RIGHT = 15; //13
+    //const int BB_DOWN = ; //14
     const int BB_UP = 13; //15
-    const int BB_LEFT = 15; //16
+    const int BB_LEFT = 14; //16
+    const int BB_X_TRIM_UP = 18;
+    const int BB_X_TRIM_DOWN = 17;
+    const int BB_Y_TRIM_UP = 16;
+    const int BB_Y_TRIM_DOWN = 19;
 
 }
 
@@ -168,7 +172,7 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = 74.26;  // 75.85
     const double BL_CANCODER_OFFSET = 41.6;   // 43.2
 
-    const double MAX_LA = 1;
+    const double MAX_LA = 2;
     const double MAX_LV = 4;   //(past year: 3, 4) (stable but scary: 2, 4) (stable but slow: 1, 3) (2.5, 5 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
@@ -221,7 +225,7 @@ namespace TwoJointArmConstants
     const double ELBOW_ARM_MAX_ACC = 90;
 
     const int SHOULDER_MASTER_ID = 6;
-    const int SHOULDER_SLAVE_ID = 15;
+    const int SHOULDER_SLAVE_ID = 11;
     const int ELBOW_MASTER_ID = 8;
     const int ELBOW_SLAVE_ID = 3;
     const int SHOULDER_BRAKE_ID = 5;
@@ -289,7 +293,7 @@ namespace TwoJointArmConstants
     const double ANGLE_ERROR_THRESHOLD = 3;
     const double ANGLE_POS_KNOWN_THRESHOLD = 10;
 
-    const double STALL_SAFETY = 13000000000000000000000000;
+    const double STALL_SAFETY = 250;
 
     const double SWINGTHROUGH_CLEARANCE = 15;
 

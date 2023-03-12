@@ -130,9 +130,9 @@ bool Controls::intakePressed()
     return rJoy_.GetRawButtonPressed(InputConstants::INTAKE_BUTTON);
 }
 
-bool Controls::lLowerButtonPressed()
+bool Controls::lLowerButton()
 {
-    return lJoy_.GetRawButtonPressed(InputConstants::LOWER_BUTTON);
+    return lJoy_.GetRawButton(InputConstants::LOWER_BUTTON);
 }
 
 bool Controls::rLowerButton()
@@ -180,7 +180,6 @@ bool Controls::dPadUpPressed()
         return false;
     }
 
-
     // return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
 }
 bool Controls::dPadDownDown()
@@ -225,7 +224,7 @@ bool Controls::dPadRightPressed()
         return false;
     }
 
-    //return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
+    // return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
 }
 
 bool Controls::bbUpDown()
@@ -258,7 +257,7 @@ bool Controls::inchingDownDown()
 {
     bool down = (rJoy_.GetPOV() < 190 && rJoy_.GetPOV() > 170);
     return down;
-    
+
     // if (down && !inchingDownDown_)
     // {
     //     inchingDownDown_ = true;
@@ -279,7 +278,7 @@ bool Controls::inchingLeftDown()
 {
     bool down = (rJoy_.GetPOV() < 280 && rJoy_.GetPOV() > 260);
     return down;
-    
+
     // if (down && !inchingLeftDown_)
     // {
     //     inchingLeftDown_ = true;
@@ -300,7 +299,7 @@ bool Controls::inchingRightDown()
 {
     bool down = (rJoy_.GetPOV() < 100 && rJoy_.GetPOV() > 80);
     return down;
-    
+
     // if (down && !inchingRightDown_)
     // {
     //     inchingRightDown_ = true;
@@ -363,22 +362,22 @@ int Controls::checkScoringButtons()
 
 int Controls::checkLevelButtons()
 {
-    if(buttonBoard_.GetRawButton(InputConstants::L1))
+    if (buttonBoard_.GetRawButton(InputConstants::L1))
     {
         return 1;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::L2))
+    else if (buttonBoard_.GetRawButton(InputConstants::L2))
     {
         return 2;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::L3))
+    else if (buttonBoard_.GetRawButton(InputConstants::L3))
     {
         return 3;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::BB_DOWN))
-    {
-        return 0;
-    }
+    // else if (buttonBoard_.GetRawButton(InputConstants::BB_DOWN))
+    // {
+    //     return 0;
+    // }
     else
     {
         return -1;
@@ -387,11 +386,11 @@ int Controls::checkLevelButtons()
 
 int Controls::checkPSButtons()
 {
-    if(buttonBoard_.GetRawButton(InputConstants::BB_LEFT))
+    if (buttonBoard_.GetRawButton(InputConstants::BB_LEFT))
     {
         return 1;
     }
-    else if(buttonBoard_.GetRawButton(InputConstants::BB_RIGHT))
+    else if (buttonBoard_.GetRawButton(InputConstants::BB_RIGHT))
     {
         return 2;
     }
@@ -399,4 +398,21 @@ int Controls::checkPSButtons()
     {
         return -1;
     }
+}
+
+bool Controls::lineupTrimXUpPressed()
+{
+    return buttonBoard_.GetRawButtonPressed(InputConstants::BB_X_TRIM_UP);
+}
+bool Controls::lineupTrimXDownPressed()
+{
+    return buttonBoard_.GetRawButtonPressed(InputConstants::BB_X_TRIM_DOWN);
+}
+bool Controls::lineupTrimYUpPressed()
+{
+    return buttonBoard_.GetRawButtonPressed(InputConstants::BB_Y_TRIM_UP);
+}
+bool Controls::lineupTrimYDownPressed()
+{
+    return buttonBoard_.GetRawButtonPressed(InputConstants::BB_Y_TRIM_DOWN);
 }

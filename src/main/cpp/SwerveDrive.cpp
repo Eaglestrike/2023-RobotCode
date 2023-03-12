@@ -16,6 +16,8 @@ SwerveDrive::SwerveDrive()
     prevUniqueVal_ = -1;
     holdingYaw_ = 0;
     isHoldingYaw_ = false;
+    xLineupTrim_ = 0;
+    yLineupTrim_ = 0;
     // inching_ = false;
 
     // aprilTagX_ = 0;
@@ -43,6 +45,54 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
 {
     frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
+
+    if(controls->lineupTrimXUpPressed())
+    {
+        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            xLineupTrim_ -= 0.0254;
+        }
+        else
+        {
+            xLineupTrim_ += 0.0254;
+        }
+    }
+    else if(controls->lineupTrimXDownPressed())
+    {
+        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            xLineupTrim_ += 0.0254;
+        }
+        else
+        {
+            xLineupTrim_ -= 0.0254;
+        }
+    }
+    else if(controls->lineupTrimYUpPressed())
+    {
+        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            yLineupTrim_ += 0.0254;
+        }
+        else
+        {
+            yLineupTrim_ -= 0.0254;
+        }
+    }
+    else if(controls->lineupTrimYDownPressed())
+    {
+        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            yLineupTrim_ -= 0.0254;
+        }
+        else
+        {
+            yLineupTrim_ += 0.0254;
+        }
+    }
+
+    frc::SmartDashboard::PutNumber("X Trim", xLineupTrim_);
+    frc::SmartDashboard::PutNumber("Y Trim", yLineupTrim_);
 
     // frc::SmartDashboard::PutBoolean("LJT", controls->lJoyTriggerDown());
     if (controls->lJoyTriggerDown())
@@ -268,6 +318,10 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             delete wantedPose;
         }
     }
+    else if(controls->lLowerButton())
+    {
+        lockWheels();
+    }
     else if (!controls->autoBalanceDown())
     {
         trackingTag_ = false;
@@ -294,18 +348,18 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
         bool inchLeft = controls->inchingLeftDown();
         bool inchRight = controls->inchingRightDown();
 
-        if(controls->rLowerButton() || inchUp || inchDown || inchLeft || inchRight)
+        if (controls->rLowerButton() || inchUp || inchDown || inchLeft || inchRight)
         {
             double ang = atan2(yStrafe, xStrafe);
             double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
-            if(vel != 0)
+            if (vel != 0)
             {
                 vel *= 0.60;
                 vel += 0.40;
             }
 
             vel *= 0.15;
-            frc::SmartDashboard::PutNumber("VEL", vel);
+            // frc::SmartDashboard::PutNumber("VEL", vel);
 
             xStrafe = vel * cos(ang);
             yStrafe = vel * sin(ang);
@@ -319,7 +373,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             // {
             //     xStrafe -= 0.02;
             // }
-            
+
             // yStrafe *= 0.1;
             // if(yStrafe > 0)
             // {
@@ -329,13 +383,13 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             // {
             //     yStrafe -= 0.02;
             // }
-            
-            turn *= 0.3;
-            if(turn > 0)
+
+            turn *= 0.15;
+            if (turn > 0)
             {
                 turn += 0.05;
             }
-            else if(turn < 0)
+            else if (turn < 0)
             {
                 turn -= 0.05;
             }
@@ -430,8 +484,6 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
         //     inching_ = false;
         //     drive(xStrafe, yStrafe, turn);
         // }
-
-        
     }
 }
 
@@ -453,6 +505,17 @@ void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
         }
 
         double yawError = (holdingYaw_ - yaw_);
+        if (abs(yawError) > 180)
+        {
+            if (yawError > 0)
+            {
+                yawError -= 360;
+            }
+            else
+            {
+                yawError += 360;
+            }
+        }
         if (abs(yawError) > 0.5 && (abs(xSpeed) > 0.1 || abs(ySpeed) > 0.1))
         {
             turn = -(yawError)*0.02;
@@ -512,6 +575,23 @@ void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
     // bottomLeft_->periodic(speed, blAngle_, true);
 }
 
+void SwerveDrive::lockWheels()
+{
+    trSpeed_ = 0;
+    tlSpeed_ = 0;
+    brSpeed_ = 0;
+    blSpeed_ = 0;
+    trAngle_ = 135;
+    tlAngle_ = 45;
+    brAngle_ = 45;
+    blAngle_ = 135;
+
+    topRight_->periodic(trSpeed_, trAngle_, false);
+    topLeft_->periodic(tlSpeed_, tlAngle_, false);
+    bottomRight_->periodic(brSpeed_, brAngle_, false);
+    bottomLeft_->periodic(blSpeed_, blAngle_, false);
+}
+
 void SwerveDrive::drivePose(SwervePose pose)
 {
     double xVel = pose.getXVel();
@@ -566,19 +646,41 @@ void SwerveDrive::drivePose(SwervePose pose)
         {
             // adjust yaw because yaw path done
             double yawError = (pose.getYaw() - yaw_);
+            if (abs(yawError) > 180)
+            {
+                if (yawError > 0)
+                {
+                    yawError -= 360;
+                }
+                else
+                {
+                    yawError += 360;
+                }
+            }
             if (abs(yawError) < 0.5)
             {
                 yawVel = 0;
             }
             else
             {
-                yawVel = (pose.getYaw() - (yaw_)) * SwerveConstants::kaP * 1.5;
+                yawVel = (yawError) * SwerveConstants::kaP * 1.5;
             }
         }
         else
         {
-            // normal yaw stuff and path still going
-            yawVel += (pose.getYaw() - (yaw_)) * SwerveConstants::kaP;
+            double yawError = (pose.getYaw() - yaw_);
+            if (abs(yawError) > 180)
+            {
+                if (yawError > 0)
+                {
+                    yawError -= 360;
+                }
+                else
+                {
+                    yawError += 360;
+                }
+            }
+            yawVel += (yawError) * SwerveConstants::kaP;
         }
     }
 
@@ -625,6 +727,17 @@ void SwerveDrive::adjustPos(SwervePose pose)
 
     double yawVel;
     double yawError = (pose.getYaw() - yaw_);
+    if (abs(yawError) > 180)
+    {
+        if (yawError > 0)
+        {
+            yawError -= 360;
+        }
+        else
+        {
+            yawError += 360;
+        }
+    }
     if (abs(yawError) < 1)
     {
         yawVel = 0;
@@ -849,6 +962,8 @@ void SwerveDrive::reset()
     // prevPoses_.clear();
     isHoldingYaw_ = false;
     // inching_ = false;
+    xLineupTrim_ = 0;
+    yLineupTrim_ = 0;
 }
 
 double SwerveDrive::getX()
@@ -1059,11 +1174,21 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
             // frc::SmartDashboard::PutNumber("DiffX", xDiff);
             // frc::SmartDashboard::PutNumber("DiffY", yDiff);
 
+            double dist;
+            if(aprilTagX > FieldConstants::FIELD_LENGTH / 2)
+            {
+                dist = FieldConstants::FIELD_LENGTH - aprilTagX;
+            }
+            else
+            {
+                dist = aprilTagX;
+            }
+            double multiplier = 0.75 * (1 - (dist / (FieldConstants::FIELD_LENGTH / 2)));
             map<double, pair<pair<double, double>, pair<double, double>>>::iterator it;
             for (it = prevPoses_.begin(); it != prevPoses_.end(); it++)
             {
-                it->second.first.first += xDiff * 0.5 / (1.0 + 0 * vel);
-                it->second.first.second += yDiff * 0.5 / (1.0 + 0 * vel);
+                it->second.first.first += xDiff * multiplier / (1.0 + 0.1 * vel);
+                it->second.first.second += yDiff * multiplier / (1.0 + 0.1 * vel);
             }
 
             robotX_ = prevPoses_.rbegin()->second.first.first;
@@ -1108,7 +1233,7 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
         else
         {
             wantedX = FieldConstants::BLUE_SCORING_X;
-            if(scoringLevel == 1)
+            if (scoringLevel == 1)
             {
                 wantedX += 0.5;
             }
@@ -1132,7 +1257,7 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
         else
         {
             wantedX = FieldConstants::RED_SCORING_X;
-            if(scoringLevel == 1)
+            if (scoringLevel == 1)
             {
                 wantedX -= 0.5;
             }
@@ -1140,7 +1265,7 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
         }
     }
 
-    return {wantedX, wantedY};
+    return {wantedX + xLineupTrim_, wantedY + yLineupTrim_};
 
     // Below is which ever is in front of the robot, above is choosing
 

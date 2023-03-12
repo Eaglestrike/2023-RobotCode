@@ -54,6 +54,7 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
 
 void Robot::RobotInit()
 {
+    arm_->zeroArmsToAutoStow();
     auto1Chooser_.SetDefaultOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
     auto1Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
     auto1Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
@@ -138,7 +139,7 @@ void Robot::RobotInit()
     psType_ = 1;
     coneGrabTimerStarted_ = false;
     coneGrabTimerStartTime_ = 0;
-    frc::SmartDashboard::PutNumber("Test Volts", 3);
+    // frc::SmartDashboard::PutNumber("Test Volts", 3);
 
     try
     {
@@ -199,7 +200,8 @@ void Robot::RobotPeriodic()
  */
 void Robot::AutonomousInit()
 {
-    arm_->stop();
+    // arm_->stop();
+    arm_->reset();
     arm_->setForward(true);
     // arm_->resetIntaking();
 
@@ -209,7 +211,7 @@ void Robot::AutonomousInit()
     armsZeroed_ = true;
     // }
 
-    arm_->reset();
+    
 
     AutoPaths::Path action1 = auto1Chooser_.GetSelected();
     AutoPaths::Path action2 = auto2Chooser_.GetSelected();
@@ -233,6 +235,7 @@ void Robot::AutonomousInit()
     }
 
     autoPaths_.startTimer();
+    autoPaths_.startAutoTimer();
 }
 
 void Robot::AutonomousPeriodic()
@@ -398,6 +401,8 @@ void Robot::TeleopPeriodic()
         }
         double output = -SwerveConstants::AUTOKTILT * tilt;
         swerveDrive_->drive(output, 0, 0);
+
+        frc::SmartDashboard::PutNumber("Tilt", tilt);
     }
 
     if (controls_->fieldOrient())
@@ -1032,8 +1037,8 @@ void Robot::TeleopPeriodic()
         }
         else
         {
-            cubeIntake_.setRollerMode(PneumaticsIntake::INTAKE);
-            // cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
+            // cubeIntake_.setRollerMode(PneumaticsIntake::INTAKE);
+            cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
         }
     }
     else
@@ -1075,6 +1080,14 @@ void Robot::DisabledPeriodic()
     swerveDrive_->reset();
     autoPaths_.setActionsSet(false);
     autoPaths_.setPathSet(false);
+    arm_->checkPos();
+
+    // frc::SmartDashboard::PutBoolean("XDown", controls_->lineupTrimXDownPressed());
+    // frc::SmartDashboard::PutBoolean("XUp", controls_->lineupTrimXUpPressed());
+    // frc::SmartDashboard::PutBoolean("YDown", controls_->lineupTrimYDownPressed());
+    // frc::SmartDashboard::PutBoolean("YUp", controls_->lineupTrimYUpPressed());
+
+    // frc::SmartDashboard::PutNumber("PS", controls_->checkPSButtons());
 }
 
 void Robot::TestInit() {}

@@ -18,7 +18,7 @@ class Controls
         bool rJoyTriggerPressed();
         bool outakePressed();
         bool intakePressed();
-        bool lLowerButtonPressed();
+        bool lLowerButton();
         bool rLowerButton();
         bool autoBalanceDown();
 
@@ -51,6 +51,11 @@ class Controls
         int checkScoringButtons();
         int checkLevelButtons();
         int checkPSButtons();
+
+        bool lineupTrimXUpPressed();
+        bool lineupTrimXDownPressed();
+        bool lineupTrimYUpPressed();
+        bool lineupTrimYDownPressed();
 
     private:
         frc::Joystick lJoy_;

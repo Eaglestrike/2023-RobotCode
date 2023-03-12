@@ -227,7 +227,8 @@ void AutoPaths::setPath(Path path)
             if (mirrored_)
             {
                 y1 = FieldConstants::TOP_PIECE_Y - SwerveConstants::CLAW_MID_OFFSET;
-                y2 = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+                y2 = FieldConstants::TOP_CUBE_Y /* - SwerveConstants::CLAW_MID_OFFSET*/ + 0.33;
+                yaw2 = 104;
             }
             else
             {
@@ -249,7 +250,8 @@ void AutoPaths::setPath(Path path)
             else
             {
                 y1 = FieldConstants::BOTTOM_PIECE_Y + SwerveConstants::CLAW_MID_OFFSET;
-                y2 = FieldConstants::BOTTOM_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
+                y2 = FieldConstants::BOTTOM_CUBE_Y /* + SwerveConstants::CLAW_MID_OFFSET*/ - 0.33;
+                yaw2 = -76;
             }
         }
 
@@ -390,13 +392,14 @@ void AutoPaths::setPath(Path path)
             yaw2 = 90;
             if (mirrored_)
             {
-                yaw1 = 65;
+                yaw1 = 45;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
-                y2 = FieldConstants::TOP_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
+                y2 = FieldConstants::TOP_CUBE_Y /* - SwerveConstants::CLAW_MID_OFFSET*/ + 0.33;
+                yaw2 = 115;
             }
             else
             {
-                yaw1 = 125;
+                yaw1 = 135;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
                 y2 = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
@@ -408,15 +411,16 @@ void AutoPaths::setPath(Path path)
             yaw2 = -90;
             if (!mirrored_)
             {
-                yaw1 = -65;
+                yaw1 = -45;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
                 y2 = FieldConstants::TOP_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
             else
             {
-                yaw1 = -115;
+                yaw1 = -135;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
-                y2 = FieldConstants::BOTTOM_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
+                y2 = FieldConstants::BOTTOM_CUBE_Y /* + SwerveConstants::CLAW_MID_OFFSET*/ - 0.33;
+                yaw2 = -65;
             }
         }
 
@@ -519,7 +523,7 @@ void AutoPaths::setPath(Path path)
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
             x1 = FieldConstants::BLUE_PIECE_X;
-            x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.7;//0.3
+            x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.33;
             if (mirrored_)
             {
                 yaw1 = 45;
@@ -529,14 +533,14 @@ void AutoPaths::setPath(Path path)
             else
             {
                 yaw1 = 135;
-                yaw2 = 180;
+                yaw2 = 179.99; // Can probably change back to 180 but no time rn
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
             }
         }
         else
         {
             x1 = FieldConstants::RED_PIECE_X;
-            x2 = FieldConstants::RED_AUTO_DOCK_X + 0.7;
+            x2 = FieldConstants::RED_AUTO_DOCK_X + 0.33;
             if (!mirrored_)
             {
                 yaw1 = -45;
@@ -647,7 +651,7 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
     }
     case PRELOADED_CONE_HIGH:
     {
-        armPosition_ = TwoJointArmProfiles::CUBE_HIGH;
+        armPosition_ = TwoJointArmProfiles::HIGH;
         forward_ = true;
         break;
     }
@@ -698,6 +702,11 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
 void AutoPaths::startTimer()
 {
     startTime_ = timer_.GetFPGATimestamp().value();
+}
+
+void AutoPaths::startAutoTimer()
+{
+    autoStartTime_ = timer_.GetFPGATimestamp().value();
 }
 
 void AutoPaths::setActionsSet(bool actionsSet)
@@ -767,18 +776,53 @@ void AutoPaths::periodic()
                         double setX = swervePoints_[i].getX();
                         xTraj_.generateTrajectory(currPose.getX(), setX, swerveDrive_->getXYVel().first);
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
+
                         curveSecondStageGenerated_ = false;
                         pathGenerated_ = true;
 
+                        double setYaw = swervePoints_[i].getYaw();
+                        yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                        yawStageGenerated_ = true;
+
                         if (pointNum_ == 0)
                         {
-                            double setYaw = swervePoints_[i].getYaw();
-                            yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
-                            yawStageGenerated_ = true;
+
+                            double setY;
+                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            {
+                                if (mirrored_)
+                                {
+                                    setY = FieldConstants::TOP_CONE_Y + 0.1;
+                                }
+                                else
+                                {
+                                    setY = FieldConstants::BOTTOM_CONE_Y - 0.1;
+                                }
+                            }
+                            else
+                            {
+                                if (mirrored_)
+                                {
+                                    setY = FieldConstants::BOTTOM_CONE_Y - 0.1;
+                                }
+                                else
+                                {
+                                    setY = FieldConstants::TOP_CONE_Y + 0.1;
+                                }
+                            }
+                            yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
+                        }
+                        else
+                        {
+                            double setY = swervePoints_[i].getY();
+                            yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
+                            curveSecondStageGenerated_ = true;
                         }
                     }
 
-                    if ((!curveSecondStageGenerated_) && (pointNum_ == 1 || (pointNum_ == 0 && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 2)))
+                    tuple<double, double, double> yProfile = yTraj_.getProfile();
+
+                    if ((!curveSecondStageGenerated_) && (/*pointNum_ == 1 || */ (pointNum_ == 0 && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0)))
                     {
                         double setY = swervePoints_[i].getY();
                         yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
@@ -787,7 +831,7 @@ void AutoPaths::periodic()
 
                     if (curveSecondStageGenerated_ && !yawStageGenerated_ && pointNum_ == 1)
                     {
-                        tuple<double, double, double> yProfile = yTraj_.getProfile();
+
                         if (get<0>(yProfile) == 0 && get<1>(yProfile) == 0)
                         {
                             double setYaw = swervePoints_[i].getYaw();
@@ -898,6 +942,8 @@ void AutoPaths::periodic()
                     currPath_.reset();
                     currPath_.addPoint(currPose);
                     currPath_.addPoint(swervePoints_[i]);
+                    frc::SmartDashboard::PutNumber("WANTED YAW", swervePoints_[i].getYaw());
+                    frc::SmartDashboard::PutNumber("CURR YAW", currPose.getYaw());
 
                     currPath_.generateTrajectory(false);
 
@@ -908,20 +954,20 @@ void AutoPaths::periodic()
             if (path_ == SECOND_CONE || path_ == SECOND_CUBE_MID)
             {
                 tuple<double, double, double> xProfile = xTraj_.getProfile(); // TODO implement second dock curve
-                tuple<double, double, double> yProfile = {0, 0, swerveDrive_->getY()};
-                tuple<double, double, double> yawProfile = {0, 0, swerveDrive_->getYaw()};
-                if (curveSecondStageGenerated_)
-                {
-                    yProfile = yTraj_.getProfile();
-                    // frc::SmartDashboard::PutNumber("WY", get<2>(yProfile));
-                    // frc::SmartDashboard::PutNumber("WYV", get<1>(yProfile));
-                    // frc::SmartDashboard::PutNumber("WYA", get<0>(yProfile));
-                    // frc::SmartDashboard::PutNumber("YVel", swerveDrive_->getXYVel().second);
-                }
-                if (yawStageGenerated_)
-                {
-                    yawProfile = yawTraj_.getProfile();
-                }
+                tuple<double, double, double> yProfile = yTraj_.getProfile();
+                tuple<double, double, double> yawProfile = yawTraj_.getProfile();
+                // if (curveSecondStageGenerated_)
+                // {
+                //     // yProfile = yTraj_.getProfile();
+                //     //  frc::SmartDashboard::PutNumber("WY", get<2>(yProfile));
+                //     //  frc::SmartDashboard::PutNumber("WYV", get<1>(yProfile));
+                //     //  frc::SmartDashboard::PutNumber("WYA", get<0>(yProfile));
+                //     //  frc::SmartDashboard::PutNumber("YVel", swerveDrive_->getXYVel().second);
+                // }
+                // if (yawStageGenerated_)
+                // {
+                //     yawProfile = yawTraj_.getProfile();
+                // }
                 pose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
 
                 if (get<0>(xProfile) == 0 && get<1>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yawProfile) == 0)
@@ -1025,7 +1071,11 @@ void AutoPaths::periodic()
 
         if (pose != nullptr)
         {
-            if (!pointOver || pointNum_ != 1 || path_ != SECOND_CUBE_DOCK)
+            if (timer_.GetFPGATimestamp().value() - autoStartTime_ > 14.95 && (path_ == SECOND_CUBE_DOCK || path_ == FIRST_CUBE_DOCK || path_ == SECOND_CONE_DOCK || path_ == FIRST_CONE_DOCK || path_ == AUTO_DOCK))
+            {
+                swerveDrive_->lockWheels();
+            }
+            else if (!pointOver || pointNum_ != 1 || path_ != SECOND_CUBE_DOCK)
             {
                 swerveDrive_->drivePose(*pose);
             }
@@ -1407,17 +1457,23 @@ void AutoPaths::periodic()
         {
             wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
-            if (timer_.GetFPGATimestamp().value() - startTime_ > 0.5)
+            if (timer_.GetFPGATimestamp().value() - startTime_ > 0.2)
             {
                 cubeIntaking_ = false;
                 forward_ = true;
-                if (arm_->isForward())
-                {
-                    if (arm_->getPosition() != TwoJointArmProfiles::CUBE_MID)
-                    {
-                        armPosition_ = TwoJointArmProfiles::CUBE_MID;
-                    }
-                }
+                // if (arm_->isForward())
+                // {
+                //     if (arm_->getPosition() != TwoJointArmProfiles::CUBE_MID)
+                //     {
+                armPosition_ = TwoJointArmProfiles::CUBE_MID;
+                // }
+                // }
+            }
+            else
+            {
+                forward_ = false;
+                clawOpen_ = true;
+                cubeIntaking_ = true;
             }
 
             if (arm_->getPosition() == TwoJointArmProfiles::CUBE_MID && arm_->getState() == TwoJointArm::HOLDING_POS && pointOver)
@@ -1429,7 +1485,7 @@ void AutoPaths::periodic()
                     placingTimerStarted_ = true;
                 }
 
-                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.25)
+                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.4)
                 {
                     nextPointReady_ = true;
                     placingTimerStarted_ = false;
@@ -1486,7 +1542,7 @@ void AutoPaths::periodic()
                 armPosition_ = TwoJointArmProfiles::STOWED;
             }
 
-            if (pointOver)
+            if (pointOver && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.95)
             {
                 double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                 double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
@@ -1564,6 +1620,15 @@ void AutoPaths::periodic()
         }
         else if (comingDownChargingStation_ && !taxied_)
         {
+            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            {
+                swerveDrive_->drive(0.5, 0, 0);
+            }
+            else
+            {
+                swerveDrive_->drive(-0.5, 0, 0);
+            }
+
             taxied_ = (abs(tilt) < 3);
         }
         else
@@ -1587,8 +1652,7 @@ void AutoPaths::periodic()
                 }
             }
 
-
-            if(dumbAutoDocking_)
+            if (dumbAutoDocking_)
             {
                 double output = -SwerveConstants::AUTOKTILT * tilt;
                 swerveDrive_->drive(output, 0, 0);

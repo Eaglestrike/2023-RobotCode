@@ -39,6 +39,7 @@ class AutoPaths
         vector<Path> getActions();
 
         void startTimer();
+        void startAutoTimer();
         void setActionsSet(bool actionsSet);
         void setPathSet(bool pathSet);
 
@@ -70,7 +71,7 @@ class AutoPaths
 
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
-        double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_;
+        double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_, autoStartTime_;
         bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_;
 
         //vector<SwervePath> swervePaths_;
