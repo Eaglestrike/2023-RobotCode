@@ -19,6 +19,8 @@ class AutoPaths
             PRELOADED_CUBE_MID,
             PRELOADED_CONE_HIGH,
             PRELOADED_CUBE_HIGH,
+            PRELOADED_CONE_HIGH_MIDDLE,
+            PRELOADED_CONE_MID_MIDDLE,
             FIRST_CONE_MID,
             FIRST_CUBE_HIGH,
             FIRST_CONE_DOCK,
@@ -65,8 +67,8 @@ class AutoPaths
         SwerveDrive* swerveDrive_;
         TwoJointArm* arm_;
 
-        TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 0.9, SwerveConstants::MAX_LA * 0.9, 0, 0, 0, 0};
-        TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 0.9, SwerveConstants::MAX_LA * 0.9, 0, 0, 0, 0};
+        TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
+        TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
         TrajectoryCalc yawTraj_{SwerveConstants::MAX_AV * 0.2, SwerveConstants::MAX_AA * 0.2, 0, 0, 0, 0};
 
         frc::Timer timer_;

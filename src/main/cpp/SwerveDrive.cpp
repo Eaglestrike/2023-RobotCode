@@ -46,53 +46,57 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
     frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
 
-    if(controls->lineupTrimXUpPressed())
+    if (controls->lineupTrimXUpPressed())
     {
-        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        {
-            xLineupTrim_ -= 0.0254;
-        }
-        else
-        {
-            xLineupTrim_ += 0.0254;
-        }
+        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        // {
+        //     xLineupTrim_ -= 0.0254;
+        // }
+        // else
+        // {
+        //     xLineupTrim_ += 0.0254;
+        // }
+        xLineupTrim_ += 0.0254;
     }
-    else if(controls->lineupTrimXDownPressed())
+    else if (controls->lineupTrimXDownPressed())
     {
-        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        {
-            xLineupTrim_ += 0.0254;
-        }
-        else
-        {
-            xLineupTrim_ -= 0.0254;
-        }
+        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        // {
+        //     xLineupTrim_ += 0.0254;
+        // }
+        // else
+        // {
+        //     xLineupTrim_ -= 0.0254;
+        // }
+        xLineupTrim_ -= 0.0254;
     }
-    else if(controls->lineupTrimYUpPressed())
+    else if (controls->lineupTrimYUpPressed())
     {
-        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        {
-            yLineupTrim_ += 0.0254;
-        }
-        else
-        {
-            yLineupTrim_ -= 0.0254;
-        }
+        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        // {
+        //     yLineupTrim_ += 0.0254;
+        // }
+        // else
+        // {
+        //     yLineupTrim_ -= 0.0254;
+        // }
+        yLineupTrim_ += 0.0254;
     }
-    else if(controls->lineupTrimYDownPressed())
+    else if (controls->lineupTrimYDownPressed())
     {
-        if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        {
-            yLineupTrim_ -= 0.0254;
-        }
-        else
-        {
-            yLineupTrim_ += 0.0254;
-        }
+        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        // {
+        //     yLineupTrim_ -= 0.0254;
+        // }
+        // else
+        // {
+        //     yLineupTrim_ += 0.0254;
+        // }
+        yLineupTrim_ -= 0.0254;
     }
 
-    frc::SmartDashboard::PutNumber("X Trim", xLineupTrim_);
-    frc::SmartDashboard::PutNumber("Y Trim", yLineupTrim_);
+    frc::SmartDashboard::PutNumber("X Trim", xLineupTrim_ / 0.0254);
+    frc::SmartDashboard::PutNumber("Y Trim", yLineupTrim_ / 0.0254);
 
     // frc::SmartDashboard::PutBoolean("LJT", controls->lJoyTriggerDown());
     if (controls->lJoyTriggerDown())
@@ -318,7 +322,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             delete wantedPose;
         }
     }
-    else if(controls->lLowerButton())
+    else if (controls->lLowerButton())
     {
         lockWheels();
     }
@@ -663,7 +667,7 @@ void SwerveDrive::drivePose(SwervePose pose)
             }
             else
             {
-                yawVel = (yawError) * SwerveConstants::kaP * 1.5;
+                yawVel = (yawError)*SwerveConstants::kaP * 1.5;
             }
         }
         else
@@ -680,7 +684,7 @@ void SwerveDrive::drivePose(SwervePose pose)
                     yawError += 360;
                 }
             }
-            yawVel += (yawError) * SwerveConstants::kaP;
+            yawVel += (yawError)*SwerveConstants::kaP;
         }
     }
 
@@ -913,11 +917,11 @@ void SwerveDrive::calcOdometry()
     dT_ = time - prevTime_;
     prevTime_ = time;
 
-    if (!frc::DriverStation::IsEnabled()) // Do not calc odomotry if the robot is not moving; reset it
-    {
-        reset();
-        return;
-    }
+    // if (!frc::DriverStation::IsEnabled()) // Do not calc odomotry if the robot is not moving; reset it
+    // {
+    //     reset();
+    //     return;
+    // }
 
     pair<double, double> xyVel = getXYVel();
 
@@ -1045,21 +1049,21 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     //[ apriltag or nah , id , x , y , _ , _ , _ , zang]
     double tagX = data.at(2);
     double tagY = data.at(3);
-    // double tagZAng = -data.at(4);
+    double tagZAng = -data.at(4);
     int tagID = data.at(1);
     int uniqueVal = data.at(6);
     double delay = data.at(5) / 1000.0;
 
-    double testTagZAng;
+    double navxTagZAng;
     if (tagID <= 4 && tagID > 0)
     {
-        testTagZAng = yaw_ + 90;
-        Helpers::normalizeAngle(testTagZAng);
+        navxTagZAng = yaw_ + 90;
+        Helpers::normalizeAngle(navxTagZAng);
     }
     else if (tagID >= 5 && tagID < 9)
     {
-        testTagZAng = yaw_ - 90;
-        Helpers::normalizeAngle(testTagZAng);
+        navxTagZAng = yaw_ - 90;
+        Helpers::normalizeAngle(navxTagZAng);
     }
     else
     {
@@ -1067,7 +1071,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     }
 
     // frc::SmartDashboard::PutNumber("TEST Z ANG", testTagZAng);
-    testTagZAng *= -(M_PI / 180.0);
+    navxTagZAng *= -(M_PI / 180.0);
 
     // frc::SmartDashboard::PutNumber("Tag x", tagX);
     // frc::SmartDashboard::PutNumber("Tag y", tagY);
@@ -1103,8 +1107,17 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     }
 
     // Rotate the tag by the seen angle to orient displacement to field orient
-    double orientedTagX = tagX * cos(testTagZAng) + tagY * sin(testTagZAng);
-    double orientedTagY = tagX * -sin(testTagZAng) + tagY * cos(testTagZAng);
+    double orientedTagX, orientedTagY;
+    if (!frc::DriverStation::IsDisabled())
+    {
+        orientedTagX = tagX * cos(navxTagZAng) + tagY * sin(navxTagZAng);
+        orientedTagY = tagX * -sin(navxTagZAng) + tagY * cos(navxTagZAng);
+    }
+    else
+    {
+        orientedTagX = tagX * cos(tagZAng) + tagY * sin(tagZAng);
+        orientedTagY = tagX * -sin(tagZAng) + tagY * cos(tagZAng);
+    }
 
     // Get xy of field tag position
     double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0];
@@ -1175,7 +1188,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
             // frc::SmartDashboard::PutNumber("DiffY", yDiff);
 
             double dist;
-            if(aprilTagX > FieldConstants::FIELD_LENGTH / 2)
+            if (aprilTagX > FieldConstants::FIELD_LENGTH / 2)
             {
                 dist = FieldConstants::FIELD_LENGTH - aprilTagX;
             }
@@ -1264,8 +1277,19 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
             wantedY = (setTagPos_ - 1) * 0.5588 + 0.512826;
         }
     }
+    double xTrim, yTrim;
+    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    {
+        xTrim = yLineupTrim_;
+        yTrim = -xLineupTrim_;
+    }
+    else
+    {
+        xTrim = -yLineupTrim_;
+        yTrim = xLineupTrim_;
+    }
 
-    return {wantedX + xLineupTrim_, wantedY + yLineupTrim_};
+    return {wantedX + xTrim, wantedY + yTrim};
 
     // Below is which ever is in front of the robot, above is choosing
 

@@ -55,10 +55,12 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
 void Robot::RobotInit()
 {
     arm_->zeroArmsToAutoStow();
-    auto1Chooser_.SetDefaultOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
+    auto1Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
     auto1Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
-    auto1Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
+    auto1Chooser_.SetDefaultOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
     auto1Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    auto1Chooser_.AddOption("Preloaded Cone High Middle", AutoPaths::PRELOADED_CONE_HIGH_MIDDLE);
+    auto1Chooser_.AddOption("Preloaded Cone Mid Middle", AutoPaths::PRELOADED_CONE_MID_MIDDLE);
     // auto1Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
     // auto1Chooser_.AddOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
     // auto1Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
@@ -78,10 +80,12 @@ void Robot::RobotInit()
     // auto2Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
     // auto2Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
     // auto2Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto2Chooser_.AddOption("Preloaded Cone High Middle", AutoPaths::PRELOADED_CONE_HIGH_MIDDLE);
+    // auto2Chooser_.AddOption("Preloaded Cone Mid Middle", AutoPaths::PRELOADED_CONE_MID_MIDDLE);
     // auto2Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
     auto2Chooser_.SetDefaultOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
     // auto2Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
-    auto2Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
+    // auto2Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
     // auto2Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
     // auto2Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
     // auto2Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
@@ -90,16 +94,19 @@ void Robot::RobotInit()
     auto2Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto2Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto2Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
+    auto2Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
     frc::SmartDashboard::PutData("Second Auto Stage", &auto2Chooser_);
 
     // auto3Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
     // auto3Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
     // auto3Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
     // auto3Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto3Chooser_.AddOption("Preloaded Cone High Middle", AutoPaths::PRELOADED_CONE_HIGH_MIDDLE);
+    // auto3Chooser_.AddOption("Preloaded Cone Mid Middle", AutoPaths::PRELOADED_CONE_MID_MIDDLE);
     // auto3Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
     auto3Chooser_.AddOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
     // auto3Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
-    auto3Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
+    // auto3Chooser_.AddOption("First Cube Dock", AutoPaths::FIRST_CUBE_DOCK);
     // auto3Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
     auto3Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
     // auto3Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
@@ -108,12 +115,15 @@ void Robot::RobotInit()
     auto3Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto3Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto3Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
+    auto3Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
     frc::SmartDashboard::PutData("Third Auto Stage", &auto3Chooser_);
 
     // auto4Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
     // auto4Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
     // auto4Chooser_.AddOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
     // auto4Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto4Chooser_.AddOption("Preloaded Cone High Middle", AutoPaths::PRELOADED_CONE_HIGH_MIDDLE);
+    // auto4Chooser_.AddOption("Preloaded Cone Mid Middle", AutoPaths::PRELOADED_CONE_MID_MIDDLE);
     // auto4Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
     // auto4Chooser_.AddOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
     // auto4Chooser_.AddOption("First Cone Dock", AutoPaths::FIRST_CONE_DOCK);
@@ -126,6 +136,7 @@ void Robot::RobotInit()
     auto4Chooser_.SetDefaultOption("Nothing", AutoPaths::NOTHING);
     auto4Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto4Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
+    auto4Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
     frc::SmartDashboard::PutData("Fourth Auto Stage", &auto4Chooser_);
 
     sideChooser_.SetDefaultOption("Right", false);
@@ -231,6 +242,7 @@ void Robot::AutonomousInit()
     pair<double, double> startXY = autoPaths_.initPos();
     if (abs(swerveDrive_->getX() - startXY.first) > 1 || abs(swerveDrive_->getY() - startXY.second) > 1)
     {
+        frc::SmartDashboard::PutBoolean("F", true);
         swerveDrive_->setPos(startXY);
     }
 

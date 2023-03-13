@@ -58,6 +58,9 @@ namespace FieldConstants
     const double MID_CUBE_Y = 2.748026;
     const double TOP_CUBE_Y = 4.4244;
 
+    const double TOP_MIDDLE_CONE_Y = 3.306826;
+    const double BOTTOM_MIDDLE_CONE_Y = 2.1844;
+
     const double BLUE_SCORING_X = 1.8+0.068; // 1.923 - 0.019 - 0.127 - 0.02
     const double RED_SCORING_X = 14.74-0.068; // 14.617 + 0.019 + 0.127 + 0.02
     const double BLUE_PS_X = TAG_XY[3][0] - 0.7;
@@ -172,8 +175,8 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = 74.26;  // 75.85
     const double BL_CANCODER_OFFSET = 41.6;   // 43.2
 
-    const double MAX_LA = 2;
-    const double MAX_LV = 4;   //(past year: 3, 4) (stable but scary: 2, 4) (stable but slow: 1, 3) (2.5, 5 for three piece)
+    const double MAX_LA = 2.5;
+    const double MAX_LV = 4;   //(past year: 3, 4) (stable but a bit too slow: 2, 4) (2.5, 4 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
 
@@ -273,9 +276,10 @@ namespace TwoJointArmConstants
             {1.38, 0.7587, 24.96, 60.78},      // cube high, 24.96, 60.78
             {1.10306, 0.04506, 20.5, 107.5},        // ground, 20.5, 107.5
             {0.76201, 0.55449, -23.3, 120.5}, //ramming player station, -23.3, 120.5
-            {0.35105, -0.17901, -18.5, 165}, //Auto stow, -18.5, 170
-            //{0.72371, -0.49738, 43, 125.5} //Cone intake, 43, 125.5 from the ground
-            {0, 0, 25.7, 138} //Cone intake maybe from store idk
+            // {0.35105, -0.17901, -18.5, 165}, //Auto stow without cone intake, -18.5, 165
+            {0.10074, -0.30109, -18.5, 179.99999}, //Auto stow with cone intake, -18.5, 180
+            // {0.72371, -0.49738, 43, 125.5}, //Cone intake from the ground, 43, 125.5
+            {0, 0, 25.7, 138} //Cone intake from intake, no trajectories, 25.7, 138
     };
 
     const int STOWED_NUM = 0;
