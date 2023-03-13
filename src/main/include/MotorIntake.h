@@ -53,9 +53,10 @@ public:
   // roller state machine
   enum RollerState
   {
-    INTAKE,  // roller spins such that it's intaking
-    STOP,    // roller does not spin
-    OUTTAKE, // roller spins such that it's outtaking
+    INTAKE,   // roller spins such that it's intaking
+    STOP,     // roller does not spin
+    OUTTAKE,  // roller spins such that it's outtaking
+    MAINTAIN, // Keep cone in roller
   };
 
   /// overall state machine
@@ -81,17 +82,10 @@ public:
   void Stow();
   void WaitForCone();
   void Spit();
-
-  // TODO implement handoff to arm
   void HandoffToArm();
 
-  void Consume();
-  void Idle();
-
   bool IsClearForArm();
-  bool IsStored();
-  bool IntakeDown();
-  bool IsIdle();
+  bool IsReadyForHandoff();
 
   DeployerState getDeployerState();
   RollerState getRollerState();
@@ -105,6 +99,14 @@ public:
   void ResetEncoderPosition();
   void ResetPID();
   void ResetAcceleration();
+
+  // --------------------- DEPRECATED -------------------
+
+  void Consume();
+  void Idle();
+  bool IsStored();
+  bool IntakeDown();
+  bool IsIdle();
 
 private:
   // state machines

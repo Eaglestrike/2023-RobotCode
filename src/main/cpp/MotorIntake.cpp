@@ -49,24 +49,17 @@ void MotorIntake::DisabledInit()
 }
 
 /**
- * If the arm can pass through the cone intake.
- *
- * @warning Use this method before moving the arm!!
- */
-bool MotorIntake::IsClearForArm()
-{
-  return m_deployerState == GROUND;
-}
-
-/**
  * Causes the intake to go down and stops rollers
  */
 void MotorIntake::Ground()
 {
-  m_deployerState = GROUNDING;
   m_rollerState = STOP;
-  ResetPID();
-  ResetAcceleration();
+  if (m_deployerState != GROUND && m_deployerState != GROUNDING)
+  {
+    m_deployerState = GROUNDING;
+    ResetPID();
+    ResetAcceleration();
+  }
 }
 
 /**
@@ -76,10 +69,13 @@ void MotorIntake::Ground()
  */
 void MotorIntake::Middle()
 {
-  m_deployerState = MIDDLING;
   m_rollerState = STOP;
-  ResetPID();
-  ResetAcceleration();
+  if (m_deployerState != MIDDLE && m_deployerState != MIDDLING)
+  {
+    m_deployerState = MIDDLING;
+    ResetPID();
+    ResetAcceleration();
+  }
 }
 
 /**
@@ -87,10 +83,13 @@ void MotorIntake::Middle()
  */
 void MotorIntake::Stow()
 {
-  ResetPID();
-  ResetAcceleration();
-  m_deployerState = STOWING;
   m_rollerState = STOP;
+  if (m_deployerState != STOWED && m_deployerState != STOWING)
+  {
+    m_deployerState = STOWING;
+    ResetPID();
+    ResetAcceleration();
+  }
 }
 
 /**
@@ -98,10 +97,13 @@ void MotorIntake::Stow()
  */
 void MotorIntake::Spit()
 {
-  ResetPID();
-  ResetAcceleration();
-  m_deployerState = GROUNDING;
   m_rollerState = OUTTAKE;
+  if (m_deployerState != GROUND && m_deployerState != GROUNDING)
+  {
+    ResetPID();
+    ResetAcceleration();
+    m_deployerState = GROUNDING;
+  }
 }
 
 /**
@@ -111,17 +113,66 @@ void MotorIntake::Spit()
  */
 void MotorIntake::WaitForCone()
 {
-  ResetPID();
-  ResetAcceleration();
-  m_deployerState = GROUNDING;
-  m_rollerState = INTAKE;
+  if (m_deployerState != GROUND && m_deployerState != GROUNDING)
+  {
+    m_deployerState = GROUNDING;
+    ResetPID();
+    ResetAcceleration();
+  }
+
+  if (m_rollerState != MAINTAIN)
+  {
+    m_rollerState = INTAKE;
+  }
 }
 
+/**
+ * Hands off to arm
+ *
+ * Stows the intake while spinning the rollers outward
+ */
+void MotorIntake::HandoffToArm()
+{
+  if (m_deployerState != STOWED && m_deployerState != STOWING)
+  {
+    m_deployerState = STOWING;
+    ResetPID();
+    ResetAcceleration();
+  }
+  m_rollerState = OUTTAKE;
+}
+
+/**
+ * If the arm can pass through the cone intake.
+ *
+ * @warning Use this method before moving the arm!!
+ */
+bool MotorIntake::IsClearForArm()
+{
+  return m_deployerState == GROUND && m_getEncoderRadians().value() < 0.3;
+}
+
+/**
+ * If intake is ready for handoff
+ *
+ * @warning Use this method before calling HandoffToArm()
+ */
+bool MotorIntake::IsReadyForHandoff()
+{
+  return m_deployerState == MIDDLE;
+}
+
+/**
+ * Gets deployer state
+ */
 MotorIntake::DeployerState MotorIntake::getDeployerState()
 {
   return m_deployerState;
 }
 
+/**
+ * Gets roller state
+ */
 MotorIntake::RollerState MotorIntake::getRollerState()
 {
   return m_rollerState;
@@ -267,7 +318,7 @@ void MotorIntake::PutDebug()
     return;
   }
 
-  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotorEncoder.GetCountsPerRevolution());
+  // frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotorEncoder.GetCountsPerRevolution());
   // frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotor.GetSelectedSensorPosition());
 }
 
@@ -277,7 +328,8 @@ void MotorIntake::m_DeployerStateMachine()
   {
   case STOWED:
     // still apply pid if stowed so it is not moved/disturbed
-    // TODO have normal PID
+    m_rollerState = STOP;
+    // fall through
   case STOWING:
   {
     // calculate motion-profiled PID for stowing
@@ -299,7 +351,7 @@ void MotorIntake::m_DeployerStateMachine()
     {
       // if the profile is done but there is still an error, regenerate another profile to correct that error.
       m_deployerState = STOWING; // reset state so it thinks it's not stowed if moved out of stowed position
-      m_pid.Reset(m_getEncoderRadians(), units::radian_t{vel});
+      m_pid.Reset(m_getEncoderRadians(), units::radians_per_second_t{vel});
     }
 
     m_lastSpeed = m_pid.GetSetpoint().velocity;
@@ -307,9 +359,13 @@ void MotorIntake::m_DeployerStateMachine()
 
     if (m_showDebug)
     {
-      frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
       frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_stowedGoal);
-      frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      frc::SmartDashboard::PutNumber("Cone Intake setpoint pos", m_pid.GetSetpoint().position.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      frc::SmartDashboard::PutNumber("FFout", ffOut.value());
       frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
     }
 
@@ -345,7 +401,7 @@ void MotorIntake::m_DeployerStateMachine()
     {
       // if the profile is done but there is still an error, regenerate another profile to correct that error.
       m_deployerState = GROUNDING; // reset state so it thinks it's not on the ground if moved out of ground position
-      m_pid.Reset(m_getEncoderRadians(), units::radian_t{vel});
+      m_pid.Reset(m_getEncoderRadians(), units::radians_per_second_t{vel});
     }
 
     m_lastSpeed = m_pid.GetSetpoint().velocity;
@@ -356,13 +412,17 @@ void MotorIntake::m_DeployerStateMachine()
       frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
       frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_groundGoal);
       frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      frc::SmartDashboard::PutNumber("FFout", ffOut.value());
       frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
     }
 
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
     if (m_AtGoal(m_groundGoal, m_getEncoderRadians().value(), vel))
-      ;
     {
       m_deployerState = GROUND;
     }
@@ -390,7 +450,7 @@ void MotorIntake::m_DeployerStateMachine()
     {
       // if the profile is done but there is still an error, regenerate another profile to correct that error.
       m_deployerState = MIDDLING; // reset state so it thinks it's not in the middle if moved out of middle position
-      m_pid.Reset(m_getEncoderRadians(), units::radian_t{vel});
+      m_pid.Reset(m_getEncoderRadians(), units::radians_per_second_t{vel});
     }
 
     m_lastSpeed = m_pid.GetSetpoint().velocity;
@@ -401,6 +461,11 @@ void MotorIntake::m_DeployerStateMachine()
       frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
       frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_middleGoal);
       frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
+      frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      frc::SmartDashboard::PutNumber("FFout", ffOut.value());
       frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
     }
 
@@ -420,10 +485,15 @@ void MotorIntake::m_DeployerStateMachine()
 
 void MotorIntake::m_RollerStateMachine()
 {
+
+  if (m_showDebug)
+  {
+    frc::SmartDashboard::PutNumber("Cone Intake current", m_rollerMotor.GetSupplyCurrent());
+  }
+
   if (m_rollerMotor.GetSupplyCurrent() >= m_rollerStallCurrent)
   {
-    m_rollerMotor.SetVoltage(units::volt_t(0));
-    return;
+    m_rollerState = MAINTAIN;
   }
 
   switch (m_rollerState)
@@ -436,6 +506,9 @@ void MotorIntake::m_RollerStateMachine()
     break;
   case STOP:
     m_rollerMotor.SetVoltage(units::volt_t(0));
+    break;
+  case MAINTAIN:
+    m_rollerMotor.SetVoltage(units::volt_t{0});
     break;
   default:
     m_rollerMotor.SetVoltage(units::volt_t(0));
@@ -503,6 +576,9 @@ void MotorIntake::m_PutCurrentRollerState()
     break;
   case STOP:
     stateStr = "Stop";
+    break;
+  case MAINTAIN:
+    stateStr = "Maintain";
     break;
   default:
     // this shouldn't happen. If it does it's problematic

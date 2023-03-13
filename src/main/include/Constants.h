@@ -312,31 +312,31 @@ namespace ClawConstants
 namespace MotorIntakeConstants
 {
     const int DEPLOYER_MOTOR_ID = 24;
-    const int ROLLER_MOTOR_ID = 11;
+    const int ROLLER_MOTOR_ID = 25;
 
-    const double GROUND_GOAL = M_PI / 2; // TODO measure deployed target - deployed target, in radians
-    const double STOWED_GOAL = 0;        // stowed target should be zero position but this is here if that needs to be changed
-    const double MIDDLE_GOAL = M_PI / 4; // TODO measure middle target - middle target, in radians
+    const double GROUND_GOAL = 0;     // TODO measure deployed target - deployed target, in radians
+    const double STOWED_GOAL = -1.30; // stowed target should be zero position but this is here if that needs to be changed
+    const double MIDDLE_GOAL = -0.65; // TODO measure middle target - middle target, in radians
 
     const double DEPLOYER_MAX_VOLTAGE = 2;
     const double DEPLOYER_STEPS_PER_REV = (1 / 21.0);
-    const double ROLLER_INTAKE_VOLTAGE = 0;     // TODO measure voltage for cube/cone to actually pass through
-    const double ROLLER_OUTTAKE_VOLTAGE = 0;    // TODO measure voltage for cube/cone to actually pass through
-    const double ROLLER_STALL_CURRENT = 0;      // TODO measure current draw threshold when cone is in intake
+    const double ROLLER_INTAKE_VOLTAGE = -2; // TODO measure voltage for cube/cone to actually pass through
+    const double ROLLER_OUTTAKE_VOLTAGE = 2; // TODO measure voltage for cube/cone to actually pass through
+    const double ROLLER_STALL_CURRENT = 0;   // TODO measure current draw threshold when cone is in intake
 
     const double kP = 0.1; // TODO tune
-    const double kI = 0; // TODO tune
+    const double kI = 0;   // TODO tune
     const double kD = 0.5; // TODO tune
     const double kS = 0.20;
     const double kG = -0.302;
     const double kV = 0.395;
-    const double kA = 0.017;
+    const double kA = 0;
 
-    const double MAX_VELOCITY = 20; // TODO tune - radians per second
+    const double MAX_VELOCITY = 20;    // TODO tune - radians per second
     const double MAX_ACCELERATION = 9; // TODO tune - radians per second squared
 
     const double POS_ERR_TOLERANCE = 0.05; // TODO tune - error tolerance, in radians
-    const double VEL_ERR_TOLERANCE = 1;  // TODO tune - error tolerance, in radians/s
+    const double VEL_ERR_TOLERANCE = 1;    // TODO tune - error tolerance, in radians/s
 } // namespace MotorIntakeConstants
 
 namespace PneumaticsIntakeConstants
