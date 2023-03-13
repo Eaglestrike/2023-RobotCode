@@ -132,8 +132,8 @@ MotorIntake::RollerState MotorIntake::getRollerState()
  */
 void MotorIntake::ResetEncoderPosition()
 {
-  // m_deployerMotorEncoder.SetPosition(0);
-  m_deployerMotor.SetSelectedSensorPosition(0);
+  m_deployerMotorEncoder.SetPosition(0);
+  // m_deployerMotor.SetSelectedSensorPosition(0);
 }
 
 /**
@@ -173,8 +173,8 @@ void MotorIntake::ResetStates()
  */
 void MotorIntake::ResetPID()
 {
-  // m_pid.Reset(units::radian_t(m_deployerMotorEncoder.GetPosition()));
-  m_pid.Reset(units::radian_t(m_deployerMotor.GetSelectedSensorPosition()));
+  m_pid.Reset(units::radian_t(m_deployerMotorEncoder.GetPosition()));
+  // m_pid.Reset(units::radian_t(m_deployerMotor.GetSelectedSensorPosition()));
 }
 
 /**
@@ -207,6 +207,10 @@ void MotorIntake::PutConstants()
   frc::SmartDashboard::PutNumber("Cone Intake kP", m_kP);
   frc::SmartDashboard::PutNumber("Cone Intake kI", m_kI);
   frc::SmartDashboard::PutNumber("Cone Intake kD", m_kD);
+  frc::SmartDashboard::PutNumber("Cone Intake kS", m_kS);
+  frc::SmartDashboard::PutNumber("Cone Intake kV", m_kV);
+  frc::SmartDashboard::PutNumber("Cone Intake kA", m_kA);
+  frc::SmartDashboard::PutNumber("Cone Intake kG", m_kG);
   frc::SmartDashboard::PutNumber("Cone Intake Max Vel", m_maxVel);
   frc::SmartDashboard::PutNumber("Cone Intake Max Acc", m_maxAcc);
   frc::SmartDashboard::PutNumber("Cone Intake Pos Tol", m_posErrTolerance);
@@ -233,6 +237,10 @@ void MotorIntake::SetConstants()
   m_kP = frc::SmartDashboard::GetNumber("Cone Intake kP", m_kP);
   m_kI = frc::SmartDashboard::GetNumber("Cone Intake kI", m_kI);
   m_kD = frc::SmartDashboard::GetNumber("Cone Intake kD", m_kD);
+  m_kS = frc::SmartDashboard::GetNumber("Cone Intake kS", m_kS);
+  m_kV = frc::SmartDashboard::GetNumber("Cone Intake kV", m_kV);
+  m_kA = frc::SmartDashboard::GetNumber("Cone Intake kA", m_kA);
+  m_kG = frc::SmartDashboard::GetNumber("Cone Intake kG", m_kG);
   m_maxVel = frc::SmartDashboard::GetNumber("Cone Intake Max Vel", m_maxVel);
   m_maxAcc = frc::SmartDashboard::GetNumber("Cone Intake Max Acc", m_maxAcc);
   m_posErrTolerance = frc::SmartDashboard::GetNumber("Cone Intake Pos Tol", m_posErrTolerance);
@@ -243,6 +251,11 @@ void MotorIntake::SetConstants()
   m_pid.SetConstraints(m_constraints);
   m_pid.SetTolerance(units::radian_t{m_posErrTolerance}, units::radians_per_second_t{m_velErrTolerance});
   m_pid.SetPID(m_kP, m_kI, m_kD);
+
+  m_feedForward.kS = units::volt_t{m_kS};
+  m_feedForward.kG = units::volt_t{m_kG};
+  m_feedForward.kA = kAUnit_t{m_kA};
+  m_feedForward.kV = kVUnit_t{m_kV};
 }
 
 /**
@@ -255,8 +268,8 @@ void MotorIntake::PutDebug()
     return;
   }
 
-  // frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotorEncoder.GetCountsPerRevolution());
-  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotor.GetSelectedSensorPosition());
+  frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotorEncoder.GetCountsPerRevolution());
+  // frc::SmartDashboard::PutNumber("Cone Intake Encoder", m_deployerMotor.GetSelectedSensorPosition());
 }
 
 void MotorIntake::m_DeployerStateMachine()
@@ -265,11 +278,33 @@ void MotorIntake::m_DeployerStateMachine()
   {
   case STOWED:
     // still apply pid if stowed so it is not moved/disturbed
+    // TODO have normal PID
   case STOWING:
   {
     // calculate motion-profiled PID for stowing
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_stowedGoal});
-    double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+    if (m_showDebug)
+    {
+      frc::SmartDashboard::PutNumber("Cone Intake pidVal", pidVal);
+    }
+
+    // feedforward calculations
+    auto acceleration = (m_pid.GetSetpoint().velocity - m_lastSpeed) /
+                        (frc::Timer::GetFPGATimestamp() - m_lastTime);
+    auto ffOut = m_feedForward.Calculate(m_pid.GetSetpoint().position, m_pid.GetSetpoint().velocity, acceleration);
+    double unclamped = pidVal + ffOut.value();
+    double voltage = std::clamp(unclamped, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+
+    double vel = m_deployerMotorEncoder.GetVelocity() * 2.0 * M_PI * MotorIntakeConstants::DEPLOYER_STEPS_PER_REV * (1 / 60.0);
+    if (m_pid.GetSetpoint() == m_pid.GetGoal() && !m_AtGoal(m_stowedGoal, m_getEncoderRadians().value(), vel))
+    {
+      // if the profile is done but there is still an error, regenerate another profile to correct that error.
+      m_deployerState = STOWING; // reset state so it thinks it's not stowed if moved out of stowed position
+      m_pid.Reset(m_getEncoderRadians(), units::radian_t{vel});
+    }
+
+    m_lastSpeed = m_pid.GetSetpoint().velocity;
+    m_lastTime = frc::Timer::GetFPGATimestamp();
 
     if (m_showDebug)
     {
@@ -281,7 +316,7 @@ void MotorIntake::m_DeployerStateMachine()
 
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
-    if (m_pid.AtGoal())
+    if (m_AtGoal(m_stowedGoal, m_getEncoderRadians().value(), vel))
     {
       m_deployerState = STOWED;
     }
@@ -292,9 +327,30 @@ void MotorIntake::m_DeployerStateMachine()
     // still apply pid if on the ground so it is not moved/disturbed
   case GROUNDING:
   {
-    // calculate motion-profiled PID for deploying
+    // calculate motion-profiled PID for grounding
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_groundGoal});
-    double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+    if (m_showDebug)
+    {
+      frc::SmartDashboard::PutNumber("Cone Intake pidVal", pidVal);
+    }
+
+    // feedfoward calculations
+    auto acceleration = (m_pid.GetSetpoint().velocity - m_lastSpeed) /
+                        (frc::Timer::GetFPGATimestamp() - m_lastTime);
+    auto ffOut = m_feedForward.Calculate(m_pid.GetSetpoint().position, m_pid.GetSetpoint().velocity, acceleration);
+    double unclamped = pidVal + ffOut.value();
+    double voltage = std::clamp(unclamped, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+
+    double vel = m_deployerMotorEncoder.GetVelocity() * 2.0 * M_PI * MotorIntakeConstants::DEPLOYER_STEPS_PER_REV * (1 / 60.0);
+    if (m_pid.GetSetpoint() == m_pid.GetGoal() && !m_AtGoal(m_groundGoal, m_getEncoderRadians().value(), vel))
+    {
+      // if the profile is done but there is still an error, regenerate another profile to correct that error.
+      m_deployerState = GROUNDING; // reset state so it thinks it's not on the ground if moved out of ground position
+      m_pid.Reset(m_getEncoderRadians(), units::radian_t{vel});
+    }
+
+    m_lastSpeed = m_pid.GetSetpoint().velocity;
+    m_lastTime = frc::Timer::GetFPGATimestamp();
 
     if (m_showDebug)
     {
@@ -306,7 +362,8 @@ void MotorIntake::m_DeployerStateMachine()
 
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
-    if (m_pid.AtGoal())
+    if (m_AtGoal(m_groundGoal, m_getEncoderRadians().value(), vel))
+      ;
     {
       m_deployerState = GROUND;
     }
@@ -316,9 +373,29 @@ void MotorIntake::m_DeployerStateMachine()
     // still apply pid if in the middle so it is not moved/disturbed
   case MIDDLING:
   {
-    // calculate motion-profiled PID for stowing
+    // calculate motion-profiled PID for middling
     double pidVal = m_pid.Calculate(m_getEncoderRadians(), units::radian_t{m_middleGoal});
-    double voltage = std::clamp(pidVal, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+    if (m_showDebug)
+    {
+      frc::SmartDashboard::PutNumber("Cone Intake pidVal", pidVal);
+    }
+
+    auto acceleration = (m_pid.GetSetpoint().velocity - m_lastSpeed) /
+                        (frc::Timer::GetFPGATimestamp() - m_lastTime);
+    auto ffOut = m_feedForward.Calculate(m_pid.GetSetpoint().position, m_pid.GetSetpoint().velocity, acceleration);
+    double unclamped = pidVal + ffOut.value();
+    double voltage = std::clamp(unclamped, -m_deployerMaxVoltage, m_deployerMaxVoltage);
+
+    double vel = m_deployerMotorEncoder.GetVelocity() * 2.0 * M_PI * MotorIntakeConstants::DEPLOYER_STEPS_PER_REV * (1 / 60.0);
+    if (m_pid.GetSetpoint() == m_pid.GetGoal() && !m_AtGoal(m_middleGoal, m_getEncoderRadians().value(), vel))
+    {
+      // if the profile is done but there is still an error, regenerate another profile to correct that error.
+      m_deployerState = MIDDLING; // reset state so it thinks it's not in the middle if moved out of middle position
+      m_pid.Reset(m_getEncoderRadians(), units::radian_t{vel});
+    }
+
+    m_lastSpeed = m_pid.GetSetpoint().velocity;
+    m_lastTime = frc::Timer::GetFPGATimestamp();
 
     if (m_showDebug)
     {
@@ -330,9 +407,9 @@ void MotorIntake::m_DeployerStateMachine()
 
     m_deployerMotor.SetVoltage(units::volt_t(voltage));
 
-    if (m_pid.AtGoal())
+    if (m_AtGoal(m_middleGoal, m_getEncoderRadians().value(), vel))
     {
-      m_deployerState = STOWED;
+      m_deployerState = MIDDLE;
     }
 
     break;
@@ -368,7 +445,8 @@ void MotorIntake::m_RollerStateMachine()
 
 units::radian_t MotorIntake::m_getEncoderRadians()
 {
-  double pos = m_deployerMotor.GetSelectedSensorPosition();
+  // double pos = m_deployerMotor.GetSelectedSensorPosition();
+  double pos = m_deployerMotorEncoder.GetPosition();
   return Helpers::convertStepsToRadians(pos, MotorIntakeConstants::DEPLOYER_STEPS_PER_REV);
 }
 
@@ -469,6 +547,14 @@ void MotorIntake::m_PutCurrentConeIntakeState()
   }
 
   frc::SmartDashboard::PutString("Cone Intake", stateStr);
+}
+
+/**
+ * AtGoal() for ProfiledPIDController does not work so I use this instead
+ */
+bool MotorIntake::m_AtGoal(double goal, double ang, double vel)
+{
+  return m_pid.GetSetpoint() == m_pid.GetGoal() && (std::abs(goal - ang)) < m_posErrTolerance && std::abs(vel) < m_velErrTolerance;
 }
 
 /**

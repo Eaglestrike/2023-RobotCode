@@ -12,6 +12,7 @@
 
 #include <ctre/Phoenix.h>
 #include <frc/controller/ProfiledPIDController.h>
+#include <frc/controller/ArmFeedForward.h>
 #include <frc/fmt/Units.h>
 #include <frc/Timer.h>
 #include <frc/trajectory/TrapezoidProfile.h>
@@ -114,7 +115,8 @@ private:
   // motors
   rev::CANSparkMax m_deployerMotor{MotorIntakeConstants::DEPLOYER_MOTOR_ID, rev::CANSparkMax::MotorType::kBrushless}; // for deploying the intake
   rev::SparkMaxRelativeEncoder m_deployerMotorEncoder{m_deployerMotor.GetEncoder()};
-  WPI_TalonFX m_rollerMotor{MotorIntakeConstants::ROLLER_MOTOR_ID};                                                   // for spinning the rollers
+  // WPI_TalonFX m_deployerMotor{2};
+  WPI_TalonFX m_rollerMotor{MotorIntakeConstants::ROLLER_MOTOR_ID}; // for spinning the rollers
 
   // motion profiled pid controller
   frc::TrapezoidProfile<units::radians>::Constraints m_constraints{
@@ -125,6 +127,16 @@ private:
       MotorIntakeConstants::kI,
       MotorIntakeConstants::kD,
       m_constraints};
+
+  typedef units::compound_unit<units::volts, units::inverse<units::radians_per_second>> kVUnit;
+  typedef units::compound_unit<units::volts, units::inverse<units::radians_per_second_squared>> kAUnit;
+  typedef units::unit_t<kVUnit> kVUnit_t;
+  typedef units::unit_t<kAUnit> kAUnit_t;
+
+  frc::ArmFeedforward m_feedForward{units::volt_t{MotorIntakeConstants::kS},
+                                    units::volt_t{MotorIntakeConstants::kG},
+                                    kVUnit_t{MotorIntakeConstants::kV},
+                                    kAUnit_t{MotorIntakeConstants::kA}};
 
   // feedforward stuff; currently unused
   units::radians_per_second_t m_lastSpeed{units::radians_per_second_t{0}};
@@ -145,7 +157,11 @@ private:
   double m_rollerStallCurrent = MotorIntakeConstants::ROLLER_STALL_CURRENT;
   double m_kP = MotorIntakeConstants::kP;
   double m_kI = MotorIntakeConstants::kI;
+  double m_kG = MotorIntakeConstants::kG;
   double m_kD = MotorIntakeConstants::kD;
+  double m_kS = MotorIntakeConstants::kS;
+  double m_kA = MotorIntakeConstants::kA;
+  double m_kV = MotorIntakeConstants::kV;
   double m_maxVel = MotorIntakeConstants::MAX_VELOCITY;
   double m_maxAcc = MotorIntakeConstants::MAX_ACCELERATION;
   double m_posErrTolerance = MotorIntakeConstants::POS_ERR_TOLERANCE;
@@ -162,6 +178,8 @@ private:
   void m_PutCurrentDeployerState();
   void m_PutCurrentRollerState();
   void m_PutCurrentConeIntakeState();
+
+  bool m_AtGoal(double, double, double);
 };
 
 #endif

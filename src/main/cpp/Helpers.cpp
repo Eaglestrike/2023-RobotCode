@@ -28,7 +28,7 @@ namespace Helpers {
     }
 
 units::radian_t convertStepsToRadians(double val, double numStepsPerRevolution) {
-  double valRad = val * (2 * M_PI / numStepsPerRevolution);
+  double valRad = val * (2 * M_PI * numStepsPerRevolution);
   return units::radian_t{valRad};
 }
 } // namespace Helpers

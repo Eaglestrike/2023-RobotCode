@@ -20,6 +20,7 @@
 #include "TwoJointArm.h"
 #include <frc/PneumaticHub.h>
 #include "PneumaticsIntake.h"
+#include "MotorIntake.h"
 
 class Robot : public frc::TimedRobot
 {
@@ -51,6 +52,7 @@ private:
     TwoJointArm* arm_ = new TwoJointArm();
     AutoPaths autoPaths_;
     PneumaticsIntake cubeIntake_{false, false};
+    MotorIntake coneIntake_{true, true, true};
 
     double yawOffset_;
 
