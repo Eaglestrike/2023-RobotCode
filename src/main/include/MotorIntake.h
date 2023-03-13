@@ -138,7 +138,7 @@ private:
                                     kVUnit_t{MotorIntakeConstants::kV},
                                     kAUnit_t{MotorIntakeConstants::kA}};
 
-  // feedforward stuff; currently unused
+  // feedforward stuff
   units::radians_per_second_t m_lastSpeed{units::radians_per_second_t{0}};
   units::second_t m_lastTime{frc::Timer::GetFPGATimestamp()};
 

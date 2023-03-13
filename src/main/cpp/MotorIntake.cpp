@@ -21,7 +21,7 @@ void MotorIntake::RobotInit()
 {
   Reset();
   PutConstants();
-  m_PutCurrentConeIntakeState();
+  // m_PutCurrentConeIntakeState();
   m_PutCurrentDeployerState();
   m_PutCurrentRollerState();
 }
@@ -31,7 +31,7 @@ void MotorIntake::RobotInit()
  */
 void MotorIntake::Periodic()
 {
-  m_PutCurrentConeIntakeState();
+  // m_PutCurrentConeIntakeState();
   m_PutCurrentDeployerState();
   m_PutCurrentRollerState();
 
@@ -178,8 +178,7 @@ void MotorIntake::ResetPID()
 }
 
 /**
- * Resets acceleration calculations (currently unused; may use in the future
- * in case we need feedforward calculations)
+ * Resets acceleration calculations
  */
 void MotorIntake::ResetAcceleration()
 {
