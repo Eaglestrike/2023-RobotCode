@@ -18,6 +18,7 @@ SwerveDrive::SwerveDrive()
     isHoldingYaw_ = false;
     xLineupTrim_ = 0;
     yLineupTrim_ = 0;
+    numLargeDiffs_ = 0;
     // inching_ = false;
 
     // aprilTagX_ = 0;
@@ -968,6 +969,7 @@ void SwerveDrive::reset()
     // inching_ = false;
     xLineupTrim_ = 0;
     yLineupTrim_ = 0;
+    numLargeDiffs_ = 0;
 }
 
 double SwerveDrive::getX()
@@ -1094,12 +1096,12 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
         return;
     }
 
-    if (tagID != prevTag_) // If tag changes
-    {
-        prevTag_ = tagID; // Set to change, do nothing (skip a frame)
-        return;
-    }
-    prevTag_ = tagID; // Set the past known tag to be this tag
+    // if (tagID != prevTag_) // If tag changes
+    // {
+    //     prevTag_ = tagID; // Set to change, do nothing (skip a frame)
+    //     return;
+    // }
+    // prevTag_ = tagID; // Set the past known tag to be this tag
 
     if (abs(tilt) > 5)
     {
@@ -1151,6 +1153,21 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
         return;
     }
 
+    if(tagID <= 4)
+    {
+        if(aprilTagX < FieldConstants::FIELD_LENGTH / 2)
+        {
+            return;
+        }
+    }
+    else
+    {
+        if(aprilTagX > FieldConstants::FIELD_LENGTH / 2)
+        {
+            return;
+        }
+    }
+
     // 1st check = set it regardless
     if (!foundTag_)
     {
@@ -1196,7 +1213,27 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
             {
                 dist = aprilTagX;
             }
-            double multiplier = 0.75 * (1 - (dist / (FieldConstants::FIELD_LENGTH / 2)));
+            double multiplier;
+            if(dist > FieldConstants::FIELD_LENGTH / 2)
+            {
+                multiplier = 0;
+            }
+            else
+            {
+                multiplier = 0.75 * (1 - (dist / (FieldConstants::FIELD_LENGTH / 2)));
+            }
+            
+
+            if(sqrt(xDiff * xDiff + yDiff * yDiff) > 2 && numLargeDiffs_ < 5/* && !frc::DriverStation::IsDisabled()*/)
+            {
+                multiplier = 0;
+                numLargeDiffs_ += 1;
+            }
+            else
+            {
+                numLargeDiffs_ = 0;
+            }
+
             map<double, pair<pair<double, double>, pair<double, double>>>::iterator it;
             for (it = prevPoses_.begin(); it != prevPoses_.end(); it++)
             {

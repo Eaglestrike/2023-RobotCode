@@ -23,6 +23,9 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
             double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
             double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
             double tilt = pitch * sin(ang) - roll * cos(ang);
+            frc::SmartDashboard::PutNumber("Tilt", tilt);
+            frc::SmartDashboard::PutNumber("Pitch", pitch);
+            frc::SmartDashboard::PutNumber("Roll", roll);
 
             swerveDrive_->periodic(yaw, tilt);
 
@@ -145,6 +148,7 @@ void Robot::RobotInit()
 
     cubeIntaking_ = false;
     coneIntaking_ = false;
+    coneIntakeDown_ = false;
     armsZeroed_ = false;
     scoringLevel_ = 1;
     psType_ = 1;
@@ -372,6 +376,7 @@ void Robot::TeleopInit()
 
     cubeIntaking_ = false;
     coneIntaking_ = false;
+    coneIntakeDown_ = false;
     PCM.EnableDigital();
 
     arm_->checkPos();
@@ -413,8 +418,6 @@ void Robot::TeleopPeriodic()
         }
         double output = -SwerveConstants::AUTOKTILT * tilt;
         swerveDrive_->drive(output, 0, 0);
-
-        frc::SmartDashboard::PutNumber("Tilt", tilt);
     }
 
     if (controls_->fieldOrient())
@@ -436,9 +439,10 @@ void Robot::TeleopPeriodic()
         armsZeroed_ = true;
     }
 
-    bool rBumperPressed = controls_->rBumperPressed();
+    // bool rBumperPressed = controls_->rBumperPressed();
     bool dPadLeftPressed = controls_->dPadLeftPressed();
-    bool dPadRightPressed = controls_->dPadRightPressed();
+    // bool dPadRightPressed = controls_->dPadRightPressed();
+    bool coneIntakePressed = controls_->coneIntakePressed();
     bool dPadUpPressed = controls_->dPadUpPressed();
 
     if (controls_->lXTriggerDown())
@@ -446,6 +450,7 @@ void Robot::TeleopPeriodic()
         arm_->manualControl(controls_->xboxLJoyY() * abs(controls_->xboxLJoyY()), controls_->xboxRJoyY() * abs(controls_->xboxRJoyY()), true);
         cubeIntaking_ = false;
         coneIntaking_ = false;
+        coneIntakeDown_ = false;
     }
     else if (controls_->bbUpDown())
     {
@@ -750,7 +755,7 @@ void Robot::TeleopPeriodic()
                 }
             }
         }
-        else if (rBumperPressed)
+        else if (controls_->rBumperDown())
         {
             // if (arm_->isForward() && arm_->getPosition() == TwoJointArmProfiles::STOWED) // TODO check if wanted w/ operator
             // {
@@ -777,7 +782,7 @@ void Robot::TeleopPeriodic()
                 coneIntaking_ = false;
             }
         }
-        else if (dPadRightPressed)
+        else if (coneIntakePressed)
         {
             // if (arm_->getState() == TwoJointArm::HOLDING_POS)
             // {
@@ -830,6 +835,7 @@ void Robot::TeleopPeriodic()
         // arm_->resetIntaking();
         coneIntaking_ = false;
         cubeIntaking_ = false;
+        coneIntakeDown_ = false;
         arm_->setEStopped(true);
     }
     else if (cubeIntaking_ && armsZeroed_)
@@ -1009,6 +1015,14 @@ void Robot::TeleopPeriodic()
         }
     }
 
+    if(controls_->dPadRightPressed())
+    {
+        if(!coneIntaking_ && !cubeIntaking_)
+        {
+            coneIntakeDown_ = !coneIntakeDown_;
+        }
+    }
+
     bool intakePressed = controls_->intakePressed();
     bool outakePressed = controls_->outakePressed();
     if (intakePressed)
@@ -1063,7 +1077,7 @@ void Robot::TeleopPeriodic()
     {
         // PUT CONE INTAKE HALFWAY
     }
-    else if (intakesNeededDown.second)
+    else if (intakesNeededDown.second || coneIntakeDown_)
     {
         // coneIntake_.Deploy();
     }

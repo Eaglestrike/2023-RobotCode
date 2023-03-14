@@ -259,7 +259,7 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     //     {
     //         return;
     //     }
-    // } 
+    // }
     // if(setPosition == TwoJointArmProfiles::AUTO_STOW)
     // {
     //     if(position_ == TwoJointArmProfiles::STOWED || position_ == TwoJointArmProfiles::CUBE_INTAKE || position_ == TwoJointArmProfiles::GROUND || position_ == TwoJointArmProfiles::RAMMING_PLAYER_STATION)
@@ -299,26 +299,38 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
         return;
     }
 
-    // if (position_ == TwoJointArmProfiles::CONE_INTAKE && setPosition == TwoJointArmProfiles::STOWED)
-    // {
-    //     // shoulderTraj_.generateTrajectory(theta, wantedTheta, 0);
-    //     // elbowTraj_.generateTrajectory(phi, wantedPhi, 0);
-    //     // state_ = FOLLOWING_JOINT_SPACE_PROFILE;
-    // }
-    // else if (setPosition == TwoJointArmProfiles::CONE_INTAKE && position_ == TwoJointArmProfiles::STOWED)
-    // {
-    //     // shoulderTraj_.generateTrajectory(theta, wantedTheta, 0);
-    //     // elbowTraj_.generateTrajectory(phi, wantedPhi, 0);
-    //     // state_ = FOLLOWING_JOINT_SPACE_PROFILE;
-    // }
-    // else
-    // {
-    key_ = {position_, setPosition};
+    if (position_ == TwoJointArmProfiles::AUTO_STOW && setPosition == TwoJointArmProfiles::STOWED)
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
+        state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }
+    else if (setPosition == TwoJointArmProfiles::STOWED && position_ == TwoJointArmProfiles::AUTO_STOW)
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3], 0);
+        state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }
+    else if (position_ == TwoJointArmProfiles::AUTO_STOW && setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION)
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][3], 0);
+        state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }
+    else if (setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION && position_ == TwoJointArmProfiles::AUTO_STOW)
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3], 0);
+        state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }
+    else
+    {
+        key_ = {position_, setPosition};
 
-    setPosition_ = setPosition;
-    state_ = FOLLOWING_TASK_SPACE_PROFILE;
-    taskSpaceStartTime_ = timer_.GetFPGATimestamp().value();
-    // }
+        setPosition_ = setPosition;
+        state_ = FOLLOWING_TASK_SPACE_PROFILE;
+        taskSpaceStartTime_ = timer_.GetFPGATimestamp().value();
+    }
 }
 
 void TwoJointArm::specialSetPosTo(TwoJointArmProfiles::Positions setPosition)
@@ -1109,7 +1121,7 @@ void TwoJointArm::homeNew()
     }
     shoulderProfile = shoulderTraj_.getProfile();
 
-    if(homingFirstStage_.second)
+    if (homingFirstStage_.second)
     {
         elbowProfile = elbowTraj_.getProfile();
     }
@@ -1633,11 +1645,11 @@ void TwoJointArm::setShoulderVolts(double volts)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2/* - 0.0889*/ && theta > 0 && volts > 0) // Less than 6 inches from ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 /* - 0.0889*/ && theta > 0 && volts > 0) // Less than 6 inches from ground
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2/* - 0.0889*/ && theta < 0 && volts < 0) // Less than 6 inches from ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 /* - 0.0889*/ && theta < 0 && volts < 0) // Less than 6 inches from ground
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }

@@ -59,7 +59,7 @@ private:
     double coneGrabTimerStartTime_;
     bool coneGrabTimerStarted_;
 
-    bool cubeIntaking_, coneIntaking_, armsZeroed_, grabbedCone_;
+    bool cubeIntaking_, coneIntaking_, coneIntakeDown_, armsZeroed_, grabbedCone_;
     int scoringLevel_, psType_;
 
 };

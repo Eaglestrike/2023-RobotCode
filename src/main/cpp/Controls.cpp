@@ -95,9 +95,9 @@ bool Controls::yDown()
     return xbox_.GetRawButton(InputConstants::Y_BUTTON);
 }
 
-bool Controls::rBumperPressed()
+bool Controls::rBumperDown()
 {
-    return xbox_.GetRawButtonPressed(InputConstants::R_BUMPER);
+    return xbox_.GetRawButton(InputConstants::R_BUMPER);
 }
 
 bool Controls::lBumperDown()
@@ -108,6 +108,11 @@ bool Controls::lBumperDown()
 bool Controls::fieldOrient()
 {
     return xbox_.GetRawButton(InputConstants::FIELD_ORIENT_BUTTON);
+}
+
+bool Controls::coneIntakePressed()
+{
+    return xbox_.GetRawButtonPressed(InputConstants::CONE_INTAKE_BUTTON);
 }
 
 bool Controls::rXTriggerDown()

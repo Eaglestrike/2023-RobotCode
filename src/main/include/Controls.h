@@ -31,7 +31,7 @@ class Controls
         bool bDown();
         bool xDown();
         bool yDown();
-        bool rBumperPressed();
+        bool rBumperDown();
         bool lBumperDown();
         bool rXTriggerDown();
         bool lXTriggerDown();
@@ -47,6 +47,7 @@ class Controls
         bool inchingRightDown();
 
         bool fieldOrient();
+        bool coneIntakePressed();
 
         int checkScoringButtons();
         int checkLevelButtons();

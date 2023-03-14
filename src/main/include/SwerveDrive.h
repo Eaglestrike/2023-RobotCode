@@ -66,7 +66,7 @@ class SwerveDrive
         double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_, holdingYaw_;
 
         bool trackingTag_, trackingPlayerStation_, foundTag_, isHoldingYaw_/*, inching_*/;
-        int setTagPos_, prevTag_, prevUniqueVal_;
+        int setTagPos_, prevTag_, prevUniqueVal_, numLargeDiffs_;
         double xLineupTrim_, yLineupTrim_;
 
         map<double, pair<pair<double, double>, pair<double, double>>> prevPoses_;

@@ -108,7 +108,7 @@ namespace InputConstants
     const int Y_BUTTON = 4;
     const int L_BUMPER = 5;
     const int R_BUMPER = 6;
-    const int CLIMB_MODE_TOGGLE_BUTTON = 7;
+    const int CONE_INTAKE_BUTTON = 7;
     const int FIELD_ORIENT_BUTTON = 8;
 
     const int BUTTON_BOARD_PORT = 3;
@@ -175,7 +175,7 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = 74.26;  // 75.85
     const double BL_CANCODER_OFFSET = 41.6;   // 43.2
 
-    const double MAX_LA = 2.5;
+    const double MAX_LA = 2.75;
     const double MAX_LV = 4;   //(past year: 3, 4) (stable but a bit too slow: 2, 4) (2.5, 4 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
@@ -192,12 +192,12 @@ namespace SwerveConstants
     const double kaP = 4; // 0.008
     const double kaD = 0;
 
-    const double CLAW_MID_OFFSET = 0.05 + 0.0254 * 2.5; // 0.0889
+    const double CLAW_MID_OFFSET = 0.0254 * 2;
 
     const double AUTOKTILT = 0.01;
     const double AUTODEADANGLE = 1.0;
-    const double PITCHOFFSET = 0.0;
-    const double ROLLOFFSET = 180.0;
+    const double PITCHOFFSET = 2.0;
+    const double ROLLOFFSET = 180.0 + 1;
 }
 
 namespace TwoJointArmConstants
