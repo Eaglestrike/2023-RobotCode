@@ -142,6 +142,7 @@ namespace SwerveConstants
     const double WHEEL_DIAGONAL = 0.8128;
     const double TREAD_RADIUS = 0.0508;
     const double DRIVE_GEAR_RATIO = 1 / 6.12;
+    const double SWIVEL_GEAR_RATIO = 1 / 12.8;
     const double MAX_TELE_VEL = 5.672;
 
 
