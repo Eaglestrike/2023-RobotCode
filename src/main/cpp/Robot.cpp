@@ -8,8 +8,9 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-Robot::Robot() : autoPaths_(swerveDrive_, arm_)
-{}
+Robot::Robot()
+{
+}
 
 void Robot::RobotInit()
 {
@@ -53,15 +54,30 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    if (controls_->xDown()) {
-        if (controls_->lXTriggerDown()) {
+    if (controls_->xDown())
+    {
+        if (controls_->lXTriggerDown())
+        {
             coneIntake_.WaitForCone();
-        } else {
+        }
+        else
+        {
             coneIntake_.Ground();
         }
-    } else if (controls_->yDown()) {
-        coneIntake_.Middle();
-    } else {
+    }
+    else if (controls_->yDown())
+    {
+        if (controls_->lXTriggerDown())
+        {
+            coneIntake_.HandoffToArm();
+        }
+        else
+        {
+            coneIntake_.Middle();
+        }
+    }
+    else
+    {
         coneIntake_.Stow();
     }
     coneIntake_.PutDebug();
@@ -69,6 +85,7 @@ void Robot::TeleopPeriodic()
     coneIntake_.Periodic();
 
     frc::SmartDashboard::PutBoolean("Arm good", coneIntake_.IsClearForArm());
+    frc::SmartDashboard::PutBoolean("Handoff good", coneIntake_.IsReadyForHandoff());
 }
 
 void Robot::DisabledInit()
@@ -79,7 +96,8 @@ void Robot::DisabledInit()
 void Robot::DisabledPeriodic()
 {
     coneIntake_.PutDebug();
-    if (controls_->aDown()) {
+    if (controls_->aDown())
+    {
         coneIntake_.Reset();
         coneIntake_.SetConstants();
     }

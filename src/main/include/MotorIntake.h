@@ -110,8 +110,8 @@ public:
 
 private:
   // state machines
-  DeployerState m_deployerState{STOWED};
-  RollerState m_rollerState{INTAKE};
+  DeployerState m_deployerState{STOWING};
+  RollerState m_rollerState{STOP};
   ConeIntakeState m_intakeState{IDLE};
 
   // motors
@@ -182,6 +182,8 @@ private:
   void m_PutCurrentConeIntakeState();
 
   bool m_AtGoal(double, double, double);
+
+  void m_SetDeployerVoltage(double);
 };
 
 #endif

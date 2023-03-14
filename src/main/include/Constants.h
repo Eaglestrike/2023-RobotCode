@@ -314,9 +314,12 @@ namespace MotorIntakeConstants
     const int DEPLOYER_MOTOR_ID = 24;
     const int ROLLER_MOTOR_ID = 25;
 
-    const double GROUND_GOAL = 0;     // TODO measure deployed target - deployed target, in radians
-    const double STOWED_GOAL = -1.30; // stowed target should be zero position but this is here if that needs to be changed
-    const double MIDDLE_GOAL = -0.65; // TODO measure middle target - middle target, in radians
+    const double GROUND_GOAL = 1.30;                           // TODO measure deployed target - deployed target, in radians
+    const double STOWED_GOAL = 0;                              // stowed target should be zero position but this is here if that needs to be changed
+    const double MIDDLE_GOAL = 0.65;                           // TODO measure middle target - middle target, in radians
+    const double GROUND_ARM_TOLERANCE_POS = GROUND_GOAL - 0.3; // encoder value for arm to pass through cone intake
+    const double MOTOR_STOP_BOTTOM = GROUND_GOAL + 0.3;        // encoder value when motor should stop (so it doesn't hit ground)
+    const double MOTOR_STOP_TOP = STOWED_GOAL - 0.2;                 // encoder value when motor should stop (so it doesn't hit bellypan)
 
     const double DEPLOYER_MAX_VOLTAGE = 2;
     const double DEPLOYER_STEPS_PER_REV = (1 / 21.0);
@@ -324,12 +327,12 @@ namespace MotorIntakeConstants
     const double ROLLER_OUTTAKE_VOLTAGE = 2; // TODO measure voltage for cube/cone to actually pass through
     const double ROLLER_STALL_CURRENT = 0;   // TODO measure current draw threshold when cone is in intake
 
-    const double kP = 0.1; // TODO tune
+    const double kP = 0; // TODO tune
     const double kI = 0;   // TODO tune
-    const double kD = 0.5; // TODO tune
-    const double kS = 0.20;
-    const double kG = -0.302;
-    const double kV = 0.395;
+    const double kD = 0; // TODO tune
+    const double kS = 0.13;
+    const double kG = 0;
+    const double kV = 0.385;
     const double kA = 0;
 
     const double MAX_VELOCITY = 20;    // TODO tune - radians per second

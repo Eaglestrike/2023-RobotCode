@@ -38,26 +38,24 @@ public:
     void TestPeriodic() override;
 
 private:
-    frc::SendableChooser<AutoPaths::Path> auto1Chooser_;
-    frc::SendableChooser<AutoPaths::Path> auto2Chooser_;
-    frc::SendableChooser<AutoPaths::Path> auto3Chooser_;
-    frc::SendableChooser<AutoPaths::Path> auto4Chooser_;
-    frc::SendableChooser<bool> sideChooser_;
+    // frc::SendableChooser<AutoPaths::Path> auto1Chooser_;
+    // frc::SendableChooser<AutoPaths::Path> auto2Chooser_;
+    // frc::SendableChooser<AutoPaths::Path> auto3Chooser_;
+    // frc::SendableChooser<AutoPaths::Path> auto4Chooser_;
+    // frc::SendableChooser<bool> sideChooser_;
 
-    AHRS *navx_;
-    frc::Compressor PCM{0, frc::PneumaticsModuleType::CTREPCM};
+    // AHRS *navx_;
+    // frc::Compressor PCM{0, frc::PneumaticsModuleType::CTREPCM};
 
-    Controls* controls_ = new Controls();
-    SwerveDrive* swerveDrive_ = new SwerveDrive();
-    TwoJointArm* arm_ = new TwoJointArm();
-    AutoPaths autoPaths_;
-    PneumaticsIntake cubeIntake_{false, false};
+    Controls *controls_ = new Controls();
+    // SwerveDrive* swerveDrive_ = new SwerveDrive();
+    // TwoJointArm* arm_ = new TwoJointArm();
+    // AutoPaths autoPaths_;
+    // PneumaticsIntake cubeIntake_{false, false};
     MotorIntake coneIntake_{true, true, true};
 
-    double yawOffset_;
+    // double yawOffset_;
 
-
-    bool cubeIntaking_, coneIntaking_, armsZeroed_;
-    int scoringLevel_;
-
+    // bool cubeIntaking_, coneIntaking_, armsZeroed_;
+    // int scoringLevel_;
 };

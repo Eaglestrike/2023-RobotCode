@@ -1,5 +1,7 @@
 #include "MotorIntake.h"
 
+#include <iostream>
+
 /**
  * Constructor
  *
@@ -100,9 +102,9 @@ void MotorIntake::Spit()
   m_rollerState = OUTTAKE;
   if (m_deployerState != GROUND && m_deployerState != GROUNDING)
   {
+    m_deployerState = GROUNDING;
     ResetPID();
     ResetAcceleration();
-    m_deployerState = GROUNDING;
   }
 }
 
@@ -149,7 +151,7 @@ void MotorIntake::HandoffToArm()
  */
 bool MotorIntake::IsClearForArm()
 {
-  return m_deployerState == GROUND && m_getEncoderRadians().value() < 0.3;
+  return m_deployerState == GROUND && m_getEncoderRadians().value() >= MotorIntakeConstants::GROUND_ARM_TOLERANCE_POS;
 }
 
 /**
@@ -359,17 +361,20 @@ void MotorIntake::m_DeployerStateMachine()
 
     if (m_showDebug)
     {
-      frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_stowedGoal);
-      frc::SmartDashboard::PutNumber("Cone Intake setpoint pos", m_pid.GetSetpoint().position.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      frc::SmartDashboard::PutNumber("Cone Intake unclamped", unclamped);
+      frc::SmartDashboard::PutNumber("Cone Intake volt", voltage);
+      frc::SmartDashboard::PutNumber("Cone Intake Target", m_stowedGoal);
+      frc::SmartDashboard::PutNumber("Cone Intake pos error", m_pid.GetPositionError().value());
+      frc::SmartDashboard::PutNumber("Cone Intake vel error", m_pid.GetVelocityError().value());
       frc::SmartDashboard::PutNumber("FFout", ffOut.value());
-      frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
     }
 
-    m_deployerMotor.SetVoltage(units::volt_t(voltage));
+    std::cout << "setting for stow: " << voltage << std::endl;
+    m_SetDeployerVoltage(voltage);
 
     if (m_AtGoal(m_stowedGoal, m_getEncoderRadians().value(), vel))
     {
@@ -380,6 +385,7 @@ void MotorIntake::m_DeployerStateMachine()
   }
   case GROUND:
     // still apply pid if on the ground so it is not moved/disturbed
+    // fall through
   case GROUNDING:
   {
     // calculate motion-profiled PID for grounding
@@ -409,18 +415,19 @@ void MotorIntake::m_DeployerStateMachine()
 
     if (m_showDebug)
     {
-      frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
       frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_groundGoal);
       frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
       frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      frc::SmartDashboard::PutNumber("Cone Intake pos error", m_pid.GetPositionError().value());
+      frc::SmartDashboard::PutNumber("Cone Intake vel error", m_pid.GetVelocityError().value());
       frc::SmartDashboard::PutNumber("FFout", ffOut.value());
-      frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
     }
 
-    m_deployerMotor.SetVoltage(units::volt_t(voltage));
+    // std::cout << "setting from ground" << std::endl;
+    m_SetDeployerVoltage(voltage);
 
     if (m_AtGoal(m_groundGoal, m_getEncoderRadians().value(), vel))
     {
@@ -430,6 +437,7 @@ void MotorIntake::m_DeployerStateMachine()
   }
   case MIDDLE:
     // still apply pid if in the middle so it is not moved/disturbed
+    // fall through
   case MIDDLING:
   {
     // calculate motion-profiled PID for middling
@@ -458,18 +466,19 @@ void MotorIntake::m_DeployerStateMachine()
 
     if (m_showDebug)
     {
-      frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
       frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_middleGoal);
       frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
       frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
       frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      frc::SmartDashboard::PutNumber("Cone Intake pos error", m_pid.GetPositionError().value());
+      frc::SmartDashboard::PutNumber("Cone Intake vel error", m_pid.GetVelocityError().value());
       frc::SmartDashboard::PutNumber("FFout", ffOut.value());
-      frc::SmartDashboard::PutNumber("Cone Intake V to motor", voltage);
     }
 
-    m_deployerMotor.SetVoltage(units::volt_t(voltage));
+    // std::cout << "setting from middle" << std::endl;
+    // m_SetDeployerVoltage(voltage);
 
     if (m_AtGoal(m_middleGoal, m_getEncoderRadians().value(), vel))
     {
@@ -630,6 +639,26 @@ void MotorIntake::m_PutCurrentConeIntakeState()
 bool MotorIntake::m_AtGoal(double goal, double ang, double vel)
 {
   return m_pid.GetSetpoint() == m_pid.GetGoal() && (std::abs(goal - ang)) < m_posErrTolerance && std::abs(vel) < m_velErrTolerance;
+}
+
+/**
+ * SetVoltage() but with checks with encoder before setting voltage to deployer motor
+ */
+void MotorIntake::m_SetDeployerVoltage(double volt)
+{
+  // if (m_getEncoderRadians().value() > MotorIntakeConstants::MOTOR_STOP_BOTTOM || m_getEncoderRadians().value() < MotorIntakeConstants::MOTOR_STOP_TOP)
+  // {
+  //   m_deployerMotor.SetVoltage(units::volt_t{0});
+  //   return;
+  // }
+
+  if (m_showDebug)
+  {
+    frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
+    frc::SmartDashboard::PutNumber("Cone Intake V to motor", volt);
+  }
+
+  m_deployerMotor.SetVoltage(units::volt_t{volt});
 }
 
 /**
