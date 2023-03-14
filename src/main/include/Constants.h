@@ -223,10 +223,10 @@ namespace TwoJointArmConstants
     const double ELBOW_MIN_ANG = 0;
     const double ELBOW_MAX_ANG = 360;
 
-    const double SHOULDER_ARM_MAX_VEL = 90; //100, 270, 270, 200
-    const double ELBOW_ARM_MAX_VEL = 135;
-    const double SHOULDER_ARM_MAX_ACC = 90;
-    const double ELBOW_ARM_MAX_ACC = 90;
+    const double SHOULDER_ARM_MAX_VEL = 135; //100, 270, 270, 200 was too fast
+    const double ELBOW_ARM_MAX_VEL = 135; //90, 135, 90, 90 was too slow
+    const double SHOULDER_ARM_MAX_ACC = 180;
+    const double ELBOW_ARM_MAX_ACC = 180;
 
     const int SHOULDER_MASTER_ID = 6;
     const int SHOULDER_SLAVE_ID = 11;

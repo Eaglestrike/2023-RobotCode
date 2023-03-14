@@ -59,9 +59,9 @@ void Robot::RobotInit()
 {
     arm_->zeroArmsToAutoStow();
     auto1Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
-    auto1Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
+    // auto1Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
     auto1Chooser_.SetDefaultOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
-    auto1Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
+    // auto1Chooser_.AddOption("Preloaded Cube High", AutoPaths::PRELOADED_CUBE_HIGH);
     auto1Chooser_.AddOption("Preloaded Cone High Middle", AutoPaths::PRELOADED_CONE_HIGH_MIDDLE);
     auto1Chooser_.AddOption("Preloaded Cone Mid Middle", AutoPaths::PRELOADED_CONE_MID_MIDDLE);
     // auto1Chooser_.AddOption("First Cone Mid", AutoPaths::FIRST_CONE_MID);
@@ -441,7 +441,7 @@ void Robot::TeleopPeriodic()
 
     // bool rBumperPressed = controls_->rBumperPressed();
     bool dPadLeftPressed = controls_->dPadLeftPressed();
-    // bool dPadRightPressed = controls_->dPadRightPressed();
+    bool dPadRightPressed = controls_->dPadRightPressed();
     bool coneIntakePressed = controls_->coneIntakePressed();
     bool dPadUpPressed = controls_->dPadUpPressed();
 
@@ -912,12 +912,14 @@ void Robot::TeleopPeriodic()
             else if (!grabbedCone_)
             {
                 intakesNeededDown.second = true;
+                coneIntakeDown_ = false;
                 if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
                 {
                     // coneIntakeHalfway = true;
                     // arm_->setPosTo(TwoJointArmProfiles::CONE_INTAKE);
 
                     intakesNeededDown.second = true;
+                    coneIntakeDown_ = false;
                     arm_->setJointPath(arm_->getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
                     arm_->setClaw(true);
                 }
@@ -951,6 +953,7 @@ void Robot::TeleopPeriodic()
                     {
                         intakesNeededDown.second = false;
                         coneIntakeHalfway = false;
+                        coneIntakeDown_ = false;
                     }
 
                     if (time > 0.6)
@@ -988,6 +991,7 @@ void Robot::TeleopPeriodic()
                     coneIntakeHalfway = false;
                     coneIntaking_ = false;
                     intakesNeededDown.second = false;
+                    coneIntakeDown_ = false;
                 }
 
                 if(abs(arm_->getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
@@ -1015,7 +1019,7 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if(controls_->dPadRightPressed())
+    if(dPadRightPressed)
     {
         if(!coneIntaking_ && !cubeIntaking_)
         {
@@ -1087,7 +1091,7 @@ void Robot::TeleopPeriodic()
     }
 
     frc::SmartDashboard::PutBoolean("Cube Intake Down", intakesNeededDown.first);
-    frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.second);
+    frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.second || coneIntakeDown_);
     frc::SmartDashboard::PutBoolean("Cone Intake Halfway", coneIntakeHalfway);
 }
 
@@ -1114,6 +1118,19 @@ void Robot::DisabledPeriodic()
     // frc::SmartDashboard::PutBoolean("YUp", controls_->lineupTrimYUpPressed());
 
     // frc::SmartDashboard::PutNumber("PS", controls_->checkPSButtons());
+
+    //Calling all the pressed functions so that they don't buffer
+    controls_->dPadUpPressed();
+    controls_->dPadLeftPressed();
+    controls_->dPadRightPressed();
+    controls_->intakePressed();
+    controls_->outakePressed();
+    controls_->coneIntakePressed();
+    controls_->rJoyTriggerPressed();
+    controls_->lineupTrimXUpPressed();
+    controls_->lineupTrimXDownPressed();
+    controls_->lineupTrimYDownPressed();
+    controls_->lineupTrimYUpPressed();
 }
 
 void Robot::TestInit() {}
