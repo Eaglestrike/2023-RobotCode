@@ -324,6 +324,7 @@ namespace MotorIntakeConstants
     const double DEPLOYER_MAX_VOLTAGE = 2;
     const double DEPLOYER_STEPS_PER_REV = (1 / 21.0);
     const double ROLLER_INTAKE_VOLTAGE = -2; // TODO measure voltage for cube/cone to actually pass through
+    const double ROLLER_MAINTAIN_VOLTAGE = 0;
     const double ROLLER_OUTTAKE_VOLTAGE = 2; // TODO measure voltage for cube/cone to actually pass through
     const double ROLLER_STALL_CURRENT = 0;   // TODO measure current draw threshold when cone is in intake
 

@@ -55,12 +55,15 @@ void MotorIntake::DisabledInit()
  */
 void MotorIntake::Ground()
 {
-  m_rollerState = STOP;
+  if (m_rollerState != MAINTAIN)
+  {
+    m_rollerState = STOP;
+  }
   if (m_deployerState != GROUND && m_deployerState != GROUNDING)
   {
     m_deployerState = GROUNDING;
-    ResetPID();
-    ResetAcceleration();
+    // ResetPID();
+    // ResetAcceleration();
   }
 }
 
@@ -71,12 +74,15 @@ void MotorIntake::Ground()
  */
 void MotorIntake::Middle()
 {
-  m_rollerState = STOP;
+  if (m_rollerState != MAINTAIN)
+  {
+    m_rollerState = STOP;
+  }
   if (m_deployerState != MIDDLE && m_deployerState != MIDDLING)
   {
     m_deployerState = MIDDLING;
-    ResetPID();
-    ResetAcceleration();
+    // ResetPID();
+    // ResetAcceleration();
   }
 }
 
@@ -85,12 +91,15 @@ void MotorIntake::Middle()
  */
 void MotorIntake::Stow()
 {
-  m_rollerState = STOP;
+  if (m_rollerState != MAINTAIN)
+  {
+    m_rollerState = STOP;
+  }
   if (m_deployerState != STOWED && m_deployerState != STOWING)
   {
     m_deployerState = STOWING;
-    ResetPID();
-    ResetAcceleration();
+    // ResetPID();
+    // ResetAcceleration();
   }
 }
 
@@ -103,8 +112,8 @@ void MotorIntake::Spit()
   if (m_deployerState != GROUND && m_deployerState != GROUNDING)
   {
     m_deployerState = GROUNDING;
-    ResetPID();
-    ResetAcceleration();
+    // ResetPID();
+    // ResetAcceleration();
   }
 }
 
@@ -118,8 +127,8 @@ void MotorIntake::WaitForCone()
   if (m_deployerState != GROUND && m_deployerState != GROUNDING)
   {
     m_deployerState = GROUNDING;
-    ResetPID();
-    ResetAcceleration();
+    // ResetPID();
+    // ResetAcceleration();
   }
 
   if (m_rollerState != MAINTAIN)
@@ -138,8 +147,8 @@ void MotorIntake::HandoffToArm()
   if (m_deployerState != STOWED && m_deployerState != STOWING)
   {
     m_deployerState = STOWING;
-    ResetPID();
-    ResetAcceleration();
+    // ResetPID();
+    // ResetAcceleration();
   }
   m_rollerState = OUTTAKE;
 }
@@ -204,7 +213,7 @@ void MotorIntake::Reset()
 {
   ResetEncoderPosition();
   ResetPID();
-  ResetAcceleration();
+  // ResetAcceleration();
   ResetStates();
 }
 
@@ -352,6 +361,10 @@ void MotorIntake::m_DeployerStateMachine()
     if (m_pid.GetSetpoint() == m_pid.GetGoal() && !m_AtGoal(m_stowedGoal, m_getEncoderRadians().value(), vel))
     {
       // if the profile is done but there is still an error, regenerate another profile to correct that error.
+      if (m_showDebug)
+      {
+        std::cout << "Stow not there yet — recalculating trajectory\r\n";
+      }
       m_deployerState = STOWING; // reset state so it thinks it's not stowed if moved out of stowed position
       m_pid.Reset(m_getEncoderRadians(), units::radians_per_second_t{vel});
     }
@@ -361,10 +374,10 @@ void MotorIntake::m_DeployerStateMachine()
 
     if (m_showDebug)
     {
-      frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
       frc::SmartDashboard::PutNumber("Cone Intake unclamped", unclamped);
       frc::SmartDashboard::PutNumber("Cone Intake volt", voltage);
       frc::SmartDashboard::PutNumber("Cone Intake Target", m_stowedGoal);
@@ -373,8 +386,8 @@ void MotorIntake::m_DeployerStateMachine()
       frc::SmartDashboard::PutNumber("FFout", ffOut.value());
     }
 
-    std::cout << "setting for stow: " << voltage << std::endl;
-    m_SetDeployerVoltage(voltage);
+    // std::cout << "setting for stow: " << voltage << std::endl;
+    m_SetDeployerVoltage(voltage, "stow");
 
     if (m_AtGoal(m_stowedGoal, m_getEncoderRadians().value(), vel))
     {
@@ -406,6 +419,11 @@ void MotorIntake::m_DeployerStateMachine()
     if (m_pid.GetSetpoint() == m_pid.GetGoal() && !m_AtGoal(m_groundGoal, m_getEncoderRadians().value(), vel))
     {
       // if the profile is done but there is still an error, regenerate another profile to correct that error.
+      if (m_showDebug)
+      {
+        std::cout << "Ground not there yet — recalculating trajectory\r\n";
+      }
+
       m_deployerState = GROUNDING; // reset state so it thinks it's not on the ground if moved out of ground position
       m_pid.Reset(m_getEncoderRadians(), units::radians_per_second_t{vel});
     }
@@ -416,18 +434,18 @@ void MotorIntake::m_DeployerStateMachine()
     if (m_showDebug)
     {
       frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_groundGoal);
-      frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
-      frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
       frc::SmartDashboard::PutNumber("Cone Intake pos error", m_pid.GetPositionError().value());
       frc::SmartDashboard::PutNumber("Cone Intake vel error", m_pid.GetVelocityError().value());
       frc::SmartDashboard::PutNumber("FFout", ffOut.value());
     }
 
     // std::cout << "setting from ground" << std::endl;
-    m_SetDeployerVoltage(voltage);
+    m_SetDeployerVoltage(voltage, "ground");
 
     if (m_AtGoal(m_groundGoal, m_getEncoderRadians().value(), vel))
     {
@@ -457,6 +475,12 @@ void MotorIntake::m_DeployerStateMachine()
     if (m_pid.GetSetpoint() == m_pid.GetGoal() && !m_AtGoal(m_middleGoal, m_getEncoderRadians().value(), vel))
     {
       // if the profile is done but there is still an error, regenerate another profile to correct that error.
+
+      if (m_showDebug)
+      {
+        std::cout << "Middle not there yet — recalculating trajectory\r\n";
+      }
+
       m_deployerState = MIDDLING; // reset state so it thinks it's not in the middle if moved out of middle position
       m_pid.Reset(m_getEncoderRadians(), units::radians_per_second_t{vel});
     }
@@ -467,11 +491,11 @@ void MotorIntake::m_DeployerStateMachine()
     if (m_showDebug)
     {
       frc::SmartDashboard::PutNumber("Cone Intake targetpos", m_middleGoal);
-      frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
-      frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
-      frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kP", m_pid.GetP());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kS", m_feedForward.kS.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kV", m_feedForward.kV.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kG", m_feedForward.kG.value());
+      // frc::SmartDashboard::PutNumber("Cone Intake current kA", m_feedForward.kA.value());
       frc::SmartDashboard::PutNumber("Cone Intake pos error", m_pid.GetPositionError().value());
       frc::SmartDashboard::PutNumber("Cone Intake vel error", m_pid.GetVelocityError().value());
       frc::SmartDashboard::PutNumber("FFout", ffOut.value());
@@ -511,13 +535,24 @@ void MotorIntake::m_RollerStateMachine()
     m_rollerMotor.SetVoltage(units::volt_t(m_rollerIntakeVoltage));
     break;
   case OUTTAKE:
-    m_rollerMotor.SetVoltage(units::volt_t(m_rollerOuttakeVoltage));
+  {
+    if (m_deployerState != GROUND)
+    {
+      // maintain cone if not on the ground, only spit on ground
+      m_rollerMotor.SetVoltage(units::volt_t(MotorIntakeConstants::ROLLER_MAINTAIN_VOLTAGE));
+    }
+    else
+    {
+
+      m_rollerMotor.SetVoltage(units::volt_t(m_rollerOuttakeVoltage));
+    }
     break;
+  }
   case STOP:
     m_rollerMotor.SetVoltage(units::volt_t(0));
     break;
   case MAINTAIN:
-    m_rollerMotor.SetVoltage(units::volt_t{0});
+    m_rollerMotor.SetVoltage(units::volt_t{MotorIntakeConstants::ROLLER_MAINTAIN_VOLTAGE});
     break;
   default:
     m_rollerMotor.SetVoltage(units::volt_t(0));
@@ -644,7 +679,7 @@ bool MotorIntake::m_AtGoal(double goal, double ang, double vel)
 /**
  * SetVoltage() but with checks with encoder before setting voltage to deployer motor
  */
-void MotorIntake::m_SetDeployerVoltage(double volt)
+void MotorIntake::m_SetDeployerVoltage(double volt, std::string where)
 {
   // if (m_getEncoderRadians().value() > MotorIntakeConstants::MOTOR_STOP_BOTTOM || m_getEncoderRadians().value() < MotorIntakeConstants::MOTOR_STOP_TOP)
   // {
@@ -656,6 +691,7 @@ void MotorIntake::m_SetDeployerVoltage(double volt)
   {
     frc::SmartDashboard::PutNumber("Cone Intake curpos", m_getEncoderRadians().value());
     frc::SmartDashboard::PutNumber("Cone Intake V to motor", volt);
+    frc::SmartDashboard::PutString("Cone Intake V where", where);
   }
 
   m_deployerMotor.SetVoltage(units::volt_t{volt});

@@ -183,7 +183,7 @@ private:
 
   bool m_AtGoal(double, double, double);
 
-  void m_SetDeployerVoltage(double);
+  void m_SetDeployerVoltage(double, std::string);
 };
 
 #endif
