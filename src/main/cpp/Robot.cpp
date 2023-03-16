@@ -41,7 +41,8 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
             else
             {
                 bool armMoving = (arm_->getState() != TwoJointArm::STOPPED && arm_->getState() != TwoJointArm::HOLDING_POS);
-                bool armOut = (arm_->getPosition() != TwoJointArmProfiles::STOWED /* && arm_->getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_->getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_->getPosition() != TwoJointArmProfiles::GROUND);
+                // bool armOut = (arm_->getPosition() != TwoJointArmProfiles::STOWED /* && arm_->getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_->getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_->getPosition() != TwoJointArmProfiles::GROUND);
+                bool armOut = (arm_->getPosition() == TwoJointArmProfiles::MID || arm_->getPosition() == TwoJointArmProfiles::HIGH || arm_->getPosition() == TwoJointArmProfiles::CUBE_MID || arm_->getPosition() == TwoJointArmProfiles::CUBE_HIGH); // TODO make this based on xy position
                 swerveDrive_->teleopPeriodic(controls_, arm_->isForward(), (armMoving || armOut), scoringLevel_);
             }
 
@@ -226,8 +227,6 @@ void Robot::AutonomousInit()
     armsZeroed_ = true;
     // }
 
-    
-
     AutoPaths::Path action1 = auto1Chooser_.GetSelected();
     AutoPaths::Path action2 = auto2Chooser_.GetSelected();
     AutoPaths::Path action3 = auto3Chooser_.GetSelected();
@@ -270,7 +269,7 @@ void Robot::AutonomousPeriodic()
         intakesNeededDown.first = true;
         if (arm_->isForward())
         {
-            if (arm_->isForward()) //Remove unecessary if??????
+            if (arm_->isForward()) // Remove unecessary if??????
             {
                 if (arm_->getPosition() == TwoJointArmProfiles::HIGH || arm_->getPosition() == TwoJointArmProfiles::MID || arm_->getPosition() == TwoJointArmProfiles::CUBE_HIGH || arm_->getPosition() == TwoJointArmProfiles::CUBE_MID)
                 {
@@ -465,6 +464,9 @@ void Robot::TeleopPeriodic()
         }
         else
         {
+            cubeIntaking_ = false;
+            coneIntaking_ = false;
+            
             double wantedYaw;
             bool playerStation = false;
             // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) FORWARD BASED LINEUP
@@ -587,6 +589,9 @@ void Robot::TeleopPeriodic()
                 }
                 case 1: // Low
                 {
+                    if(!lineupForward)
+                    {
+                    }
                     if (lineupForward != arm_->isForward())
                     {
                         if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
@@ -600,7 +605,16 @@ void Robot::TeleopPeriodic()
                     }
                     else
                     {
-                        arm_->setPosTo(TwoJointArmProfiles::GROUND);
+                        bool atGroundPos = (abs(arm_->getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
+                        // arm_->setPosTo(TwoJointArmProfiles::GROUND);
+                        if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
+                        {
+                            arm_->setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
+                        }
+                        else if (arm_->getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (arm_->getState() == TwoJointArm::HOLDING_POS || arm_->getState() == TwoJointArm::STOPPED))
+                        {
+                            arm_->setPosTo(TwoJointArmProfiles::STOWED);
+                        }
                     }
                     break;
                 }
@@ -765,7 +779,15 @@ void Robot::TeleopPeriodic()
 
             if (!coneIntaking_ && !cubeIntaking_)
             {
-                arm_->setPosTo(TwoJointArmProfiles::GROUND);
+                if (!arm_->isForward() && arm_->getPosition() == TwoJointArmProfiles::STOWED)
+                {
+                    arm_->toggleForward();
+                }
+
+                if (arm_->isForward())
+                {
+                    arm_->setPosTo(TwoJointArmProfiles::GROUND);
+                }
             }
         }
         else if (dPadLeftPressed)
@@ -782,25 +804,25 @@ void Robot::TeleopPeriodic()
                 coneIntaking_ = false;
             }
         }
-        else if (coneIntakePressed)
-        {
-            // if (arm_->getState() == TwoJointArm::HOLDING_POS)
-            // {
-            //     if (coneIntaking_)
-            //     {
-            //         arm_->setPosTo(TwoJointArmProfiles::STOWED);
-            //         arm_->setClawWheels(0);
-            //         // arm_->setClaw(false);
-            //     }
-            //     coneIntaking_ = !coneIntaking_;
-            //     cubeIntaking_ = false;
-            // }
+        // else if (coneIntakePressed)
+        // {
+        //     // if (arm_->getState() == TwoJointArm::HOLDING_POS)
+        //     // {
+        //     //     if (coneIntaking_)
+        //     //     {
+        //     //         arm_->setPosTo(TwoJointArmProfiles::STOWED);
+        //     //         arm_->setClawWheels(0);
+        //     //         // arm_->setClaw(false);
+        //     //     }
+        //     //     coneIntaking_ = !coneIntaking_;
+        //     //     cubeIntaking_ = false;
+        //     // }
 
-            if (arm_->getState() == TwoJointArm::HOLDING_POS && arm_->getPosition() == TwoJointArmProfiles::STOWED)
-            {
-                coneIntaking_ = true;
-            }
-        }
+        //     if (arm_->getState() == TwoJointArm::HOLDING_POS && arm_->getPosition() == TwoJointArmProfiles::STOWED)
+        //     {
+        //         coneIntaking_ = true;
+        //     }
+        // }
         else if (dPadUpPressed)
         {
             // if (cubeIntaking_ && arm_->getState() == TwoJointArm::HOLDING_POS)//NEUTRAL STOW
@@ -881,126 +903,126 @@ void Robot::TeleopPeriodic()
             arm_->setClaw(true);
         }
     }
-    else if (coneIntaking_ && armsZeroed_)
-    {
-        bool atConeIntakePos = (abs(arm_->getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
-        if (/*arm_->getState() == TwoJointArm::STOPPED || */ arm_->getState() == TwoJointArm::HOMING)
-        {
-            coneIntaking_ = false;
-        }
-        else if (arm_->getPosition() != TwoJointArmProfiles::STOWED && !atConeIntakePos /* || arm_->getPosition() != TwoJointArmProfiles::CONE_INTAKE*/)
-        {
-            coneIntaking_ = false;
-        }
-        else
-        {
-            if (!arm_->isForward())
-            {
-                if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
-                {
-                    arm_->toggleForward();
-                }
-                else
-                {
-                    arm_->setPosTo(TwoJointArmProfiles::STOWED);
-                }
-            }
+    // else if (coneIntaking_ && armsZeroed_)
+    // {
+    //     bool atConeIntakePos = (abs(arm_->getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
+    //     if (/*arm_->getState() == TwoJointArm::STOPPED || */ arm_->getState() == TwoJointArm::HOMING)
+    //     {
+    //         coneIntaking_ = false;
+    //     }
+    //     else if (arm_->getPosition() != TwoJointArmProfiles::STOWED && !atConeIntakePos /* || arm_->getPosition() != TwoJointArmProfiles::CONE_INTAKE*/)
+    //     {
+    //         coneIntaking_ = false;
+    //     }
+    //     else
+    //     {
+    //         if (!arm_->isForward())
+    //         {
+    //             if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
+    //             {
+    //                 arm_->toggleForward();
+    //             }
+    //             else
+    //             {
+    //                 arm_->setPosTo(TwoJointArmProfiles::STOWED);
+    //             }
+    //         }
 
-            if (!arm_->isForward())
-            {
-            }
-            else if (!grabbedCone_)
-            {
-                intakesNeededDown.second = true;
-                coneIntakeDown_ = false;
-                if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
-                {
-                    // coneIntakeHalfway = true;
-                    // arm_->setPosTo(TwoJointArmProfiles::CONE_INTAKE);
+    //         if (!arm_->isForward())
+    //         {
+    //         }
+    //         else if (!grabbedCone_)
+    //         {
+    //             intakesNeededDown.second = true;
+    //             coneIntakeDown_ = false;
+    //             if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
+    //             {
+    //                 // coneIntakeHalfway = true;
+    //                 // arm_->setPosTo(TwoJointArmProfiles::CONE_INTAKE);
 
-                    intakesNeededDown.second = true;
-                    coneIntakeDown_ = false;
-                    arm_->setJointPath(arm_->getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
-                    arm_->setClaw(true);
-                }
-                else if ((arm_->getState() == TwoJointArm::STOPPED || arm_->getState() == TwoJointArm::HOLDING_POS) && (abs(arm_->getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2]) > TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD))
-                {
-                    arm_->setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2], TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
-                }
-                else if (atConeIntakePos && (arm_->getState() == TwoJointArm::STOPPED || arm_->getState() == TwoJointArm::HOLDING_POS))
-                {
-                    if (!coneGrabTimerStarted_)
-                    {
-                        coneGrabTimerStartTime_ = timer_.GetFPGATimestamp().value();
-                        coneGrabTimerStarted_ = true;
-                    }
+    //                 intakesNeededDown.second = true;
+    //                 coneIntakeDown_ = false;
+    //                 arm_->setJointPath(arm_->getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
+    //                 arm_->setClaw(true);
+    //             }
+    //             else if ((arm_->getState() == TwoJointArm::STOPPED || arm_->getState() == TwoJointArm::HOLDING_POS) && (abs(arm_->getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2]) > TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD))
+    //             {
+    //                 arm_->setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2], TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
+    //             }
+    //             else if (atConeIntakePos && (arm_->getState() == TwoJointArm::STOPPED || arm_->getState() == TwoJointArm::HOLDING_POS))
+    //             {
+    //                 if (!coneGrabTimerStarted_)
+    //                 {
+    //                     coneGrabTimerStartTime_ = timer_.GetFPGATimestamp().value();
+    //                     coneGrabTimerStarted_ = true;
+    //                 }
 
-                    arm_->setClawWheels(ClawConstants::INTAKING_SPEED);
+    //                 arm_->setClawWheels(ClawConstants::INTAKING_SPEED);
 
-                    double time = timer_.GetFPGATimestamp().value() - coneGrabTimerStartTime_;
+    //                 double time = timer_.GetFPGATimestamp().value() - coneGrabTimerStartTime_;
 
-                    coneIntakeHalfway = true;
+    //                 coneIntakeHalfway = true;
 
-                    if (time > 0.25)
-                    {
-                        arm_->setClaw(false);
-                        // intakesNeededDown.second = false;
-                        // coneIntakeHalfway = false;
-                        // OUTAKE CONE
-                    }
+    //                 if (time > 0.25)
+    //                 {
+    //                     arm_->setClaw(false);
+    //                     // intakesNeededDown.second = false;
+    //                     // coneIntakeHalfway = false;
+    //                     // OUTAKE CONE
+    //                 }
 
-                    if(time > 0.45)
-                    {
-                        intakesNeededDown.second = false;
-                        coneIntakeHalfway = false;
-                        coneIntakeDown_ = false;
-                    }
+    //                 if(time > 0.45)
+    //                 {
+    //                     intakesNeededDown.second = false;
+    //                     coneIntakeHalfway = false;
+    //                     coneIntakeDown_ = false;
+    //                 }
 
-                    if (time > 0.6)
-                    {
-                        grabbedCone_ = true;
-                        coneGrabTimerStarted_ = false;
-                    }
-                }
-            }
-            else
-            {
-                arm_->setClawWheels(0);
-                arm_->setClaw(false);
+    //                 if (time > 0.6)
+    //                 {
+    //                     grabbedCone_ = true;
+    //                     coneGrabTimerStarted_ = false;
+    //                 }
+    //             }
+    //         }
+    //         else
+    //         {
+    //             arm_->setClawWheels(0);
+    //             arm_->setClaw(false);
 
-                // if (!coneGrabTimerStarted_)
-                // {
-                //     coneGrabTimerStartTime_ = timer_.GetFPGATimestamp().value();
-                //     coneGrabTimerStarted_ = true;
-                // }
+    //             // if (!coneGrabTimerStarted_)
+    //             // {
+    //             //     coneGrabTimerStartTime_ = timer_.GetFPGATimestamp().value();
+    //             //     coneGrabTimerStarted_ = true;
+    //             // }
 
-                // double time = timer_.GetFPGATimestamp().value() - coneGrabTimerStartTime_;
+    //             // double time = timer_.GetFPGATimestamp().value() - coneGrabTimerStartTime_;
 
-                double intermediatePhi = 140;
-                if (atConeIntakePos && (arm_->getState() == TwoJointArm::HOLDING_POS || arm_->getState() == TwoJointArm::STOPPED))
-                {
-                    arm_->setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], intermediatePhi);
-                    // arm_->setPosTo(TwoJointArmProfiles::STOWED);
-                }
-                else if(abs(arm_->getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && (arm_->getState() == TwoJointArm::HOLDING_POS || arm_->getState() == TwoJointArm::STOPPED))
-                {
-                    arm_->setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]);
-                }
-                else if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
-                {
-                    coneIntakeHalfway = false;
-                    coneIntaking_ = false;
-                    intakesNeededDown.second = false;
-                    coneIntakeDown_ = false;
-                }
+    //             double intermediatePhi = 140;
+    //             if (atConeIntakePos && (arm_->getState() == TwoJointArm::HOLDING_POS || arm_->getState() == TwoJointArm::STOPPED))
+    //             {
+    //                 arm_->setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], intermediatePhi);
+    //                 // arm_->setPosTo(TwoJointArmProfiles::STOWED);
+    //             }
+    //             else if(abs(arm_->getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && (arm_->getState() == TwoJointArm::HOLDING_POS || arm_->getState() == TwoJointArm::STOPPED))
+    //             {
+    //                 arm_->setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]);
+    //             }
+    //             else if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
+    //             {
+    //                 coneIntakeHalfway = false;
+    //                 coneIntaking_ = false;
+    //                 intakesNeededDown.second = false;
+    //                 coneIntakeDown_ = false;
+    //             }
 
-                if(abs(arm_->getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-                {
-                    intakesNeededDown.second = true;
-                }
-            }
-        }
-    }
+    //             if(abs(arm_->getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
+    //             {
+    //                 intakesNeededDown.second = true;
+    //             }
+    //         }
+    //     }
+    // }
     else
     {
         coneGrabTimerStarted_ = false;
@@ -1019,12 +1041,36 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if(dPadRightPressed)
+    if (/*dPadRightPressed*/ controls_->dPadRightDown())
     {
-        if(!coneIntaking_ && !cubeIntaking_)
+        if (!arm_->isForward())
         {
-            coneIntakeDown_ = !coneIntakeDown_;
+            if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
+            {
+                arm_->toggleForward();
+            }
+            else
+            {
+                arm_->setPosTo(TwoJointArmProfiles::STOWED);
+            }
         }
+        else
+        {
+            bool atGroundPos = (abs(arm_->getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_->getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
+            // arm_->setPosTo(TwoJointArmProfiles::GROUND);
+            if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
+            {
+                arm_->setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
+            }
+            else if (arm_->getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (arm_->getState() == TwoJointArm::HOLDING_POS || arm_->getState() == TwoJointArm::STOPPED))
+            {
+                arm_->setPosTo(TwoJointArmProfiles::STOWED);
+            }
+        }
+        // if(!coneIntaking_ && !cubeIntaking_)
+        // {
+        //     coneIntakeDown_ = !coneIntakeDown_;
+        // }
     }
 
     bool intakePressed = controls_->intakePressed();
@@ -1119,7 +1165,7 @@ void Robot::DisabledPeriodic()
 
     // frc::SmartDashboard::PutNumber("PS", controls_->checkPSButtons());
 
-    //Calling all the pressed functions so that they don't buffer
+    // Calling all the pressed functions so that they don't buffer
     controls_->dPadUpPressed();
     controls_->dPadLeftPressed();
     controls_->dPadRightPressed();

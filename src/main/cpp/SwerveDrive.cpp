@@ -1285,7 +1285,7 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
             wantedX = FieldConstants::BLUE_SCORING_X;
             if (scoringLevel == 1)
             {
-                wantedX += 0.5;
+                wantedX += 0.1; //0.5
             }
             wantedY = (9 - setTagPos_) * 0.5588 + 0.512826;
         }
@@ -1309,7 +1309,7 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
             wantedX = FieldConstants::RED_SCORING_X;
             if (scoringLevel == 1)
             {
-                wantedX -= 0.5;
+                wantedX -= 0.1; //0.5
             }
             wantedY = (setTagPos_ - 1) * 0.5588 + 0.512826;
         }

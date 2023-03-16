@@ -232,6 +232,11 @@ bool Controls::dPadRightPressed()
     // return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
 }
 
+bool Controls::dPadRightDown()
+{
+    return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
+}
+
 bool Controls::bbUpDown()
 {
     return buttonBoard_.GetRawButton(InputConstants::BB_UP);

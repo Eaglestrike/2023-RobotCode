@@ -241,6 +241,10 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     {
         return;
     }
+    if (state_ == FOLLOWING_TASK_SPACE_PROFILE || state_ == FOLLOWING_JOINT_SPACE_PROFILE)
+    {
+        return;
+    }
     if (posUnknown_)
     {
         checkPos();
@@ -268,7 +272,8 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     //     }
     // }
 
-    if (state_ == STOPPED)
+    bool atGroundPos = (abs(getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
+    if (state_ == STOPPED && !atGroundPos)
     {
         state_ = HOMING;
     }
@@ -279,7 +284,7 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
         return;
     }
 
-    if (position_ == setPosition)
+    if (position_ == setPosition && !atGroundPos)
     {
         return;
     }
@@ -294,12 +299,20 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     //     return;
     // }
 
-    if (state_ == FOLLOWING_TASK_SPACE_PROFILE)
-    {
-        return;
-    }
 
-    if (position_ == TwoJointArmProfiles::AUTO_STOW && setPosition == TwoJointArmProfiles::STOWED)
+    if(atGroundPos)
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
+        state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }
+    else if (position_ == TwoJointArmProfiles::AUTO_STOW && setPosition == TwoJointArmProfiles::GROUND)
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
+        setPosition_ = setPosition;
+    }
+    else if (position_ == TwoJointArmProfiles::AUTO_STOW && setPosition == TwoJointArmProfiles::STOWED)
     {
         shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
@@ -322,6 +335,14 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
         shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2], 0);
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3], 0);
         state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }
+    else if (position_ == TwoJointArmProfiles::GROUND)
+    {
+        key_ = {position_, TwoJointArmProfiles::STOWED};
+
+        setPosition_ = setPosition;
+        state_ = FOLLOWING_TASK_SPACE_PROFILE;
+        taskSpaceStartTime_ = timer_.GetFPGATimestamp().value();
     }
     else
     {
@@ -1645,11 +1666,11 @@ void TwoJointArm::setShoulderVolts(double volts)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 /* - 0.0889*/ && theta > 0 && volts > 0) // Less than 6 inches from ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && theta > 0 && volts > 0) // Less than 6 inches from ground is * 2
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 /* - 0.0889*/ && theta < 0 && volts < 0) // Less than 6 inches from ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && theta < 0 && volts < 0) // Less than 6 inches from ground
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
@@ -1703,11 +1724,11 @@ void TwoJointArm::setElbowVolts(double volts)
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Less than 6 inches above the ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Less than 6 inches above the ground
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 2 && phi + theta > 180 && volts < 0) // Less than 6 inches above the ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && phi + theta > 180 && volts < 0) // Less than 6 inches above the ground
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
