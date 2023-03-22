@@ -1173,6 +1173,9 @@ void Robot::DisabledPeriodic()
     // frc::SmartDashboard::PutBoolean("XUp", controls_->lineupTrimXUpPressed());
     // frc::SmartDashboard::PutBoolean("YDown", controls_->lineupTrimYDownPressed());
     // frc::SmartDashboard::PutBoolean("YUp", controls_->lineupTrimYUpPressed());
+    frc::SmartDashboard::PutBoolean("Right Joystick Top Button Pressed", controls_->rJoyTopDown());
+    frc::SmartDashboard::PutBoolean("Left Joystick Top Button Pressed", controls_->lJoyTopDown());
+
 
     // frc::SmartDashboard::PutNumber("PS", controls_->checkPSButtons());
 
@@ -1188,6 +1191,9 @@ void Robot::DisabledPeriodic()
     controls_->lineupTrimXDownPressed();
     controls_->lineupTrimYDownPressed();
     controls_->lineupTrimYUpPressed();
+
+    controls_->rJoyTopDown();
+    controls_->lJoyTopDown();
 }
 
 void Robot::TestInit() {}
