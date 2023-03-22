@@ -75,6 +75,14 @@ bool Controls::rJoyTriggerPressed()
     return rJoy_.GetTriggerPressed();
 }
 
+bool Controls::rJoyTopDown() {
+    return rJoy_.GetTopPressed();
+}
+
+bool Controls::lJoyTopDown() {
+    return lJoy_.GetTopPressed();
+}
+
 bool Controls::aDown()
 {
     return xbox_.GetRawButton(InputConstants::A_BUTTON);

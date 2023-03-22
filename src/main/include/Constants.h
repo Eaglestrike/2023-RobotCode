@@ -367,3 +367,12 @@ namespace PneumaticsIntakeConstants
     const double ROLLER_INTAKE_VOLTAGE = -2.5;
     const double ROLLER_OUTTAKE_VOLTAGE = 2.5;
 } // namespace PneumaticsIntakeConstants
+
+namespace CubeGrabberConstants {
+    // TODO: change the IDs to be accurate
+    const int LEFT_MOTOR_ID = 0;
+    const int RIGHT_MOTOR_ID = 0;
+
+    const double CLOCKWISE_VOLTAGE = 1;
+    const double COUNTERCLOCKWISE_VOLTAGE = -CLOCKWISE_VOLTAGE; 
+}
