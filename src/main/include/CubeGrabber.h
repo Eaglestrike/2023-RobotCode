@@ -3,7 +3,7 @@
 */
 
 #include "Constants.h"
-#include "rev/CANSparkMax.h"
+#include "ctre/Phoenix.h"
 
 class CubeGrabber {
 public:
@@ -23,6 +23,6 @@ public:
 
 private:
     State grabber_status{STOPPED};
-    rev::CANSparkMax left_motor{CubeGrabberConstants::LEFT_MOTOR_ID, rev::CANSparkMaxLowLevel::MotorType::kBrushless};
-    rev::CANSparkMax right_motor{CubeGrabberConstants::RIGHT_MOTOR_ID, rev::CANSparkMaxLowLevel::MotorType::kBrushless};
+    WPI_TalonSRX  left_motor{CubeGrabberConstants::LEFT_MOTOR_ID};
+    WPI_TalonSRX right_motor{CubeGrabberConstants::RIGHT_MOTOR_ID};
 };
