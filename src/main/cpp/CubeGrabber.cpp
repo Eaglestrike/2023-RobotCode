@@ -18,7 +18,7 @@ CubeGrabber::State CubeGrabber::getState() {
 void CubeGrabber::Intake() {
     grabber_status = INTAKING;
     left_motor.SetVoltage(units::volt_t{CubeGrabberConstants::CLOCKWISE_VOLTAGE});
-    right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE});
+    right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::CLOCKWISE_VOLTAGE});
 }
 
 /**
@@ -36,5 +36,5 @@ void CubeGrabber::Stop() {
 void CubeGrabber::Outtake() {
     grabber_status = OUTTAKING;
     left_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE});
-    right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::CLOCKWISE_VOLTAGE});
+    right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE});
 }

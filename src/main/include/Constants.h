@@ -369,7 +369,6 @@ namespace PneumaticsIntakeConstants
 } // namespace PneumaticsIntakeConstants
 
 namespace CubeGrabberConstants {
-    // TODO: change the IDs to be accurate
     const int LEFT_MOTOR_ID = 41;
     const int RIGHT_MOTOR_ID = 43;
 
