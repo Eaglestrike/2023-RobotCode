@@ -394,15 +394,6 @@ void Robot::TeleopPeriodic()
         scoringLevel_ = controls_->checkLevelButtons();
     }
 
-    // Default state for cube grabber is stopped
-    if (controls_->rJoyAltPressed()) {
-        cubeGrabber_.Intake();
-    } else if (controls_->lJoyAltPressed()) {
-        cubeGrabber_.Outtake();
-    } else {
-        cubeGrabber_.Stop();
-    }
-
     if (controls_->checkPSButtons() != -1)
     {
         psType_ = controls_->checkPSButtons();
@@ -1175,10 +1166,6 @@ void Robot::DisabledPeriodic()
     // frc::SmartDashboard::PutBoolean("YDown", controls_->lineupTrimYDownPressed());
     // frc::SmartDashboard::PutBoolean("YUp", controls_->lineupTrimYUpPressed());
 
-    // Used to check if the buttons to trigger the cube grabber are being pressed
-    frc::SmartDashboard::PutBoolean("Right Joystick Alt Button Pressed", controls_->rJoyAltPressed());
-    frc::SmartDashboard::PutBoolean("Left Joystick Alt Button Pressed", controls_->lJoyAltPressed());
-
     // frc::SmartDashboard::PutNumber("PS", controls_->checkPSButtons());
 
     // Calling all the pressed functions so that they don't buffer
@@ -1193,9 +1180,6 @@ void Robot::DisabledPeriodic()
     controls_->lineupTrimXDownPressed();
     controls_->lineupTrimYDownPressed();
     controls_->lineupTrimYUpPressed();
-
-    controls_->rJoyAltPressed();
-    controls_->lJoyAltPressed();
 }
 
 void Robot::TestInit() {}
