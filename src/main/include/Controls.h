@@ -16,8 +16,6 @@ class Controls
         double getTurn();
         bool lJoyTriggerDown();
         bool rJoyTriggerPressed();
-        bool rJoyAltPressed();
-        bool lJoyAltPressed();
         bool outakePressed();
         bool intakePressed();
         bool lLowerButton();
