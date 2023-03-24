@@ -21,6 +21,7 @@
 #include <frc/PneumaticHub.h>
 #include "PneumaticsIntake.h"
 #include <frc/Timer.h>
+#include "CubeGrabber.h"
 
 class Robot : public frc::TimedRobot
 {
@@ -52,6 +53,7 @@ private:
     TwoJointArm* arm_ = new TwoJointArm();
     AutoPaths autoPaths_;
     PneumaticsIntake cubeIntake_{false, false};
+    CubeGrabber cubeGrabber_;
 
     double yawOffset_;
 
@@ -60,6 +62,6 @@ private:
     bool coneGrabTimerStarted_;
 
     bool cubeIntaking_, coneIntaking_, coneIntakeDown_, armsZeroed_, grabbedCone_;
-    int scoringLevel_, psType_;
+    int scoringLevel_/*, psType_*/;
 
 };

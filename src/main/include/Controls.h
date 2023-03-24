@@ -18,8 +18,8 @@ class Controls
         bool rJoyTriggerPressed();
         bool outakePressed();
         bool intakePressed();
-        bool lLowerButton();
-        bool rLowerButton();
+        bool lockWheels();
+        bool inchingLowerButton();
         bool autoBalanceDown();
 
         double xboxLJoyX();
@@ -36,10 +36,13 @@ class Controls
         bool rXTriggerDown();
         bool lXTriggerDown();
         bool dPadUpPressed();
+        bool dPadDownPressed();
         bool dPadDownDown();
         bool dPadLeftPressed();
         bool dPadRightPressed();
         bool dPadRightDown();
+        bool bbLeftPresseed();
+        bool bbRightDown();
         bool bbUpDown();
 
         bool inchingUpDown();
@@ -52,7 +55,7 @@ class Controls
 
         int checkScoringButtons();
         int checkLevelButtons();
-        int checkPSButtons();
+        // int checkPSButtons();
 
         bool lineupTrimXUpPressed();
         bool lineupTrimXDownPressed();
@@ -65,5 +68,5 @@ class Controls
         frc::Joystick xbox_;
         frc::Joystick buttonBoard_;
 
-        bool dPadUpDown_, dPadLeftDown_, dPadRightDown_, /*intakeDown_, outakeDown_,*/ inchingUpDown_, inchingDownDown_, inchingLeftDown_, inchingRightDown_;
+        bool dPadUpDown_, dPadDownDown_, dPadLeftDown_, dPadRightDown_, /*intakeDown_, outakeDown_,*/ inchingUpDown_, inchingDownDown_, inchingLeftDown_, inchingRightDown_;
 };

@@ -19,7 +19,7 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
             frc::SmartDashboard::PutNumber("yaw", yaw);
             frc::SmartDashboard::PutBoolean("navx alive", navx_->IsConnected());
 
-            double ang = (navx_->GetYaw() - yawOffset_) * M_PI / 180.0;                                            // Radians
+            double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
             double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
             double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
             double tilt = pitch * sin(ang) - roll * cos(ang);
@@ -38,7 +38,7 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
                 autoPaths_.periodic();
                 autoPaths_.setGyros(yaw, navx_->GetPitch(), navx_->GetRoll());
             }
-            else
+            else if (frc::DriverStation::IsTeleop())
             {
                 bool armMoving = (arm_->getState() != TwoJointArm::STOPPED && arm_->getState() != TwoJointArm::HOLDING_POS);
                 // bool armOut = (arm_->getPosition() != TwoJointArmProfiles::STOWED /* && arm_->getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_->getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_->getPosition() != TwoJointArmProfiles::GROUND);
@@ -59,6 +59,8 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
 void Robot::RobotInit()
 {
     arm_->zeroArmsToAutoStow();
+    cubeGrabber_.Stop();
+
     auto1Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
     // auto1Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
     auto1Chooser_.SetDefaultOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
@@ -73,6 +75,7 @@ void Robot::RobotInit()
     // auto1Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
     // auto1Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
     // auto1Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
+    // auto1Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
     auto1Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto1Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto1Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
@@ -93,7 +96,8 @@ void Robot::RobotInit()
     // auto2Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
     // auto2Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
     // auto2Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
-    // auto2Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
+    // auto2Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
+    auto2Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
     auto2Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto2Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto2Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
@@ -114,8 +118,9 @@ void Robot::RobotInit()
     // auto3Chooser_.AddOption("Second Cone", AutoPaths::SECOND_CONE);
     auto3Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
     // auto3Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
-    auto3Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
-    auto3Chooser_.SetDefaultOption("Auto Dock", AutoPaths::AUTO_DOCK);
+    auto3Chooser_.SetDefaultOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
+    auto3Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
+    auto3Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto3Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto3Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto3Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
@@ -136,6 +141,7 @@ void Robot::RobotInit()
     auto4Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
     // auto4Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
     auto4Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
+    auto4Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
     auto4Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto4Chooser_.SetDefaultOption("Nothing", AutoPaths::NOTHING);
     auto4Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
@@ -152,7 +158,7 @@ void Robot::RobotInit()
     coneIntakeDown_ = false;
     armsZeroed_ = false;
     scoringLevel_ = 1;
-    psType_ = 1;
+    // psType_ = 1;
     coneGrabTimerStarted_ = false;
     coneGrabTimerStartTime_ = 0;
     // frc::SmartDashboard::PutNumber("Test Volts", 3);
@@ -392,10 +398,10 @@ void Robot::TeleopPeriodic()
         scoringLevel_ = controls_->checkLevelButtons();
     }
 
-    if (controls_->checkPSButtons() != -1)
-    {
-        psType_ = controls_->checkPSButtons();
-    }
+    // if (controls_->checkPSButtons() != -1)
+    // {
+    //     psType_ = controls_->checkPSButtons();
+    // }
 
     pair<bool, bool> intakesNeededDown = arm_->intakesNeededDown();
     bool coneIntakeHalfway = false;
@@ -407,16 +413,21 @@ void Robot::TeleopPeriodic()
         // 90, 0, -
         // 180, +, 0
         // 270, 0, +
-        double ang = (navx_->GetYaw() - yawOffset_) * M_PI / 180.0;                                            // Radians
+        double yaw = (navx_->GetYaw() - yawOffset_);
+        Helpers::normalizeAngle(yaw);
+        double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
         double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
         double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
         double tilt = pitch * sin(ang) - roll * cos(ang);
         if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
         {
-            tilt = 0.0;
+            swerveDrive_->lockWheels();
         }
-        double output = -SwerveConstants::AUTOKTILT * tilt;
-        swerveDrive_->drive(output, 0, 0);
+        else
+        {
+            double output = -SwerveConstants::AUTOKTILT * tilt;
+            swerveDrive_->drive(output, 0, 0);
+        }
     }
 
     if (controls_->fieldOrient())
@@ -432,7 +443,7 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if (controls_->dPadDownDown() && controls_->lXTriggerDown() && controls_->rXTriggerDown())
+    if (controls_->bbRightDown() && controls_->lXTriggerDown() && controls_->rXTriggerDown())
     {
         arm_->zeroArms();
         armsZeroed_ = true;
@@ -442,7 +453,8 @@ void Robot::TeleopPeriodic()
     bool dPadLeftPressed = controls_->dPadLeftPressed();
     bool dPadRightPressed = controls_->dPadRightPressed();
     bool coneIntakePressed = controls_->coneIntakePressed();
-    bool dPadUpPressed = controls_->dPadUpPressed();
+    // bool dPadUpPressed = controls_->dPadUpPressed();
+    bool bbLeftPressed = controls_->bbLeftPresseed();
 
     if (controls_->lXTriggerDown())
     {
@@ -466,7 +478,7 @@ void Robot::TeleopPeriodic()
         {
             cubeIntaking_ = false;
             coneIntaking_ = false;
-            
+
             double wantedYaw;
             bool playerStation = false;
             // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) FORWARD BASED LINEUP
@@ -512,13 +524,19 @@ void Robot::TeleopPeriodic()
             //     }
             // }
 
-            if ((navx_->GetYaw() - yawOffset_) > 0)
+            double yaw = navx_->GetYaw() - yawOffset_;
+            Helpers::normalizeAngle(yaw);
+            if ((yaw - yawOffset_) > 0)
             {
                 wantedYaw = 90;
             }
             else
             {
                 wantedYaw = -90;
+            }
+            if (swerveDrive_->getScoringPos() == 9)
+            {
+                wantedYaw += 5;
             }
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
@@ -532,14 +550,26 @@ void Robot::TeleopPeriodic()
             bool lineupForward;
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                lineupForward = (playerStation) ? (wantedYaw == -90) : (wantedYaw == 90);
+                lineupForward = (playerStation) ? (wantedYaw < 0) : (wantedYaw > 0);
             }
             else
             {
-                lineupForward = (playerStation) ? (wantedYaw == 90) : (wantedYaw == -90);
+                lineupForward = (playerStation) ? (wantedYaw > 0) : (wantedYaw < 0);
             }
 
-            if (abs((navx_->GetYaw() - yawOffset_) - wantedYaw) > 15)
+            double yawError = yaw - wantedYaw;
+            if (abs(yawError) > 180)
+            {
+                if (yawError > 0)
+                {
+                    yawError -= 360;
+                }
+                else
+                {
+                    yawError += 360;
+                }
+            }
+            if (abs(yawError) > 15 || abs(swerveDrive_->getX() - scoringPos.first) > 1.5 || abs(swerveDrive_->getY() - scoringPos.second) > 2)
             {
                 // Do nothing
             }
@@ -550,11 +580,11 @@ void Robot::TeleopPeriodic()
                 {
                     // arm_->setPosTo(TwoJointArmProfiles::MID); //FORWARD BASED LINEUP
 
-                    TwoJointArmProfiles::Positions position = TwoJointArmProfiles::RAMMING_PLAYER_STATION;
-                    if (psType_ == 2)
-                    {
-                        position = TwoJointArmProfiles::MID;
-                    }
+                    // TwoJointArmProfiles::Positions position = TwoJointArmProfiles::RAMMING_PLAYER_STATION;
+                    // if (psType_ == 2)
+                    // {
+                    //     position = TwoJointArmProfiles::MID;
+                    // }
 
                     if (lineupForward != arm_->isForward())
                     {
@@ -575,7 +605,22 @@ void Robot::TeleopPeriodic()
                     }
                     else
                     {
-                        arm_->setPosTo(position);
+                        if (controls_->xDown())
+                        {
+                            arm_->setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
+                        }
+                        else if (controls_->bDown())
+                        {
+                            arm_->setPosTo(TwoJointArmProfiles::MID);
+                        }
+                        if (arm_->getPosition() == TwoJointArmProfiles::STOWED && arm_->getState() == TwoJointArm::HOLDING_POS)
+                        {
+                            arm_->setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
+                        }
+                        else if (arm_->getPosition() != TwoJointArmProfiles::RAMMING_PLAYER_STATION && arm_->getPosition() != TwoJointArmProfiles::MID)
+                        {
+                            arm_->setPosTo(TwoJointArmProfiles::STOWED);
+                        }
                     }
                 }
             }
@@ -589,7 +634,7 @@ void Robot::TeleopPeriodic()
                 }
                 case 1: // Low
                 {
-                    if(!lineupForward)
+                    if (!lineupForward)
                     {
                     }
                     if (lineupForward != arm_->isForward())
@@ -823,7 +868,7 @@ void Robot::TeleopPeriodic()
         //         coneIntaking_ = true;
         //     }
         // }
-        else if (dPadUpPressed)
+        else if (bbLeftPressed)
         {
             // if (cubeIntaking_ && arm_->getState() == TwoJointArm::HOLDING_POS)//NEUTRAL STOW
             // {
@@ -1104,6 +1149,24 @@ void Robot::TeleopPeriodic()
         }
     }
 
+    bool cutoutIntakePressed = controls_->dPadUpPressed();
+    bool cutoutOutakePressed = controls_->dPadDownPressed();
+    if(cutoutIntakePressed)
+    {
+        cubeGrabber_.Intake();
+    }
+    else if(cutoutOutakePressed)
+    {
+        if(cubeGrabber_.getState() == CubeGrabber::OUTTAKING)
+        {
+            cubeGrabber_.Stop();
+        }
+        else
+        {
+            cubeGrabber_.Outtake();
+        }
+    }
+
     if (intakesNeededDown.first)
     {
         cubeIntake_.Deploy();
@@ -1157,6 +1220,7 @@ void Robot::DisabledPeriodic()
     autoPaths_.setActionsSet(false);
     autoPaths_.setPathSet(false);
     arm_->checkPos();
+    cubeGrabber_.Stop();
 
     // frc::SmartDashboard::PutBoolean("XDown", controls_->lineupTrimXDownPressed());
     // frc::SmartDashboard::PutBoolean("XUp", controls_->lineupTrimXUpPressed());
@@ -1167,8 +1231,10 @@ void Robot::DisabledPeriodic()
 
     // Calling all the pressed functions so that they don't buffer
     controls_->dPadUpPressed();
+    controls_->dPadDownPressed();
     controls_->dPadLeftPressed();
     controls_->dPadRightPressed();
+    controls_->bbLeftPresseed();
     controls_->intakePressed();
     controls_->outakePressed();
     controls_->coneIntakePressed();

@@ -125,6 +125,39 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
                 {
                     turn = clamp(turn, -0.075, 0.075);
                 }
+
+                bool inchUp = controls->inchingUpDown();
+                bool inchDown = controls->inchingDownDown();
+                bool inchLeft = controls->inchingLeftDown();
+                bool inchRight = controls->inchingRightDown();
+
+                if (controls->inchingLowerButton() || inchUp || inchDown || inchLeft || inchRight)
+                {
+                    double ang = atan2(yStrafe, xStrafe);
+                    double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
+                    if (vel != 0)
+                    {
+                        vel *= 0.60;
+                        vel += 0.40;
+                    }
+
+                    vel *= 0.15;
+                    // frc::SmartDashboard::PutNumber("VEL", vel);
+
+                    xStrafe = vel * cos(ang);
+                    yStrafe = vel * sin(ang);
+
+                    turn *= 0.15; // 0.15
+                    if (turn > 0)
+                    {
+                        turn += 0.05; // 0.05
+                    }
+                    else if (turn < 0)
+                    {
+                        turn -= 0.05;
+                    }
+                }
+
                 drive(xStrafe, yStrafe, turn);
                 return;
             }
@@ -206,6 +239,12 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             {
                 wantedYaw = -90;
             }
+
+            if ((setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) || (setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kRed))
+            {
+                wantedYaw += 5;
+            }
+
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
                 playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0);
@@ -214,34 +253,34 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             {
                 playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0);
             }
-            wantedY += (wantedYaw == 90) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
+            wantedY += (wantedYaw > 0) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
             trackingPlayerStation_ = playerStation;
 
-            if (playerStation)
-            {
-                if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
-                {
-                    double xStrafe, yStrafe;
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-                    {
-                        xStrafe = controls->getYStrafe();
-                        yStrafe = -controls->getXStrafe();
-                    }
-                    else
-                    {
-                        xStrafe = -controls->getYStrafe();
-                        yStrafe = controls->getXStrafe();
-                    }
-                    double turn = controls->getTurn();
-                    if (panic)
-                    {
-                        turn = clamp(turn, -0.075, 0.075);
-                    }
-                    trackingTag_ = false;
-                    drive(xStrafe, yStrafe, turn);
-                    return;
-                }
-            }
+            // if (playerStation)
+            // {
+            //     if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
+            //     {
+            //         double xStrafe, yStrafe;
+            //         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            //         {
+            //             xStrafe = controls->getYStrafe();
+            //             yStrafe = -controls->getXStrafe();
+            //         }
+            //         else
+            //         {
+            //             xStrafe = -controls->getYStrafe();
+            //             yStrafe = controls->getXStrafe();
+            //         }
+            //         double turn = controls->getTurn();
+            //         if (panic)
+            //         {
+            //             turn = clamp(turn, -0.075, 0.075);
+            //         }
+            //         trackingTag_ = false;
+            //         drive(xStrafe, yStrafe, turn);
+            //         return;
+            //     }
+            // }
 
             frc::SmartDashboard::PutNumber("WX", wantedX);
             frc::SmartDashboard::PutNumber("WY", wantedY);
@@ -323,7 +362,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             delete wantedPose;
         }
     }
-    else if (controls->lLowerButton())
+    else if (controls->lockWheels())
     {
         lockWheels();
     }
@@ -353,7 +392,7 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
         bool inchLeft = controls->inchingLeftDown();
         bool inchRight = controls->inchingRightDown();
 
-        if (controls->rLowerButton() || inchUp || inchDown || inchLeft || inchRight)
+        if (controls->inchingLowerButton() || inchUp || inchDown || inchLeft || inchRight)
         {
             double ang = atan2(yStrafe, xStrafe);
             double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
@@ -389,10 +428,10 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             //     yStrafe -= 0.02;
             // }
 
-            turn *= 0.15;
+            turn *= 0.15; // 0.15
             if (turn > 0)
             {
-                turn += 0.05;
+                turn += 0.05; // 0.05
             }
             else if (turn < 0)
             {
@@ -1081,6 +1120,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
 
     if (uniqueVal == prevUniqueVal_)
     {
+        frc::SmartDashboard::PutBoolean("Different Tag", false);
         if (robotX_ > 3.919857 + 2 && robotX_ < 12.621893 - 2) // If robot is not near community nor loading station
         {
             // foundTag_ = false;
@@ -1089,6 +1129,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
     }
     else
     {
+        frc::SmartDashboard::PutBoolean("Different Tag", true);
         prevUniqueVal_ = uniqueVal;
     }
     if (tagID < 1 || tagID > 8) // Ignore for now
@@ -1153,16 +1194,16 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
         return;
     }
 
-    if(tagID <= 4)
+    if (tagID <= 4)
     {
-        if(aprilTagX < FieldConstants::FIELD_LENGTH / 2)
+        if (aprilTagX < FieldConstants::FIELD_LENGTH / 2)
         {
             return;
         }
     }
     else
     {
-        if(aprilTagX > FieldConstants::FIELD_LENGTH / 2)
+        if (aprilTagX > FieldConstants::FIELD_LENGTH / 2)
         {
             return;
         }
@@ -1214,7 +1255,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
                 dist = aprilTagX;
             }
             double multiplier;
-            if(dist > FieldConstants::FIELD_LENGTH / 2)
+            if (dist > FieldConstants::FIELD_LENGTH / 2)
             {
                 multiplier = 0;
             }
@@ -1222,9 +1263,8 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt)
             {
                 multiplier = 0.75 * (1 - (dist / (FieldConstants::FIELD_LENGTH / 2)));
             }
-            
 
-            if(sqrt(xDiff * xDiff + yDiff * yDiff) > 2 && numLargeDiffs_ < 5/* && !frc::DriverStation::IsDisabled()*/)
+            if (sqrt(xDiff * xDiff + yDiff * yDiff) > 2 && numLargeDiffs_ < 5 /* && !frc::DriverStation::IsDisabled()*/)
             {
                 multiplier = 0;
                 numLargeDiffs_ += 1;
@@ -1272,11 +1312,11 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
             wantedX = FieldConstants::BLUE_PS_X;
             if (robotY_ > FieldConstants::TAG_XY[4][1])
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.6;
+                wantedY = FieldConstants::TAG_XY[4][1] + 0.838 - 0.127; // 0.6, then 0.838
             }
             else
             {
-                wantedY = FieldConstants::TAG_XY[4][1] - 0.6;
+                wantedY = FieldConstants::TAG_XY[4][1] - 0.838;
             }
             // wantedY = FieldConstants::TAG_XY[4][1];
         }
@@ -1285,9 +1325,15 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
             wantedX = FieldConstants::BLUE_SCORING_X;
             if (scoringLevel == 1)
             {
-                wantedX += 0.1; //0.5
+                wantedX += 0.1; // 0.5
             }
             wantedY = (9 - setTagPos_) * 0.5588 + 0.512826;
+
+            if (setTagPos_ == 9)
+            {
+                wantedY += (0.0254 * 4);
+                wantedX -= (0.0254 * 2);
+            }
         }
     }
     else
@@ -1297,11 +1343,11 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
             wantedX = FieldConstants::RED_PS_X;
             if (robotY_ > FieldConstants::TAG_XY[4][1])
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.6;
+                wantedY = FieldConstants::TAG_XY[4][1] + 0.838;
             }
             else
             {
-                wantedY = FieldConstants::TAG_XY[4][1] - 0.6;
+                wantedY = FieldConstants::TAG_XY[4][1] - 0.838 + 0.127;
             }
         }
         else
@@ -1309,9 +1355,15 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
             wantedX = FieldConstants::RED_SCORING_X;
             if (scoringLevel == 1)
             {
-                wantedX -= 0.1; //0.5
+                wantedX -= 0.1; // 0.5
             }
             wantedY = (setTagPos_ - 1) * 0.5588 + 0.512826;
+
+            if (setTagPos_ == 9)
+            {
+                wantedY -= (0.0254 * 4);
+                wantedX += (0.0254 * 2);
+            }
         }
     }
     double xTrim, yTrim;

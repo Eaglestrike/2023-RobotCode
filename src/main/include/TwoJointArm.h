@@ -141,8 +141,8 @@ class TwoJointArm
         double calcKT(double volts);
         double calcR(double volts);
 
-        void setShoulderVolts(double volts);
-        void setElbowVolts(double volts);
+        bool setShoulderVolts(double volts);
+        bool setElbowVolts(double volts);
 
         void followTaskSpaceProfile(double time);//COULDO combine into one function to calculate
         void followJointSpaceProfile();

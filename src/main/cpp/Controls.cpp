@@ -135,14 +135,14 @@ bool Controls::intakePressed()
     return rJoy_.GetRawButtonPressed(InputConstants::INTAKE_BUTTON);
 }
 
-bool Controls::lLowerButton()
+bool Controls::lockWheels()
 {
-    return lJoy_.GetRawButton(InputConstants::LOWER_BUTTON);
+    return lJoy_.GetRawButton(InputConstants::LOCK_WHEELS_LOWER_BUTTON);
 }
 
-bool Controls::rLowerButton()
+bool Controls::inchingLowerButton()
 {
-    return rJoy_.GetRawButton(InputConstants::LOWER_BUTTON);
+    return rJoy_.GetRawButton(InputConstants::INCHING_LOWER_BUTTON);
 }
 
 bool Controls::autoBalanceDown()
@@ -187,6 +187,26 @@ bool Controls::dPadUpPressed()
 
     // return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
 }
+
+bool Controls::dPadDownPressed()
+{
+    bool down = (xbox_.GetPOV() < 190 && xbox_.GetPOV() > 170);
+    if (down && !dPadDownDown_)
+    {
+        dPadDownDown_ = true;
+        return true;
+    }
+    else if (dPadDownDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        dPadDownDown_ = false;
+        return false;
+    }
+}
+
 bool Controls::dPadDownDown()
 {
     return (xbox_.GetPOV() < 190 && xbox_.GetPOV() > 170);
@@ -235,6 +255,16 @@ bool Controls::dPadRightPressed()
 bool Controls::dPadRightDown()
 {
     return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
+}
+
+bool Controls::bbLeftPresseed()
+{
+    return buttonBoard_.GetRawButtonPressed(InputConstants::BB_LEFT);
+}
+
+bool Controls::bbRightDown()
+{
+    return buttonBoard_.GetRawButton(InputConstants::BB_RIGHT);
 }
 
 bool Controls::bbUpDown()
@@ -394,21 +424,21 @@ int Controls::checkLevelButtons()
     }
 }
 
-int Controls::checkPSButtons()
-{
-    if (buttonBoard_.GetRawButton(InputConstants::BB_LEFT))
-    {
-        return 1;
-    }
-    else if (buttonBoard_.GetRawButton(InputConstants::BB_RIGHT))
-    {
-        return 2;
-    }
-    else
-    {
-        return -1;
-    }
-}
+// int Controls::checkPSButtons()
+// {
+//     if (buttonBoard_.GetRawButton(InputConstants::BB_LEFT))
+//     {
+//         return 1;
+//     }
+//     else if (buttonBoard_.GetRawButton(InputConstants::BB_RIGHT))
+//     {
+//         return 2;
+//     }
+//     else
+//     {
+//         return -1;
+//     }
+// }
 
 bool Controls::lineupTrimXUpPressed()
 {
