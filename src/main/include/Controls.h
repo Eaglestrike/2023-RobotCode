@@ -18,8 +18,8 @@ class Controls
         bool rJoyTriggerPressed();
         bool outakePressed();
         bool intakePressed();
-        bool lLowerButton();
-        bool rLowerButton();
+        bool lockWheels();
+        bool inchingLowerButton();
         bool autoBalanceDown();
 
         double xboxLJoyX();
@@ -40,6 +40,8 @@ class Controls
         bool dPadLeftPressed();
         bool dPadRightPressed();
         bool dPadRightDown();
+        bool bbLeftPresseed();
+        bool bbRightDown();
         bool bbUpDown();
 
         bool inchingUpDown();
@@ -52,7 +54,7 @@ class Controls
 
         int checkScoringButtons();
         int checkLevelButtons();
-        int checkPSButtons();
+        // int checkPSButtons();
 
         bool lineupTrimXUpPressed();
         bool lineupTrimXDownPressed();

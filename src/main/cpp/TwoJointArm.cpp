@@ -1394,8 +1394,15 @@ void TwoJointArm::manualControl(double thetaVel, double phiVel, bool gravity)
     }
     else
     {
-        setBrakes(false, elbowBrakeEngaged());
-        setShoulderVolts(thetaVolts);
+        bool moving = setShoulderVolts(thetaVolts);
+        if(!moving)
+        {
+            setBrakes(true, elbowBrakeEngaged());
+        }
+        else
+        {
+            setBrakes(false, elbowBrakeEngaged());
+        }
     }
 
     if (abs(phiVel) < 0.05)
@@ -1412,8 +1419,15 @@ void TwoJointArm::manualControl(double thetaVel, double phiVel, bool gravity)
     }
     else
     {
-        setBrakes(shoulderBrakeEngaged(), false);
-        setElbowVolts(phiVolts);
+        bool moving = setElbowVolts(phiVolts);
+        if(!moving)
+        {
+            setBrakes(shoulderBrakeEngaged(), true);
+        }
+        else
+        {
+            setBrakes(shoulderBrakeEngaged(), false);
+        }
     }
     // New lenghts with gravity of -0.0165 * 1.2
     // 0.6, 0, na
@@ -1644,7 +1658,7 @@ double TwoJointArm::calcR(double volts)
     return 0.000758486 * volts * volts - 0.0187702 * volts + 0.163911;
 }
 
-void TwoJointArm::setShoulderVolts(double volts)
+bool TwoJointArm::setShoulderVolts(double volts)
 {
     // frc::SmartDashboard::PutNumber("SC", shoulderMaster_.GetSupplyCurrent());
     double theta = getTheta();
@@ -1690,20 +1704,32 @@ void TwoJointArm::setShoulderVolts(double volts)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
+    else if(xy.first > 1.6021 && volts > 0)
+    {
+        shoulderMaster_.SetVoltage(units::volt_t(0));
+    } 
+    else if(xy.first < -1.6021 && volts < 0)
+    {
+        shoulderMaster_.SetVoltage(units::volt_t(0));
+    } 
     else
     {
         if (forward_)
         {
             shoulderMaster_.SetVoltage(units::volt_t{volts});
+            return true;
         }
         else
         {
             shoulderMaster_.SetVoltage(units::volt_t{-volts});
+            return true;
         }
     }
+
+    return false;
 }
 
-void TwoJointArm::setElbowVolts(double volts)
+bool TwoJointArm::setElbowVolts(double volts)
 {
     // frc::SmartDashboard::PutNumber("EC", elbowMaster_.GetSupplyCurrent());
     double theta = getTheta();
@@ -1748,17 +1774,29 @@ void TwoJointArm::setElbowVolts(double volts)
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
+    else if(xy.first > 1.6021 && volts > 0)
+    {
+        elbowMaster_.SetVoltage(units::volt_t(0));
+    } 
+    else if(xy.first < -1.6021 && volts < 0) //55
+    {
+        elbowMaster_.SetVoltage(units::volt_t(0));
+    } 
     else
     {
         if (forward_)
         {
             elbowMaster_.SetVoltage(units::volt_t{volts});
+            return true;
         }
         else
         {
             elbowMaster_.SetVoltage(units::volt_t{-volts});
+            return true;
         }
     }
+
+    return false;
 }
 
 double TwoJointArm::getTheta()

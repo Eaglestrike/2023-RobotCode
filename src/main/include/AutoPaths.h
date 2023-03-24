@@ -30,6 +30,7 @@ class AutoPaths
             SECOND_CUBE_HIGH,
             SECOND_CONE_DOCK,
             SECOND_CUBE_DOCK,
+            SECOND_CUBE_GRAB,
             AUTO_DOCK,
             TAXI_DOCK_DUMB,
             NOTHING,
@@ -61,6 +62,12 @@ class AutoPaths
         bool cubeIntaking();
         bool coneIntaking();
 
+        void generateXTraj(double pos, double setPos, double vel);
+        void generateYTraj(double pos, double setPos, double vel);
+
+        tuple<double, double, double> getXProfile();
+        tuple<double, double, double> getYProfile();
+
     private:
         vector<Path> actions_;
         Path path_;
@@ -69,12 +76,15 @@ class AutoPaths
 
         TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
         TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
-        TrajectoryCalc yawTraj_{SwerveConstants::MAX_AV * 0.2, SwerveConstants::MAX_AA * 0.2, 0, 0, 0, 0};
+        TrajectoryCalc yawTraj_{SwerveConstants::MAX_AV * 0.3, SwerveConstants::MAX_AA * 0.3, 0, 0, 0, 0};
+
+        TrajectoryCalc xSlowTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0};
+        TrajectoryCalc ySlowTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0};
 
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
-        double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_, autoStartTime_;
-        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_;
+        double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_, autoStartTime_, sendingItTime_;
+        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, slowTraj_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_, sendingIt_, firstCubeArmSafety_;
 
         //vector<SwervePath> swervePaths_;
         int actionNum_;

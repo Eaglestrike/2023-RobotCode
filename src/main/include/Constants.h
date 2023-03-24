@@ -61,8 +61,8 @@ namespace FieldConstants
     const double TOP_MIDDLE_CONE_Y = 3.306826;
     const double BOTTOM_MIDDLE_CONE_Y = 2.1844;
 
-    const double BLUE_SCORING_X = 1.8+0.068; // 1.923 - 0.019 - 0.127 - 0.02
-    const double RED_SCORING_X = 14.74-0.068; // 14.617 + 0.019 + 0.127 + 0.02
+    const double BLUE_SCORING_X = 1.8+0.068 + (0.0254 * 2);
+    const double RED_SCORING_X = 14.74-0.068 - (0.0254 * 2);
     const double BLUE_PS_X = TAG_XY[3][0] - 0.7;
     const double RED_PS_X = TAG_XY[4][0] + 0.7;
 
@@ -97,10 +97,11 @@ namespace InputConstants
     const int XBOX_RJOY_X = 4;
     const int XBOX_RJOY_Y = 5;
 
-    const int OUTAKE_BUTTON = 4;
-    const int INTAKE_BUTTON = 3;
-    const int LOWER_BUTTON = 2;
-    const int AUTO_BALANCE_BUTTON = 4;
+    const int OUTAKE_BUTTON = 4; //6 for left joystick backup
+    const int INTAKE_BUTTON = 3; //5 for right joystick backup
+    const int LOCK_WHEELS_LOWER_BUTTON = 2; //4 for left joystick
+    const int INCHING_LOWER_BUTTON = 2; //3 for right joystick
+    const int AUTO_BALANCE_BUTTON = 4; //6 for right joystick
 
     const int A_BUTTON = 1;
     const int B_BUTTON = 2;
@@ -177,7 +178,7 @@ namespace SwerveConstants
     const double BL_CANCODER_OFFSET = 41.6;   // 43.2
 
     const double MAX_LA = 2.75;
-    const double MAX_LV = 4;   //(past year: 3, 4) (stable but a bit too slow: 2, 4) (2.5, 4 for three piece)
+    const double MAX_LV = 4;   //(past year: 3, 4) (stable but a bit too slow: 2, 4) (2.75, 4 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
 
@@ -196,7 +197,7 @@ namespace SwerveConstants
     const double CLAW_MID_OFFSET = 0.0254 * 2;
 
     const double AUTOKTILT = 0.01;
-    const double AUTODEADANGLE = 1.0;
+    const double AUTODEADANGLE = 7.0;
     const double PITCHOFFSET = 2.0;
     const double ROLLOFFSET = 180.0 + 1;
 }
@@ -235,7 +236,7 @@ namespace TwoJointArmConstants
     const int SHOULDER_BRAKE_ID = 5;
     const int ELBOW_BRAKE_ID = 4;
     const int SHOULDER_ENCODER_ID = 0;
-    const double SHOULDER_ENCODER_OFFSET = 130;
+    const double SHOULDER_ENCODER_OFFSET = -67.4;
 
     const double UPPER_ARM_I = 0.206;
     const double FOREARM_I = 0.22; // 0.32, 0.35?

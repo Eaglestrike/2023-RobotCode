@@ -135,14 +135,14 @@ bool Controls::intakePressed()
     return rJoy_.GetRawButtonPressed(InputConstants::INTAKE_BUTTON);
 }
 
-bool Controls::lLowerButton()
+bool Controls::lockWheels()
 {
-    return lJoy_.GetRawButton(InputConstants::LOWER_BUTTON);
+    return lJoy_.GetRawButton(InputConstants::LOCK_WHEELS_LOWER_BUTTON);
 }
 
-bool Controls::rLowerButton()
+bool Controls::inchingLowerButton()
 {
-    return rJoy_.GetRawButton(InputConstants::LOWER_BUTTON);
+    return rJoy_.GetRawButton(InputConstants::INCHING_LOWER_BUTTON);
 }
 
 bool Controls::autoBalanceDown()
@@ -235,6 +235,16 @@ bool Controls::dPadRightPressed()
 bool Controls::dPadRightDown()
 {
     return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
+}
+
+bool Controls::bbLeftPresseed()
+{
+    return buttonBoard_.GetRawButtonPressed(InputConstants::BB_LEFT);
+}
+
+bool Controls::bbRightDown()
+{
+    return buttonBoard_.GetRawButton(InputConstants::BB_RIGHT);
 }
 
 bool Controls::bbUpDown()
@@ -394,21 +404,21 @@ int Controls::checkLevelButtons()
     }
 }
 
-int Controls::checkPSButtons()
-{
-    if (buttonBoard_.GetRawButton(InputConstants::BB_LEFT))
-    {
-        return 1;
-    }
-    else if (buttonBoard_.GetRawButton(InputConstants::BB_RIGHT))
-    {
-        return 2;
-    }
-    else
-    {
-        return -1;
-    }
-}
+// int Controls::checkPSButtons()
+// {
+//     if (buttonBoard_.GetRawButton(InputConstants::BB_LEFT))
+//     {
+//         return 1;
+//     }
+//     else if (buttonBoard_.GetRawButton(InputConstants::BB_RIGHT))
+//     {
+//         return 2;
+//     }
+//     else
+//     {
+//         return -1;
+//     }
+// }
 
 bool Controls::lineupTrimXUpPressed()
 {
