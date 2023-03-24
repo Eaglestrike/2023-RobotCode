@@ -31,6 +31,7 @@
     "iostream": "cpp",
     "cmath": "cpp",
     "*.inc": "cpp",
-    "numbers": "cpp"
+    "numbers": "cpp",
+    "atomic": "cpp"
   }
 }
