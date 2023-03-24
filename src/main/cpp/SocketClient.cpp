@@ -10,6 +10,8 @@
 
 #include "SocketClient.h"
 
+#define SOCK_CLIENT_BUF_SIZE 128
+
 const std::string regexp = R"(^([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)$)";
 
 #define GET_CUR_TIME_MS \
@@ -155,10 +157,10 @@ void SocketClient::m_SocketLoop(std::string host, int port)
 
   while (true)
   {
-    char buff[1024];
+    char buff[SOCK_CLIENT_BUF_SIZE];
     bzero(buff, sizeof(buff));
     read(sockfd, buff, sizeof(buff));
-    buff[1023] = '\0';
+    buff[SOCK_CLIENT_BUF_SIZE - 1] = '\0';
 
     std::regex exp(regexp);
     std::string inp(buff);
