@@ -75,16 +75,6 @@ bool Controls::rJoyTriggerPressed()
     return rJoy_.GetTriggerPressed();
 }
 
-// Detects if button on the left side of the right joystick is pressed
-bool Controls::rJoyAltPressed() {
-    return rJoy_.GetRawButton(7);
-}
-
-// Detects if button on the left side of the left joystick is pressed
-bool Controls::lJoyAltPressed() {
-    return lJoy_.GetRawButton(7);
-}
-
 bool Controls::aDown()
 {
     return xbox_.GetRawButton(InputConstants::A_BUTTON);
