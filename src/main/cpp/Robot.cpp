@@ -59,6 +59,8 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
 void Robot::RobotInit()
 {
     arm_->zeroArmsToAutoStow();
+    cubeGrabber_.Stop();
+
     auto1Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
     // auto1Chooser_.AddOption("Preloaded Cube Mid", AutoPaths::PRELOADED_CUBE_MID);
     auto1Chooser_.SetDefaultOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
@@ -1200,6 +1202,7 @@ void Robot::DisabledPeriodic()
     autoPaths_.setActionsSet(false);
     autoPaths_.setPathSet(false);
     arm_->checkPos();
+    cubeGrabber_.Stop();
 
     // frc::SmartDashboard::PutBoolean("XDown", controls_->lineupTrimXDownPressed());
     // frc::SmartDashboard::PutBoolean("XUp", controls_->lineupTrimXUpPressed());
