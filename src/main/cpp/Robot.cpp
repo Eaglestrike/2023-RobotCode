@@ -1149,6 +1149,24 @@ void Robot::TeleopPeriodic()
         }
     }
 
+    bool cutoutIntakePressed = controls_->dPadUpPressed();
+    bool cutoutOutakePressed = controls_->dPadDownPressed();
+    if(cutoutIntakePressed)
+    {
+        cubeGrabber_.Intake();
+    }
+    else if(cutoutOutakePressed)
+    {
+        if(cubeGrabber_.getState() == CubeGrabber::OUTTAKING)
+        {
+            cubeGrabber_.Stop();
+        }
+        else
+        {
+            cubeGrabber_.Outtake();
+        }
+    }
+
     if (intakesNeededDown.first)
     {
         cubeIntake_.Deploy();
@@ -1212,10 +1230,11 @@ void Robot::DisabledPeriodic()
     // frc::SmartDashboard::PutNumber("PS", controls_->checkPSButtons());
 
     // Calling all the pressed functions so that they don't buffer
-    // controls_->dPadUpPressed();
-    controls_->bbLeftPresseed();
+    controls_->dPadUpPressed();
+    controls_->dPadDownPressed();
     controls_->dPadLeftPressed();
     controls_->dPadRightPressed();
+    controls_->bbLeftPresseed();
     controls_->intakePressed();
     controls_->outakePressed();
     controls_->coneIntakePressed();

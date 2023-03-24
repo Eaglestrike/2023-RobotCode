@@ -36,6 +36,7 @@ class Controls
         bool rXTriggerDown();
         bool lXTriggerDown();
         bool dPadUpPressed();
+        bool dPadDownPressed();
         bool dPadDownDown();
         bool dPadLeftPressed();
         bool dPadRightPressed();
@@ -67,5 +68,5 @@ class Controls
         frc::Joystick xbox_;
         frc::Joystick buttonBoard_;
 
-        bool dPadUpDown_, dPadLeftDown_, dPadRightDown_, /*intakeDown_, outakeDown_,*/ inchingUpDown_, inchingDownDown_, inchingLeftDown_, inchingRightDown_;
+        bool dPadUpDown_, dPadDownDown_, dPadLeftDown_, dPadRightDown_, /*intakeDown_, outakeDown_,*/ inchingUpDown_, inchingDownDown_, inchingLeftDown_, inchingRightDown_;
 };

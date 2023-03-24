@@ -187,6 +187,26 @@ bool Controls::dPadUpPressed()
 
     // return ((xbox_.GetPOV() < 10 && xbox_.GetPOV() >= 0) || (xbox_.GetPOV() <= 360 && xbox_.GetPOV() > 350));
 }
+
+bool Controls::dPadDownPressed()
+{
+    bool down = (xbox_.GetPOV() < 190 && xbox_.GetPOV() > 170);
+    if (down && !dPadDownDown_)
+    {
+        dPadDownDown_ = true;
+        return true;
+    }
+    else if (dPadDownDown_ && down)
+    {
+        return false;
+    }
+    else
+    {
+        dPadDownDown_ = false;
+        return false;
+    }
+}
+
 bool Controls::dPadDownDown()
 {
     return (xbox_.GetPOV() < 190 && xbox_.GetPOV() > 170);
