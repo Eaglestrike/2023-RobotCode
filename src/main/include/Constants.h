@@ -370,9 +370,9 @@ namespace PneumaticsIntakeConstants
 
 namespace CubeGrabberConstants {
     // TODO: change the IDs to be accurate
-    const int LEFT_MOTOR_ID = 0;
-    const int RIGHT_MOTOR_ID = 0;
+    const int LEFT_MOTOR_ID = 41;
+    const int RIGHT_MOTOR_ID = 43;
 
-    const double CLOCKWISE_VOLTAGE = 1;
-    const double COUNTERCLOCKWISE_VOLTAGE = -CLOCKWISE_VOLTAGE; 
+    const double CLOCKWISE_VOLTAGE = 3;
+    const double COUNTERCLOCKWISE_VOLTAGE = -3; 
 }
