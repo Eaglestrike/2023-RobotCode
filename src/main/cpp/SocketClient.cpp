@@ -163,9 +163,16 @@ void SocketClient::m_SocketLoop(std::string host, int port)
     std::regex exp(regexp);
     std::string inp(buff);
 
+    unsigned long long curTimeMs = GET_CUR_TIME_MS;
+    if (inp == "0")
+    {
+      // store time
+      m_lastTimeMs.store(curTimeMs);
+      continue;
+    }
+
     std::smatch matches;
     auto res = std::regex_match(inp, matches, exp);
-    unsigned long long curTimeMs = GET_CUR_TIME_MS;
     if (res)
     {
       // parses regex
