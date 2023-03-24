@@ -28,6 +28,7 @@ private:
 
   std::atomic<unsigned long long> m_lastTimeMs;
 
+  std::atomic<bool> m_hasInit;
   std::atomic<bool> m_hasConn;
 
   std::atomic<int> m_camId;

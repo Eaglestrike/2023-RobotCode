@@ -12,7 +12,7 @@
 
 #define SOCK_CLIENT_BUF_SIZE 128
 
-const std::string regexp = R"(^\^([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\$$)";
+const std::string regexp = R"(\^([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?)\$$)";
 
 #define GET_CUR_TIME_MS \
   std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
@@ -66,7 +66,9 @@ bool SocketClient::IsStale()
 {
   unsigned long long curTimeMs = GET_CUR_TIME_MS;
   double lastTime = m_lastTimeMs.load();
-  return curTimeMs - lastTime >= m_staleTime;
+  bool hasInit = m_hasInit.load();
+
+  return hasInit && (curTimeMs - lastTime >= m_staleTime);
 }
 
 /**
@@ -154,9 +156,12 @@ void SocketClient::m_SocketLoop(std::string host, int port)
   m_angZ.store(0);
   m_age.store(0);
   m_count.store(0);
+  m_hasInit.store(false);
 
   while (true)
   {
+    // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+
     char buff[SOCK_CLIENT_BUF_SIZE];
     bzero(buff, sizeof(buff));
     read(sockfd, buff, sizeof(buff));
@@ -165,13 +170,29 @@ void SocketClient::m_SocketLoop(std::string host, int port)
     std::regex exp(regexp);
     std::string inp(buff);
 
+    // std::cout << inp << std::endl;
+
     unsigned long long curTimeMs = GET_CUR_TIME_MS;
-    if (inp == "0")
+    if (inp[0] == '0')
     {
       // store time
+      m_hasInit.store(true);
       m_lastTimeMs.store(curTimeMs);
       continue;
     }
+
+    // filter string until last dollar sign, where regex would register
+    int idx = inp.size();
+    for (int i = inp.size() - 1; i >= 0; i--)
+    {
+      if (inp[i] == '$')
+      {
+        idx = i + 1;
+        break;
+      }
+    }
+
+    inp = inp.substr(0, idx);
 
     std::smatch matches;
     auto res = std::regex_match(inp, matches, exp);
