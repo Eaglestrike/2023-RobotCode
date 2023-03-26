@@ -24,9 +24,11 @@ const std::string regexp = R"(\^([-+]?[0-9]*\.?[0-9]+([eE][-+]?[0-9]+)?),([-+]?[
  * @param host The hostname string of jetson
  * @param port The port of socket server with jetson
  * @param staleTime The amount of time, in ms, after the rio gets the data from the jetson before data is considered stale.
+ * @param deadTime The amount of time, in ms, after the rio gets the data from the jetson before the jetson is considered dead (and it will retry connection);
+ * This value should be greater than staleTime.
  */
-SocketClient::SocketClient(std::string host, int port, unsigned long long staleTime)
-    : m_host{host}, m_port{port}, m_staleTime{staleTime} {}
+SocketClient::SocketClient(std::string host, int port, unsigned long long staleTime, unsigned long long deadTime)
+    : m_host{host}, m_port{port}, m_staleTime{staleTime}, m_deadTime{deadTime} {}
 
 /**
  * Initializes thread that fetches data from socket server
@@ -67,6 +69,8 @@ bool SocketClient::IsStale()
   unsigned long long curTimeMs = GET_CUR_TIME_MS;
   double lastTime = m_lastTimeMs.load();
   bool hasInit = m_hasInit.load();
+
+  // std::cout << "lastTime: " << lastTime << " hasInit: " << hasInit << std::endl;
 
   return hasInit && (curTimeMs - lastTime >= m_staleTime);
 }
@@ -127,7 +131,7 @@ void SocketClient::m_SocketLoop(std::string host, int port)
     close(sockfd); // destroy socket
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    // after 1 second delay, try everything
+    // after 1 second delay, try init socket again
     // socket create and verification
     sockfd = socket(AF_INET, SOCK_STREAM, 0);
     while (sockfd == -1)
@@ -161,6 +165,41 @@ void SocketClient::m_SocketLoop(std::string host, int port)
   while (true)
   {
     // std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    unsigned long long curTimeMs = GET_CUR_TIME_MS;
+    unsigned long long lastTimeMs = m_lastTimeMs.load();
+
+    if (m_hasInit && curTimeMs - lastTimeMs >= m_deadTime)
+    {
+      // attempts to reconnect if jetson dies mid-match
+      res = -1;
+      while (res != 0)
+      {
+        // printf("connection with the server failed ...\n");
+
+        close(sockfd); // destroy socket
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        // after 1 second delay, try everything
+        // socket create and verification
+        sockfd = socket(AF_INET, SOCK_STREAM, 0);
+        while (sockfd == -1)
+        {
+          // try again until good
+          sockfd = socket(AF_INET, SOCK_STREAM, 0);
+          std::this_thread::sleep_for(std::chrono::milliseconds(10));
+        }
+        bzero(&servaddr, sizeof(servaddr));
+
+        // printf("Good socket creation\n");
+
+        // assign IP, PORT
+        servaddr.sin_family = AF_INET;
+        servaddr.sin_addr.s_addr = inet_addr(host.c_str());
+        servaddr.sin_port = htons(port);
+
+        res = connect(sockfd, (struct sockaddr *)&servaddr, sizeof(servaddr));
+      }
+    }
 
     char buff[SOCK_CLIENT_BUF_SIZE];
     bzero(buff, sizeof(buff));
@@ -171,8 +210,6 @@ void SocketClient::m_SocketLoop(std::string host, int port)
     std::string inp(buff);
 
     // std::cout << inp << std::endl;
-
-    unsigned long long curTimeMs = GET_CUR_TIME_MS;
     if (inp[0] == '0')
     {
       // store time

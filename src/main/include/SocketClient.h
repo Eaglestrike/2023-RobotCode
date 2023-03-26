@@ -8,7 +8,7 @@
 class SocketClient
 {
 public:
-  SocketClient(std::string host, int port, unsigned long long staleTime);
+  SocketClient(std::string host, int port, unsigned long long staleTime, unsigned long long deadTime);
 
   void Init();
 
@@ -25,6 +25,7 @@ private:
   std::string m_host;
   int m_port;
   unsigned long long m_staleTime;
+  unsigned long long m_deadTime;
 
   std::atomic<unsigned long long> m_lastTimeMs;
 
