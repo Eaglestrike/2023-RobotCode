@@ -261,7 +261,7 @@ namespace TwoJointArmConstants
     const double ELBOW_KVI = -25.9533;
 
     const double skD_ = 0.05; //0.05, 0.05, 0, 0.15
-    const double skP_ = 0.1; //Unstable but works 0, 0.5, 0, 0.5
+    const double skP_ = 0.2; //Unstable but works 0, 0.5, 0, 0.5
     const double ekD_ = 0;
     const double ekP_ = 0.15;
 
@@ -292,9 +292,15 @@ namespace TwoJointArmConstants
     const double ARM_POSITIONS[11][4] =
         {
             {0.0, -0.3175, 0, 179.999999}, // stowed, 0, 180
-            {0.63102, -0.26025, 16.2, 140.5},    // cube intake, 16.2, 140.5
+
+            // {0.63102, -0.26025, 16.2, 140.5},    // cube intake, 16.2, 140.5
+            {0.68919, -0.19095, 13, 138},       // cube intake, 13, 138
+
             {1.1607, 0.59354, 8, 90},     // mid, 8, 90 {1.15488, 0.55676, 8, 92}
-            {-0.63102, -0.26025, -16.2, 219.5}, // cube intake other side, or just special paths!
+
+            // {-0.63102, -0.26025, -16.2, 219.5}, // cube intake other side, or just special paths!
+            {-0.68919, -0.19095, -13, 222},       // cube intake other side, or just special paths!
+
             {1.54007, 0.92549, 49, 17},     // high, 49, 17
             {1.02963, 0.36889, 2.5, 108.35},     // cube mid, 2.5, 108.35
             {1.38, 0.7587, 24.96, 60.78},      // cube high, 24.96, 60.78

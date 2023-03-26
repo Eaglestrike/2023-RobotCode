@@ -43,6 +43,9 @@ class SwerveDrive
         pair<double, double> checkScoringPos(int scoringLevel);
         void setScoringPos(int scoringPos);
         int getScoringPos();
+
+        void resetYawTagOffset();
+        double getYawTagOffset();
         
     private:
         SwerveModule* topRight_ = new SwerveModule(SwerveConstants::TR_TURN_ID, SwerveConstants::TR_DRIVE_ID, SwerveConstants::TR_CANCODER_ID, SwerveConstants::TR_CANCODER_OFFSET);
@@ -52,7 +55,7 @@ class SwerveDrive
 
         SwervePath tagPath_{SwerveConstants::MAX_LA, SwerveConstants::MAX_LV, SwerveConstants::MAX_AA, SwerveConstants::MAX_AV};
 
-        double robotX_, robotY_, yaw_;
+        double robotX_, robotY_, yaw_, yawTagOffset_;
         TrajectoryCalc xTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
         TrajectoryCalc yawTagTraj_{SwerveConstants::MAX_AV * 0.7, SwerveConstants::MAX_AA * 0.7, 0, 0, 0, 0};

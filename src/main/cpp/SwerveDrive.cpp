@@ -23,6 +23,8 @@ SwerveDrive::SwerveDrive()
 
     // aprilTagX_ = 0;
     // aprilTagY_ = 0;
+
+    yawTagOffset_ = 0;
 }
 
 /*
@@ -44,7 +46,7 @@ void SwerveDrive::periodic(double yaw, double tilt, vector<double> data)
 
 void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, int scoringLevel)
 {
-    frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
+    // frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
 
     if (controls->lineupTrimXUpPressed())
@@ -707,7 +709,7 @@ void SwerveDrive::drivePose(SwervePose pose)
             }
             else
             {
-                yawVel = (yawError)*SwerveConstants::kaP * 1.8; //1.5
+                yawVel = (yawError)*SwerveConstants::kaP * 1.8; // 1.5
             }
         }
         else
@@ -1009,6 +1011,7 @@ void SwerveDrive::reset()
     xLineupTrim_ = 0;
     yLineupTrim_ = 0;
     numLargeDiffs_ = 0;
+    resetYawTagOffset();
 }
 
 double SwerveDrive::getX()
@@ -1077,7 +1080,7 @@ void SwerveDrive::setPos(pair<double, double> xy)
 void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
 {
     //-1 is no april tag
-    double defaultVal[] = {-1};
+    // double defaultVal[] = {-1};
     // Get data from SmartDashboard/Networktables
     // vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
 
@@ -1091,27 +1094,31 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
     double tagX = data.at(2);
     double tagY = data.at(3);
     double tagZAng = -data.at(4);
+    // frc::SmartDashboard::PutNumber("Tag Ang", tagZAng * 180 / M_PI);
     int tagID = data.at(1);
     int uniqueVal = data.at(6);
     double delay = data.at(5) / 1000.0;
 
-    double navxTagZAng;
+    double navxTagZAng, tagAngToRobotAng;
     if (tagID <= 4 && tagID > 0)
     {
         navxTagZAng = yaw_ + 90;
         Helpers::normalizeAngle(navxTagZAng);
+
+        tagAngToRobotAng = (tagZAng * 180 / M_PI) - 90;
     }
     else if (tagID >= 5 && tagID < 9)
     {
         navxTagZAng = yaw_ - 90;
         Helpers::normalizeAngle(navxTagZAng);
+
+        tagAngToRobotAng = (tagZAng * 180 / M_PI)  + 90;
     }
     else
     {
         return;
     }
 
-    // frc::SmartDashboard::PutNumber("TEST Z ANG", testTagZAng);
     navxTagZAng *= -(M_PI / 180.0);
 
     // frc::SmartDashboard::PutNumber("Tag x", tagX);
@@ -1283,6 +1290,21 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
 
             robotX_ = prevPoses_.rbegin()->second.first.first;
             robotY_ = prevPoses_.rbegin()->second.first.second;
+
+            if (frc::DriverStation::IsDisabled())
+            {
+                if (true)
+                {
+                    yawTagOffset_ = (tagAngToRobotAng - yaw_);
+                }
+            }
+            else
+            {
+                if (getXYVel().first < 0.1 && getXYVel().second < 0.1 && abs(tagAngToRobotAng - yaw_) < 5 && abs(abs(yaw_) - 90) < 10/* && IN FRONT OF CUBE OR SOMETHING*/)
+                {
+                    yawTagOffset_ += 0.3 * (tagAngToRobotAng - yaw_);
+                }
+            }
         }
     }
 }
@@ -1483,4 +1505,15 @@ void SwerveDrive::setScoringPos(int scoringPos)
 int SwerveDrive::getScoringPos()
 {
     return setTagPos_;
+}
+
+void SwerveDrive::resetYawTagOffset()
+{
+    yawTagOffset_ = 0;
+}
+
+double SwerveDrive::getYawTagOffset()
+{
+    return 0;
+    return yawTagOffset_;
 }

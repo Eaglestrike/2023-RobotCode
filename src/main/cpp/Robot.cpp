@@ -8,18 +8,18 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.43", 5807, 300, 5000)
+Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.43", 5807, 500, 5000)
 {
 
     AddPeriodic(
         [&]
         {
-            double yaw = navx_->GetYaw() - yawOffset_;
+            double yaw = navx_->GetYaw() - yawOffset_/* + swerveDrive_->getYawTagOffset()*/;
             Helpers::normalizeAngle(yaw);
             frc::SmartDashboard::PutNumber("yaw", yaw);
             frc::SmartDashboard::PutBoolean("navx alive", navx_->IsConnected());
             frc::SmartDashboard::PutBoolean("Data Stale", socketClient_.IsStale());
-            frc::SmartDashboard::PutBoolean("Camera Has Connection", socketClient_.HasConn());
+            frc::SmartDashboard::PutBoolean("Camera Connection", socketClient_.HasConn());
 
             double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
             double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
@@ -28,8 +28,8 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.43", 580
             frc::SmartDashboard::PutNumber("Tilt", tilt);
             frc::SmartDashboard::PutNumber("Pitch", pitch);
             frc::SmartDashboard::PutNumber("Roll", roll);
-            frc::SmartDashboard::PutNumber("Pitch Raw", navx_->GetPitch());
-            frc::SmartDashboard::PutNumber("Roll Raw", navx_->GetRoll());
+            // frc::SmartDashboard::PutNumber("Pitch Raw", navx_->GetPitch());
+            // frc::SmartDashboard::PutNumber("Roll Raw", navx_->GetRoll());
 
             vector<double> data = socketClient_.GetData();
             swerveDrive_->periodic(yaw, tilt, data);
@@ -82,7 +82,7 @@ void Robot::RobotInit()
     // auto1Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
     // auto1Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
     // auto1Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
-    auto1Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
+    // auto1Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto1Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto1Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto1Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
@@ -104,7 +104,7 @@ void Robot::RobotInit()
     // auto2Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
     // auto2Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
     auto2Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
-    auto2Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
+    // auto2Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto2Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto2Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto2Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
@@ -126,7 +126,7 @@ void Robot::RobotInit()
     // auto3Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
     auto3Chooser_.SetDefaultOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
     auto3Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
-    auto3Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
+    // auto3Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
     auto3Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto3Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto3Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
@@ -149,7 +149,7 @@ void Robot::RobotInit()
     auto4Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
     auto4Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
     auto4Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
-    auto4Chooser_.SetDefaultOption("Nothing", AutoPaths::NOTHING);
+    // auto4Chooser_.SetDefaultOption("Nothing", AutoPaths::NOTHING);
     auto4Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto4Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto4Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
@@ -190,11 +190,11 @@ void Robot::RobotInit()
  */
 void Robot::RobotPeriodic()
 {
-    frc::SmartDashboard::PutBoolean("Shoulder Brake", arm_->shoulderBrakeEngaged());
-    frc::SmartDashboard::PutBoolean("Elbow Brake", arm_->elbowBrakeEngaged());
+    // frc::SmartDashboard::PutBoolean("Shoulder Brake", arm_->shoulderBrakeEngaged());
+    // frc::SmartDashboard::PutBoolean("Elbow Brake", arm_->elbowBrakeEngaged());
     frc::SmartDashboard::PutBoolean("Forward", arm_->isForward());
     frc::SmartDashboard::PutBoolean("Pos Known", !arm_->posUnknown());
-    frc::SmartDashboard::PutBoolean("Intaking Cone", coneIntaking_);
+    // frc::SmartDashboard::PutBoolean("Intaking Cone", coneIntaking_);
     frc::SmartDashboard::PutBoolean("Intaking Cube", cubeIntaking_);
     frc::SmartDashboard::PutBoolean("ESTOPPED", arm_->isEStopped());
     frc::SmartDashboard::PutBoolean("Arms Zeroed", armsZeroed_);
@@ -207,8 +207,8 @@ void Robot::RobotPeriodic()
     frc::SmartDashboard::PutNumber("y", swerveDrive_->getY());
     frc::SmartDashboard::PutNumber("Theta", arm_->getTheta());
     frc::SmartDashboard::PutNumber("Phi", arm_->getPhi());
-    frc::SmartDashboard::PutNumber("Theta vel", arm_->getThetaVel());
-    frc::SmartDashboard::PutNumber("Phi vel", arm_->getPhiVel());
+    // frc::SmartDashboard::PutNumber("Theta vel", arm_->getThetaVel());
+    // frc::SmartDashboard::PutNumber("Phi vel", arm_->getPhiVel());
     // frc::SmartDashboard::PutNumber("Theta Volts", arm_->getThetaVolts());
     // frc::SmartDashboard::PutNumber("Phi Volts", arm_->getPhiVolts());
 
@@ -419,7 +419,7 @@ void Robot::TeleopPeriodic()
         // 90, 0, -
         // 180, +, 0
         // 270, 0, +
-        double yaw = (navx_->GetYaw() - yawOffset_);
+        double yaw = (navx_->GetYaw() - yawOffset_/* + swerveDrive_->getYawTagOffset()*/);
         Helpers::normalizeAngle(yaw);
         double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
         double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
@@ -447,6 +447,7 @@ void Robot::TeleopPeriodic()
         {
             yawOffset_ = -90;
         }
+        swerveDrive_->resetYawTagOffset();
     }
 
     if (controls_->bbRightDown() && controls_->lXTriggerDown() && controls_->rXTriggerDown())
@@ -530,9 +531,9 @@ void Robot::TeleopPeriodic()
             //     }
             // }
 
-            double yaw = navx_->GetYaw() - yawOffset_;
+            double yaw = navx_->GetYaw() - yawOffset_/* + swerveDrive_->getYawTagOffset()*/;
             Helpers::normalizeAngle(yaw);
-            if ((yaw - yawOffset_) > 0)
+            if ((yaw) > 0) //HERE
             {
                 wantedYaw = 90;
             }
@@ -938,16 +939,10 @@ void Robot::TeleopPeriodic()
             }
             else
             {
-                // if (arm_->getPosition() != TwoJointArmProfiles::STOWED && arm_->getPosition() != TwoJointArmProfiles::CUBE_INTAKE)
-                // {
-                //     arm_->setPosTo(TwoJointArmProfiles::STOWED);
-                // }
-                // else
-                // {
-                arm_->setPosTo(TwoJointArmProfiles::CUBE_INTAKE);
-                // arm_->setClawWheels(ClawConstants::INTAKING_SPEED);
-                // arm_->setClaw(true);
-                // }
+                if(arm_->getPosition() != TwoJointArmProfiles::CUBE_INTAKE || arm_->getState() != TwoJointArm::HOLDING_POS)
+                {
+                    arm_->setPosTo(TwoJointArmProfiles::CUBE_INTAKE);
+                }
             }
 
             arm_->setClawWheels(ClawConstants::INTAKING_SPEED);
@@ -1206,8 +1201,8 @@ void Robot::TeleopPeriodic()
     }
 
     frc::SmartDashboard::PutBoolean("Cube Intake Down", intakesNeededDown.first);
-    frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.second || coneIntakeDown_);
-    frc::SmartDashboard::PutBoolean("Cone Intake Halfway", coneIntakeHalfway);
+    // frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.second || coneIntakeDown_);
+    // frc::SmartDashboard::PutBoolean("Cone Intake Halfway", coneIntakeHalfway);
 }
 
 void Robot::DisabledInit()
