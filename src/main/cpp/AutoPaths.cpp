@@ -1375,11 +1375,11 @@ void AutoPaths::periodic()
                     double xVel;
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                     {
-                        xVel = 0.25 * SwerveConstants::MAX_TELE_VEL;
+                        xVel = SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
                     else
                     {
-                        xVel = -0.25 * SwerveConstants::MAX_TELE_VEL;
+                        xVel = -SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
                     pose = new SwervePose(swerveDrive_->getX(), get<2>(yProfile), get<2>(yawProfile), xVel, get<1>(yProfile), get<1>(yawProfile), 0, get<0>(yProfile), get<0>(yawProfile));
 
@@ -1436,11 +1436,11 @@ void AutoPaths::periodic()
                     double xVel;
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                     {
-                        xVel = -0.25 * SwerveConstants::MAX_TELE_VEL;
+                        xVel = -SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
                     else
                     {
-                        xVel = 0.25 * SwerveConstants::MAX_TELE_VEL;
+                        xVel = SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
                     // frc::SmartDashboard::PutNumber("Y DOCK VEL", get<1>(yProfile));
                     // frc::SmartDashboard::PutNumber("YAW DOCK VEL", get<1>(yawProfile));
@@ -2154,24 +2154,24 @@ void AutoPaths::periodic()
                     double tilt = pitch * sin(ang) - roll * cos(ang);
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                     {
-                        if (abs(tilt) < 12)
+                        if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION)
                         {
-                            swerveDrive_->drive(-0.4, 0, 0);
+                            swerveDrive_->drive(-SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
                         }
                         else
                         {
-                            swerveDrive_->drive(-0.25, 0, 0);
+                            swerveDrive_->drive(-SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
                         }
                     }
                     else
                     {
-                        if (abs(tilt) < 12)
+                        if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION)
                         {
-                            swerveDrive_->drive(0.4, 0, 0);
+                            swerveDrive_->drive(SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
                         }
                         else
                         {
-                            swerveDrive_->drive(0.25, 0, 0);
+                            swerveDrive_->drive(SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
                         }
                     }
                 }
@@ -2240,22 +2240,22 @@ void AutoPaths::periodic()
                 {
                     if (abs(tilt) < 12)
                     {
-                        swerveDrive_->drive(0.4, 0, 0);
+                        swerveDrive_->drive(SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
                     }
                     else
                     {
-                        swerveDrive_->drive(0.2, 0, 0);
+                        swerveDrive_->drive(SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
                     }
                 }
                 else
                 {
                     if (abs(tilt) < 12)
                     {
-                        swerveDrive_->drive(-0.4, 0, 0);
+                        swerveDrive_->drive(-SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
                     }
                     else
                     {
-                        swerveDrive_->drive(-0.2, 0, 0);
+                        swerveDrive_->drive(-SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
                     }
                 }
             }

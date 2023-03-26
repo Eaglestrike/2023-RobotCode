@@ -200,6 +200,11 @@ namespace SwerveConstants
     const double AUTODEADANGLE = 12.0;
     const double PITCHOFFSET = 0.0;
     const double ROLLOFFSET = 180.0 + 2;
+    const double MIN_TILT_ON_STATION = 12;
+
+    const double PRE_SENDING_IT_SPEED = 0.25;
+    const double SENDING_IT_FAST_SPEED = 0.4;
+    const double SENDING_IT_MED_SPEED = 0.25;
 }
 
 namespace TwoJointArmConstants
