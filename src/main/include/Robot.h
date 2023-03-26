@@ -22,6 +22,7 @@
 #include "PneumaticsIntake.h"
 #include <frc/Timer.h>
 #include "CubeGrabber.h"
+#include "SocketClient.h"
 
 class Robot : public frc::TimedRobot
 {
@@ -54,6 +55,7 @@ private:
     AutoPaths autoPaths_;
     PneumaticsIntake cubeIntake_{false, false};
     CubeGrabber cubeGrabber_;
+    SocketClient socketClient_;
 
     double yawOffset_;
 

@@ -35,11 +35,11 @@ void SwerveDrive::setYaw(double yaw)
     yaw_ = yaw;
 }
 
-void SwerveDrive::periodic(double yaw, double tilt)
+void SwerveDrive::periodic(double yaw, double tilt, vector<double> data)
 {
     setYaw(yaw);
     calcOdometry();
-    updateAprilTagFieldXY(tilt);
+    updateAprilTagFieldXY(tilt, data);
 }
 
 void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, int scoringLevel)
@@ -317,15 +317,15 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
 
         if (trackingPlayerStation_)
         {
-            if (get<0>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yProfile) == 0 && get<1>(yawProfile) == 0)
-            {
-                if (abs(robotY_ - get<2>(yProfile)) > 0.08)
-                {
-                    trackingTag_ = false;
-                    trackingPlayerStation_ = false;
-                    return;
-                }
-            }
+            // if (get<0>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yProfile) == 0 && get<1>(yawProfile) == 0)
+            // {
+            //     if (abs(robotY_ - get<2>(yProfile)) > 0.0254 * 4)
+            //     {
+            //         trackingTag_ = false;
+            //         trackingPlayerStation_ = false;
+            //         return;
+            //     }
+            // }
             double xStrafe;
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
@@ -707,7 +707,7 @@ void SwerveDrive::drivePose(SwervePose pose)
             }
             else
             {
-                yawVel = (yawError)*SwerveConstants::kaP * 1.5;
+                yawVel = (yawError)*SwerveConstants::kaP * 1.8; //1.5
             }
         }
         else
@@ -1074,12 +1074,12 @@ void SwerveDrive::setPos(pair<double, double> xy)
 /**
  * Using april tags to update field odometry
  */
-void SwerveDrive::updateAprilTagFieldXY(double tilt)
+void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
 {
     //-1 is no april tag
     double defaultVal[] = {-1};
     // Get data from SmartDashboard/Networktables
-    vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
+    // vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
 
     if (data.at(0) == -1) // No april tag data
     {

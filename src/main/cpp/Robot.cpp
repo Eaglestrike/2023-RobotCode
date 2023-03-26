@@ -8,7 +8,7 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-Robot::Robot() : autoPaths_(swerveDrive_, arm_)
+Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.43", 5807, 0.3)
 {
 
     AddPeriodic(
@@ -18,6 +18,8 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
             Helpers::normalizeAngle(yaw);
             frc::SmartDashboard::PutNumber("yaw", yaw);
             frc::SmartDashboard::PutBoolean("navx alive", navx_->IsConnected());
+            frc::SmartDashboard::PutBoolean("Data Stale", socketClient_.IsStale());
+            frc::SmartDashboard::PutBoolean("Camera Has Connection", socketClient_.HasConn());
 
             double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
             double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
@@ -26,8 +28,11 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
             frc::SmartDashboard::PutNumber("Tilt", tilt);
             frc::SmartDashboard::PutNumber("Pitch", pitch);
             frc::SmartDashboard::PutNumber("Roll", roll);
+            frc::SmartDashboard::PutNumber("Pitch Raw", navx_->GetPitch());
+            frc::SmartDashboard::PutNumber("Roll Raw", navx_->GetRoll());
 
-            swerveDrive_->periodic(yaw, tilt);
+            vector<double> data = socketClient_.GetData();
+            swerveDrive_->periodic(yaw, tilt, data);
 
             arm_->periodic();
             cubeIntake_.Periodic();
@@ -58,6 +63,7 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_)
 
 void Robot::RobotInit()
 {
+    socketClient_.Init();
     arm_->zeroArmsToAutoStow();
     cubeGrabber_.Stop();
 
@@ -251,7 +257,7 @@ void Robot::AutonomousInit()
     pair<double, double> startXY = autoPaths_.initPos();
     if (abs(swerveDrive_->getX() - startXY.first) > 1 || abs(swerveDrive_->getY() - startXY.second) > 1)
     {
-        frc::SmartDashboard::PutBoolean("F", true);
+        // frc::SmartDashboard::PutBoolean("F", true); 
         swerveDrive_->setPos(startXY);
     }
 
@@ -569,7 +575,7 @@ void Robot::TeleopPeriodic()
                     yawError += 360;
                 }
             }
-            if (abs(yawError) > 15 || abs(swerveDrive_->getX() - scoringPos.first) > 1.5 || abs(swerveDrive_->getY() - scoringPos.second) > 2)
+            if (abs(yawError) > 15 || (!playerStation && (abs(swerveDrive_->getX() - scoringPos.first) > 1.5 || abs(swerveDrive_->getY() - scoringPos.second) > 2)))
             {
                 // Do nothing
             }

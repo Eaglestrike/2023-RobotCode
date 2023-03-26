@@ -21,7 +21,7 @@ class SwerveDrive
         SwerveDrive();
         void setYaw(double yaw);
         
-        void periodic(double yaw, double tilt);
+        void periodic(double yaw, double tilt, vector<double> data);
         void teleopPeriodic(Controls* controls, bool forward, bool panic, int scoringLevel);
         void drive(double xSpeed, double ySpeed, double turn);
         void lockWheels();
@@ -39,7 +39,7 @@ class SwerveDrive
         double getYaw();
         void setPos(pair<double, double> xy);
 
-        void updateAprilTagFieldXY(double tilt);
+        void updateAprilTagFieldXY(double tilt, vector<double> data);
         pair<double, double> checkScoringPos(int scoringLevel);
         void setScoringPos(int scoringPos);
         int getScoringPos();

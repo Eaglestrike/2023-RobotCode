@@ -194,12 +194,12 @@ namespace SwerveConstants
     const double kaP = 4; // 0.008
     const double kaD = 0;
 
-    const double CLAW_MID_OFFSET = 0.0254 * 2;
+    const double CLAW_MID_OFFSET = 0.0254 * 4.5; //was 2
 
     const double AUTOKTILT = 0.01;
-    const double AUTODEADANGLE = 7.0;
-    const double PITCHOFFSET = 2.0;
-    const double ROLLOFFSET = 180.0 + 1;
+    const double AUTODEADANGLE = 12.0;
+    const double PITCHOFFSET = 0.0;
+    const double ROLLOFFSET = 180.0 + 2;
 }
 
 namespace TwoJointArmConstants
@@ -298,8 +298,8 @@ namespace TwoJointArmConstants
             {0.72371, -0.49738, 43, 125.5}, //Cone intake from the ground, 43, 125.5
 
             {0.76201, 0.55449, -23.3, 120.5}, //ramming player station, -23.3, 120.5
+            // {0.6685, 0.53897, -31.7, 127}, //ramming player station closer to bumper, -31.7, 127
 
-            // {0.35105, -0.17901, -18.5, 165}, //Auto stow without cone intake, -18.5, 165
             {0.10074, -0.30109, -18.5, 179.99999}, //Auto stow with cone intake, -18.5, 180
 
             {0, 0, 25.7, 138} //Cone intake from intake, no trajectories, 25.7, 138

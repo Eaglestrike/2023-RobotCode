@@ -318,7 +318,7 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
         state_ = FOLLOWING_JOINT_SPACE_PROFILE;
     }
-    else if (setPosition == TwoJointArmProfiles::STOWED && position_ == TwoJointArmProfiles::AUTO_STOW)
+    else if (position_ == TwoJointArmProfiles::STOWED && setPosition == TwoJointArmProfiles::AUTO_STOW)
     {
         shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2], 0);
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3], 0);
@@ -330,12 +330,24 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][3], 0);
         state_ = FOLLOWING_JOINT_SPACE_PROFILE;
     }
-    else if (setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION && position_ == TwoJointArmProfiles::AUTO_STOW)
+    else if (position_ == TwoJointArmProfiles::RAMMING_PLAYER_STATION && setPosition == TwoJointArmProfiles::AUTO_STOW)
     {
         shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2], 0);
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3], 0);
         state_ = FOLLOWING_JOINT_SPACE_PROFILE;
     }
+    // else if (position_ == TwoJointArmProfiles::STOWED && setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION) //From here
+    // {
+    //     shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][2], 0);
+    //     elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][3], 0);
+    //     state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    // }
+    // else if (position_ == TwoJointArmProfiles::RAMMING_PLAYER_STATION && setPosition == TwoJointArmProfiles::STOWED)
+    // {
+    //     shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
+    //     elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
+    //     state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    // }// To here, comment out for curved path from stow to ramming ps
     else if (position_ == TwoJointArmProfiles::GROUND)
     {
         key_ = {position_, TwoJointArmProfiles::STOWED};
