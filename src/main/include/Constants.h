@@ -61,8 +61,8 @@ namespace FieldConstants
     const double TOP_MIDDLE_CONE_Y = 3.306826;
     const double BOTTOM_MIDDLE_CONE_Y = 2.1844;
 
-    const double BLUE_SCORING_X = 1.8+0.068 + (0.0254 * 2);
-    const double RED_SCORING_X = 14.74-0.068 - (0.0254 * 2);
+    const double BLUE_SCORING_X = 1.8+0.068 + (0.0254 * 1);
+    const double RED_SCORING_X = 14.74-0.068 - (0.0254 * 1);
     const double BLUE_PS_X = TAG_XY[3][0] - 0.7;
     const double RED_PS_X = TAG_XY[4][0] + 0.7;
 
@@ -228,6 +228,7 @@ namespace TwoJointArmConstants
     const double SHOULDER_MAX_ANG = 90;
     const double ELBOW_MIN_ANG = 0;
     const double ELBOW_MAX_ANG = 360;
+    const double MAX_X_EXENTIONS = 1.6021;
 
     const double SHOULDER_ARM_MAX_VEL = 135; //100, 270, 270, 200 was too fast
     const double ELBOW_ARM_MAX_VEL = 135; //90, 135, 90, 90 was too slow
@@ -308,8 +309,9 @@ namespace TwoJointArmConstants
             // {1.10306, 0.04506, 20.5, 107.5},        // ground but high, 20.5, 107.5
             {0.72371, -0.49738, 43, 125.5}, //Cone intake from the ground, 43, 125.5
 
-            {0.76201, 0.55449, -23.3, 120.5}, //ramming player station, -23.3, 120.5
+            // {0.76201, 0.55449, -23.3, 120.5}, //ramming player station, -23.3, 120.5
             // {0.6685, 0.53897, -31.7, 127}, //ramming player station closer to bumper, -31.7, 127
+            {0.70918, 0.55008, -28, 124}, //ramming player station, far but not as far, -28, -124
 
             {0.10074, -0.30109, -18.5, 179.99999}, //Auto stow with cone intake, -18.5, 180
 

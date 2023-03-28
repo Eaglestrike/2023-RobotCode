@@ -447,7 +447,7 @@ void Robot::TeleopPeriodic()
         {
             yawOffset_ = -90;
         }
-        swerveDrive_->resetYawTagOffset();
+        // swerveDrive_->resetYawTagOffset();
     }
 
     if (controls_->bbRightDown() && controls_->lXTriggerDown() && controls_->rXTriggerDown())

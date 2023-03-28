@@ -24,7 +24,7 @@ SwerveDrive::SwerveDrive()
     // aprilTagX_ = 0;
     // aprilTagY_ = 0;
 
-    yawTagOffset_ = 0;
+    // yawTagOffset_ = 0;
 }
 
 /*
@@ -123,10 +123,6 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
                     yStrafe = controls->getXStrafe();
                 }
                 double turn = controls->getTurn();
-                if (panic)
-                {
-                    turn = clamp(turn, -0.075, 0.075);
-                }
 
                 bool inchUp = controls->inchingUpDown();
                 bool inchDown = controls->inchingDownDown();
@@ -149,15 +145,24 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
                     xStrafe = vel * cos(ang);
                     yStrafe = vel * sin(ang);
 
-                    turn *= 0.15; // 0.15
-                    if (turn > 0)
+                    turn *= 0.3; // 0.15
+                    // frc::SmartDashboard::PutNumber("Turn", turn);
+                    if (abs(turn) < 0.3 * 0.3 * 0.2)
                     {
-                        turn += 0.05; // 0.05
+                        turn = 0;
                     }
-                    else if (turn < 0)
-                    {
-                        turn -= 0.05;
-                    }
+                    // if (turn > 0)
+                    // {
+                    //     turn += 0.05; // 0.05
+                    // }
+                    // else if (turn < 0)
+                    // {
+                    //     turn -= 0.05;
+                    // }
+                }
+                else if (panic)
+                {
+                    turn = clamp(turn, -0.075, 0.075);
                 }
 
                 drive(xStrafe, yStrafe, turn);
@@ -384,10 +389,6 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             yStrafe = controls->getXStrafe();
         }
         double turn = controls->getTurn();
-        if (panic)
-        {
-            turn = clamp(turn, -0.075, 0.075);
-        }
 
         bool inchUp = controls->inchingUpDown();
         bool inchDown = controls->inchingDownDown();
@@ -410,35 +411,24 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             xStrafe = vel * cos(ang);
             yStrafe = vel * sin(ang);
 
-            // xStrafe *= 0.1;
-            // if(xStrafe > 0)
-            // {
-            //     xStrafe += 0.02;
-            // }
-            // else if(xStrafe < 0)
-            // {
-            //     xStrafe -= 0.02;
-            // }
-
-            // yStrafe *= 0.1;
-            // if(yStrafe > 0)
-            // {
-            //     yStrafe += 0.02;
-            // }
-            // else if(yStrafe < 0)
-            // {
-            //     yStrafe -= 0.02;
-            // }
-
-            turn *= 0.15; // 0.15
-            if (turn > 0)
+            turn *= 0.3; // 0.15
+            // frc::SmartDashboard::PutNumber("Turn", turn);
+            if (abs(turn) < 0.3 * 0.3 * 0.2)
             {
-                turn += 0.05; // 0.05
+                turn = 0;
             }
-            else if (turn < 0)
-            {
-                turn -= 0.05;
-            }
+            // if (turn > 0)
+            // {
+            //     turn += 0.05; // 0.05
+            // }
+            // else if (turn < 0)
+            // {
+            //     turn -= 0.05;
+            // }
+        }
+        else if (panic)
+        {
+            turn = clamp(turn, -0.075, 0.075);
         }
 
         drive(xStrafe, yStrafe, turn);
@@ -1011,7 +1001,7 @@ void SwerveDrive::reset()
     xLineupTrim_ = 0;
     yLineupTrim_ = 0;
     numLargeDiffs_ = 0;
-    resetYawTagOffset();
+    // resetYawTagOffset();
 }
 
 double SwerveDrive::getX()
@@ -1099,20 +1089,20 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
     int uniqueVal = data.at(6);
     double delay = data.at(5) / 1000.0;
 
-    double navxTagZAng, tagAngToRobotAng;
+    double navxTagZAng/*, tagAngToRobotAng*/;
     if (tagID <= 4 && tagID > 0)
     {
         navxTagZAng = yaw_ + 90;
         Helpers::normalizeAngle(navxTagZAng);
 
-        tagAngToRobotAng = (tagZAng * 180 / M_PI) - 90;
+        // tagAngToRobotAng = (tagZAng * 180 / M_PI) - 90;
     }
     else if (tagID >= 5 && tagID < 9)
     {
         navxTagZAng = yaw_ - 90;
         Helpers::normalizeAngle(navxTagZAng);
 
-        tagAngToRobotAng = (tagZAng * 180 / M_PI)  + 90;
+        // tagAngToRobotAng = (tagZAng * 180 / M_PI) + 90;
     }
     else
     {
@@ -1291,20 +1281,20 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
             robotX_ = prevPoses_.rbegin()->second.first.first;
             robotY_ = prevPoses_.rbegin()->second.first.second;
 
-            if (frc::DriverStation::IsDisabled())
-            {
-                if (true)
-                {
-                    yawTagOffset_ = (tagAngToRobotAng - yaw_);
-                }
-            }
-            else
-            {
-                if (getXYVel().first < 0.1 && getXYVel().second < 0.1 && abs(tagAngToRobotAng - yaw_) < 5 && abs(abs(yaw_) - 90) < 10/* && IN FRONT OF CUBE OR SOMETHING*/)
-                {
-                    yawTagOffset_ += 0.3 * (tagAngToRobotAng - yaw_);
-                }
-            }
+            // if (frc::DriverStation::IsDisabled())
+            // {
+            //     if (true)
+            //     {
+            //         yawTagOffset_ = (tagAngToRobotAng - yaw_);
+            //     }
+            // }
+            // else
+            // {
+            //     if (getXYVel().first < 0.1 && getXYVel().second < 0.1 && abs(tagAngToRobotAng - yaw_) < 5 && abs(abs(yaw_) - 90) < 10 /* && IN FRONT OF CUBE OR SOMETHING*/)
+            //     {
+            //         yawTagOffset_ += 0.3 * (tagAngToRobotAng - yaw_);
+            //     }
+            // }
         }
     }
 }
@@ -1507,13 +1497,13 @@ int SwerveDrive::getScoringPos()
     return setTagPos_;
 }
 
-void SwerveDrive::resetYawTagOffset()
-{
-    yawTagOffset_ = 0;
-}
+// void SwerveDrive::resetYawTagOffset()
+// {
+//     yawTagOffset_ = 0;
+// }
 
-double SwerveDrive::getYawTagOffset()
-{
-    return 0;
-    return yawTagOffset_;
-}
+// double SwerveDrive::getYawTagOffset()
+// {
+//     return 0;
+//     return yawTagOffset_;
+// }

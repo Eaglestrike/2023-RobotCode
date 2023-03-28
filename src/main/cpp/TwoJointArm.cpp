@@ -336,18 +336,18 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3], 0);
         state_ = FOLLOWING_JOINT_SPACE_PROFILE;
     }
-    // else if (position_ == TwoJointArmProfiles::STOWED && setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION) //From here
-    // {
-    //     shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][2], 0);
-    //     elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][3], 0);
-    //     state_ = FOLLOWING_JOINT_SPACE_PROFILE;
-    // }
-    // else if (position_ == TwoJointArmProfiles::RAMMING_PLAYER_STATION && setPosition == TwoJointArmProfiles::STOWED)
-    // {
-    //     shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
-    //     elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
-    //     state_ = FOLLOWING_JOINT_SPACE_PROFILE;
-    // }// To here, comment out for curved path from stow to ramming ps
+    else if (position_ == TwoJointArmProfiles::STOWED && setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION) //From here
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][3], 0);
+        state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }
+    else if (position_ == TwoJointArmProfiles::RAMMING_PLAYER_STATION && setPosition == TwoJointArmProfiles::STOWED)
+    {
+        shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
+        elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
+        state_ = FOLLOWING_JOINT_SPACE_PROFILE;
+    }// To here, comment out for curved path from stow to ramming ps
     else if (position_ == TwoJointArmProfiles::GROUND)
     {
         key_ = {position_, TwoJointArmProfiles::STOWED};
@@ -1716,11 +1716,11 @@ bool TwoJointArm::setShoulderVolts(double volts)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if(xy.first > 1.6021 && volts > 0)
+    else if(xy.first > TwoJointArmConstants::MAX_X_EXENTIONS && volts > 0)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     } 
-    else if(xy.first < -1.6021 && volts < 0)
+    else if(xy.first < -TwoJointArmConstants::MAX_X_EXENTIONS && volts < 0)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     } 
@@ -1786,11 +1786,11 @@ bool TwoJointArm::setElbowVolts(double volts)
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if(xy.first > 1.6021 && volts > 0)
+    else if(xy.first > TwoJointArmConstants::MAX_X_EXENTIONS && volts > 0)
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     } 
-    else if(xy.first < -1.6021 && volts < 0) //55
+    else if(xy.first < -TwoJointArmConstants::MAX_X_EXENTIONS && volts < 0) //55
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     } 
