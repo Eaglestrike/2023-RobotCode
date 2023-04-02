@@ -61,8 +61,8 @@ namespace FieldConstants
     const double TOP_MIDDLE_CONE_Y = 3.306826;
     const double BOTTOM_MIDDLE_CONE_Y = 2.1844;
 
-    const double BLUE_SCORING_X = 1.8+0.068 + (0.0254 * 1);
-    const double RED_SCORING_X = 14.74-0.068 - (0.0254 * 1);
+    const double BLUE_SCORING_X = 1.8+0.068 + (0.0254 * 3);
+    const double RED_SCORING_X = 14.74-0.068 - (0.0254 * 3);
     const double BLUE_PS_X = TAG_XY[3][0] - 0.7;
     const double RED_PS_X = TAG_XY[4][0] + 0.7;
 
@@ -204,7 +204,9 @@ namespace SwerveConstants
 
     const double PRE_SENDING_IT_SPEED = 0.25;
     const double SENDING_IT_FAST_SPEED = 0.4;
-    const double SENDING_IT_MED_SPEED = 0.25;
+    const double SENDING_IT_MED_SPEED = 0.35; //Was 0.3
+
+    const double SENDING_IT_TIME = 1.1; //was 0.9
 }
 
 namespace TwoJointArmConstants
@@ -242,7 +244,7 @@ namespace TwoJointArmConstants
     const int SHOULDER_BRAKE_ID = 5;
     const int ELBOW_BRAKE_ID = 4;
     const int SHOULDER_ENCODER_ID = 0;
-    const double SHOULDER_ENCODER_OFFSET = -67.4;
+    const double SHOULDER_ENCODER_OFFSET = -67.4 - 60;
 
     const double UPPER_ARM_I = 0.206;
     const double FOREARM_I = 0.22; // 0.32, 0.35?
@@ -343,7 +345,7 @@ namespace ClawConstants
 {
     const int PNEUMATIC_ID = 6;
     const int WHEEL_MOTOR_ID = 1;
-    const double INTAKING_SPEED = 7;
+    const double INTAKING_SPEED = 10;
     const double OUTAKING_SPEED = -3;
     const double RETAINING_SPEED = 0.5;
     const double RETAINING_CURRENT = 7;

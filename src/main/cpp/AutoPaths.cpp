@@ -126,10 +126,11 @@ void AutoPaths::setPath(Path path)
             {
                 yaw = 90;
                 y = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
+                x += (0.0254 * 2);
             }
             else
             {
-                yaw = 95;
+                yaw = 90 + 7;
                 y = FieldConstants::BOTTOM_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
                 y += (0.0254 * 4);
                 x -= (0.0254 * 2);
@@ -140,7 +141,7 @@ void AutoPaths::setPath(Path path)
             x = FieldConstants::RED_SCORING_X;
             if (!mirrored_)
             {
-                yaw = -85;
+                yaw = -90 + 7;
                 y = FieldConstants::TOP_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
                 y -= (0.0254 * 4);
                 x += (0.0254 * 2);
@@ -149,6 +150,7 @@ void AutoPaths::setPath(Path path)
             {
                 yaw = -90;
                 y = FieldConstants::BOTTOM_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
+                x -= (0.0254 * 2);
             }
         }
 
@@ -1469,6 +1471,14 @@ void AutoPaths::periodic()
                             hitChargeStation_ = true;
                         }
                     }
+
+                    frc::SmartDashboard::PutBoolean("Hit Charge Station", false);
+                    frc::SmartDashboard::PutBoolean("Sending it Fast", false);
+                    frc::SmartDashboard::PutBoolean("Sending it Medium", false);
+                }
+                else
+                {
+                    frc::SmartDashboard::PutBoolean("Hit Charge Station", true);
                 }
             }
             else if ((path_ == FIRST_CONE_DOCK && pointNum_ == 1) || (path_ == FIRST_CUBE_DOCK && pointNum_ == 1))
@@ -1536,7 +1546,7 @@ void AutoPaths::periodic()
 
         if (pose != nullptr)
         {
-            if (timer_.GetFPGATimestamp().value() - autoStartTime_ > 14.95 && (path_ == SECOND_CUBE_DOCK || path_ == FIRST_CUBE_DOCK || path_ == SECOND_CONE_DOCK || path_ == FIRST_CONE_DOCK || path_ == AUTO_DOCK))
+            if (timer_.GetFPGATimestamp().value() - autoStartTime_ > 14.9 && (path_ == SECOND_CUBE_DOCK || path_ == FIRST_CUBE_DOCK || path_ == SECOND_CONE_DOCK || path_ == FIRST_CONE_DOCK || path_ == AUTO_DOCK))
             {
                 swerveDrive_->lockWheels();
             }
@@ -1986,7 +1996,7 @@ void AutoPaths::periodic()
                 forward_ = false;
             }
 
-            if (pointOver && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.95)
+            if (pointOver && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.9)
             {
                 double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                 double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
@@ -2137,7 +2147,7 @@ void AutoPaths::periodic()
                 armPosition_ = TwoJointArmProfiles::STOWED;
             }
 
-            if (hitChargeStation_ && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.95)
+            if (hitChargeStation_ && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.9)
             {
                 if (!sendingIt_)
                 {
@@ -2145,9 +2155,8 @@ void AutoPaths::periodic()
                     sendingIt_ = true;
                 }
                 double time = timer_.GetFPGATimestamp().value() - sendingItTime_;
-                if (time < 1.2)
+                if (time < SwerveConstants::SENDING_IT_TIME)
                 {
-                    // frc::SmartDashboard::PutBoolean("Sending it", true);
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                     double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
@@ -2156,10 +2165,14 @@ void AutoPaths::periodic()
                     {
                         if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION)
                         {
+                            frc::SmartDashboard::PutBoolean("Sending it Fast", true);
+                            frc::SmartDashboard::PutBoolean("Sending it Medium", false);
                             swerveDrive_->drive(-SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
                         }
                         else
                         {
+                            frc::SmartDashboard::PutBoolean("Sending it Fast", false);
+                            frc::SmartDashboard::PutBoolean("Sending it Medium", true);
                             swerveDrive_->drive(-SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
                         }
                     }
@@ -2167,31 +2180,42 @@ void AutoPaths::periodic()
                     {
                         if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION)
                         {
+                            frc::SmartDashboard::PutBoolean("Sending it Fast", true);
+                            frc::SmartDashboard::PutBoolean("Sending it Medium", false);
                             swerveDrive_->drive(SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
                         }
                         else
                         {
+                            frc::SmartDashboard::PutBoolean("Sending it Fast", false);
+                            frc::SmartDashboard::PutBoolean("Sending it Medium", true);
                             swerveDrive_->drive(SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
                         }
                     }
                 }
                 else
                 {
-                    // frc::SmartDashboard::PutBoolean("Sending it", false);
+                    frc::SmartDashboard::PutBoolean("Sending it Fast", false);
+                    frc::SmartDashboard::PutBoolean("Sending it Medium", false);
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                     double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
                     if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
                     {
+                        frc::SmartDashboard::PutBoolean("Balanced", true);
                         swerveDrive_->lockWheels();
                     }
                     else
                     {
+                        frc::SmartDashboard::PutBoolean("Balanced", false);
                         double output = -SwerveConstants::AUTOKTILT * tilt;
                         swerveDrive_->drive(output, 0, 0);
                     }
                 }
+            }
+            else if(timer_.GetFPGATimestamp().value() - autoStartTime_ > 14.9)
+            {
+                swerveDrive_->lockWheels();
             }
         }
 
@@ -2222,7 +2246,7 @@ void AutoPaths::periodic()
         armPosition_ = TwoJointArmProfiles::STOWED;
         clawOpen_ = false;
         wheelSpeed_ = 0;
-        if (hitChargeStation_ && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.95)
+        if (hitChargeStation_ && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.9)
         {
             if (!sendingIt_)
             {
@@ -2230,7 +2254,7 @@ void AutoPaths::periodic()
                 sendingIt_ = true;
             }
             double time = timer_.GetFPGATimestamp().value() - sendingItTime_;
-            if (time < 1.2)
+            if (time < SwerveConstants::SENDING_IT_TIME)
             {
                 double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                 double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
@@ -2367,7 +2391,7 @@ void AutoPaths::periodic()
     }
     case NOTHING:
     {
-        swerveDrive_->drive(0, 0, 0);
+        swerveDrive_->lockWheels();
         break;
     }
     case DRIVE_BACK_DUMB:
@@ -2409,7 +2433,7 @@ void AutoPaths::periodic()
     }
     case WAIT_5_SECONDS:
     {
-        swerveDrive_->drive(0, 0, 0);
+        swerveDrive_->lockWheels();
         if (!failsafeStarted_)
         {
             failsafeStarted_ = true;

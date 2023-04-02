@@ -254,11 +254,11 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
 
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0);
+                playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
             }
             else
             {
-                playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0);
+                playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
             }
             wantedY += (wantedYaw > 0) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
             trackingPlayerStation_ = playerStation;
@@ -1306,10 +1306,10 @@ pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get 
         return {0, 0};
     }
 
-    if (robotX_ > 3.919857 + 2 && robotX_ < 12.621893 - 2) // If robot is not near community nor loading station
-    {
-        return {0, 0};
-    }
+    // if (robotX_ > 3.919857 + 2 && robotX_ < 12.621893 - 2) // If robot is not near community nor loading station
+    // {
+    //     return {0, 0};
+    // }
 
     if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH) // If rbot is out of bounds
     {

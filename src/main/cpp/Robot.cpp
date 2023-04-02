@@ -8,7 +8,7 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.43", 5807, 500, 5000)
+Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.213", 5807, 500, 5000)
 {
 
     AddPeriodic(
@@ -63,6 +63,10 @@ Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.43", 580
 
 void Robot::RobotInit()
 {
+
+    // frc::SmartDashboard::PutBoolean("Sending it Fast", false);
+    // frc::SmartDashboard::PutBoolean("Sending it Medium", false);
+    // frc::SmartDashboard::PutBoolean("Balanced", false);
     socketClient_.Init();
     arm_->zeroArmsToAutoStow();
     cubeGrabber_.Stop();
@@ -148,8 +152,8 @@ void Robot::RobotInit()
     // auto4Chooser_.AddOption("Second Cone Dock", AutoPaths::SECOND_CONE_DOCK);
     auto4Chooser_.AddOption("Second Cube Dock", AutoPaths::SECOND_CUBE_DOCK);
     auto4Chooser_.AddOption("Second Cube Grab", AutoPaths::SECOND_CUBE_GRAB);
-    auto4Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
-    // auto4Chooser_.SetDefaultOption("Nothing", AutoPaths::NOTHING);
+    // auto4Chooser_.AddOption("Auto Dock", AutoPaths::AUTO_DOCK);
+    auto4Chooser_.SetDefaultOption("Nothing", AutoPaths::NOTHING);
     auto4Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto4Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto4Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
@@ -213,6 +217,9 @@ void Robot::RobotPeriodic()
     // frc::SmartDashboard::PutNumber("Phi Volts", arm_->getPhiVolts());
 
     frc::SmartDashboard::PutNumber("Scoring Pos", swerveDrive_->getScoringPos());
+
+    frc::SmartDashboard::PutBoolean("Cutout Intaking", cubeIntake_.getState() == CubeGrabber::INTAKING);
+    frc::SmartDashboard::PutBoolean("Cutout Outaking", cubeIntake_.getState() == CubeGrabber::OUTTAKING);
 }
 
 /**
@@ -583,7 +590,7 @@ void Robot::TeleopPeriodic()
             else if (playerStation)
             {
                 arm_->setClawWheels(ClawConstants::INTAKING_SPEED);
-                if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && swerveDrive_->getX() < FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && swerveDrive_->getX() > FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
+                if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && swerveDrive_->getX() < FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] + 0.6) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && swerveDrive_->getX() > FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] - 0.6))
                 {
                     // arm_->setPosTo(TwoJointArmProfiles::MID); //FORWARD BASED LINEUP
 

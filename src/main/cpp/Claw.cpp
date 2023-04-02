@@ -10,6 +10,7 @@ Claw::Claw() : clawPneumatic_(frc::PneumaticsModuleType::CTREPCM, ClawConstants:
 void Claw::periodic()
 {
     frc::SmartDashboard::PutBoolean("Claw Open", open_);
+    // frc::SmartDashboard::PutNumber("Claw Current", wheelMotor_.GetOutputCurrent());
 
     clawPneumatic_.Set(open_);
 

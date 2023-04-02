@@ -336,7 +336,7 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3], 0);
         state_ = FOLLOWING_JOINT_SPACE_PROFILE;
     }
-    else if (position_ == TwoJointArmProfiles::STOWED && setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION) //From here
+    else if (position_ == TwoJointArmProfiles::STOWED && setPosition == TwoJointArmProfiles::RAMMING_PLAYER_STATION) //From here COMP
     {
         shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][2], 0);
         elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::RAMMING_PLAYER_STATION_NUM][3], 0);
@@ -690,7 +690,7 @@ void TwoJointArm::followTaskSpaceProfile(double time)
 
     bool intakeNeededDown;
     double intakeLength, collisionBuffer;
-    if (!forward_)
+    if (!forward_ || key_.first == TwoJointArmProfiles::SPECIAL)
     {
         xy.first -= TwoJointArmConstants::CUBE_INTAKE_TO_SHOULDER_X;
         xy.second += TwoJointArmConstants::CUBE_INTAKE_PIVOT_TO_SHOULDER_HEGHT;
@@ -754,7 +754,14 @@ void TwoJointArm::followTaskSpaceProfile(double time)
     if (forward_)
     {
         coneIntakeNeededDown_ = intakeNeededDown;
-        cubeIntakeNeededDown_ = false;
+        if(key_.first == TwoJointArmProfiles::SPECIAL)
+        {
+            cubeIntakeNeededDown_ = true;
+        }
+        else
+        {
+            cubeIntakeDown_ = false;
+        }
     }
     else
     {
@@ -1380,7 +1387,7 @@ void TwoJointArm::manualControl(double thetaVel, double phiVel, bool gravity)
 
     // double volts = frc::SmartDashboard::GetNumber("Test Volts", 3);
     double thetaVolts = 3 * thetaVel;
-    double phiVolts = 2 * phiVel;
+    double phiVolts = 1.5 * phiVel;
 
     if (gravity)
     {
