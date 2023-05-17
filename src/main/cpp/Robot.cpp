@@ -8,7 +8,7 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.213", 5807, 500, 5000)
+Robot::Robot() : autoPaths_(swerveDrive_, arm_), socketClient_("10.1.14.43", 5807, 500, 5000)
 {
 
     AddPeriodic(

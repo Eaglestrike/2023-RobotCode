@@ -172,10 +172,10 @@ namespace SwerveConstants
     const int BR_CANCODER_ID = 9; // 8, 8
     const int BL_CANCODER_ID = 6; // 42, 6
 
-    const double TR_CANCODER_OFFSET = 173.75; // 172.7
-    const double TL_CANCODER_OFFSET = 175.8;  // 177.02
-    const double BR_CANCODER_OFFSET = 74.26;  // 75.85
-    const double BL_CANCODER_OFFSET = 41.6;   // 43.2
+    const double TR_CANCODER_OFFSET = -12.5 + 180; // 172.7
+    const double TL_CANCODER_OFFSET = -7.29 + 180;  // 177.02
+    const double BR_CANCODER_OFFSET = -31.3 + 180;  // 75.85
+    const double BL_CANCODER_OFFSET = -96.3 + 180;   // 43.2
 
     const double MAX_LA = 2.75;
     const double MAX_LV = 4;   //(past year: 3, 4) (stable but a bit too slow: 2, 4) (2.75, 4 for three piece)
