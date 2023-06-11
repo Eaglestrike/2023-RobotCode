@@ -1,4 +1,4 @@
-#include "SimTesting.h"
+
 #include <frc/simulation/DriverStationSim.h>
 #include <frc/simulation/SimHooks.h>
 #include <frc/DataLogManager.h>
@@ -9,6 +9,7 @@
 #include <iomanip>
 #include <fstream>
 
+#include "Sim/SimTesting.h"
 
 std::string SimTesting::runTest(std::string expectedFilePath, std::string logFileName, std::string debugFileName, units::time::second_t stepTime, TestMode mode) {
     //frc::DataLogManager::GetLog().SetFilename("HHIIIi");
