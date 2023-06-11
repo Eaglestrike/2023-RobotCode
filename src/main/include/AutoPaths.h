@@ -2,11 +2,11 @@
 
 #include <frc/Timer.h>
 
-#include "SwerveDrive.h"
-#include "SwervePath.h"
-#include "TwoJointArm.h"
-#include "Constants.h"
-#include "TwoJointArmProfiles.h"
+#include "GeneralConstants.h"
+#include "Drivebase/SwerveDrive.h"
+#include "Drivebase/SwervePath.h"
+#include "Arm/TwoJointArm.h"
+#include "Arm/TwoJointArmProfiles.h"
 #include <vector>
 
 class AutoPaths

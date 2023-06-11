@@ -12,17 +12,22 @@
 #include <frc/smartdashboard/SendableChooser.h>
 #include <frc/DriverStation.h>
 #include <frc/Compressor.h>
-#include "AHRS.h"
-#include "Constants.h"
-#include "Controls.h"
-#include "SwerveDrive.h"
-#include "AutoPaths.h"
-#include "TwoJointArm.h"
 #include <frc/PneumaticHub.h>
-#include "PneumaticsIntake.h"
 #include <frc/Timer.h>
-#include "CubeGrabber.h"
-#include "SocketClient.h"
+
+#include "AHRS.h"
+
+#include "GeneralConstants.h"
+#include "AutoPaths.h"
+#include "Controls/Controls.h"
+
+#include "Arm/TwoJointArm.h"
+
+#include "Drivebase/SwerveDrive.h"
+
+#include "Intake/PneumaticsIntake.h"
+#include "Intake/CubeGrabber.h"
+#include "Vision/SocketClient.h"
 
 class Robot : public frc::TimedRobot
 {
