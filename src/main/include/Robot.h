@@ -1,16 +1,38 @@
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
+
 #pragma once
 
 #include <string>
-#include <AHRS.h>
+#include <sstream>
+#include <iostream>
+
 #include <frc/TimedRobot.h>
 #include <frc/smartdashboard/SendableChooser.h>
-#include "SwerveDrive.h"
-#include "frc/Joystick.h"
-#include "Constants.h"
-#include <wpi/DataLog.h>
+#include <frc/DriverStation.h>
+#include <frc/Compressor.h>
+#include <frc/PneumaticHub.h>
+#include <frc/Timer.h>
 
-class Robot : public frc::TimedRobot {
- public:
+#include "AHRS.h"
+
+#include "GeneralConstants.h"
+#include "AutoPaths.h"
+#include "Controls/Controls.h"
+
+#include "Arm/TwoJointArm.h"
+
+#include "Drivebase/SwerveDrive.h"
+
+#include "Intake/PneumaticsIntake.h"
+#include "Intake/CubeGrabber.h"
+#include "Vision/SocketClient.h"
+
+class Robot : public frc::TimedRobot
+{
+public:
+    Robot();
     void RobotInit() override;
     void RobotPeriodic() override;
     void AutonomousInit() override;
@@ -21,19 +43,32 @@ class Robot : public frc::TimedRobot {
     void DisabledPeriodic() override;
     void TestInit() override;
     void TestPeriodic() override;
-    void SimulationInit() override;
-    void SimulationPeriodic() override;
 
- private:
-   AHRS * navx_; //can't be initialized by compiler because doesn't have a constructor :(
-   SwerveDrive * swerveDrive_; //pointer because it relies on navx being initialized
+private:
+    frc::SendableChooser<AutoPaths::Path> auto1Chooser_;
+    frc::SendableChooser<AutoPaths::Path> auto2Chooser_;
+    frc::SendableChooser<AutoPaths::Path> auto3Chooser_;
+    frc::SendableChooser<AutoPaths::Path> auto4Chooser_;
+    frc::SendableChooser<bool> sideChooser_;
 
-   frc::Joystick ljoy{InputConstants::LJOY_PORT};
-   frc::Joystick rjoy{InputConstants::RJOY_PORT};
+    AHRS *navx_;
+    frc::Compressor PCM{0, frc::PneumaticsModuleType::CTREPCM};
 
-   double joy_val_to_mps(double val);
-   double joy_rot_to_rps(double rot); 
+    Controls* controls_ = new Controls();
+    SwerveDrive* swerveDrive_ = new SwerveDrive();
+    TwoJointArm* arm_ = new TwoJointArm();
+    AutoPaths autoPaths_;
+    PneumaticsIntake cubeIntake_{false, false};
+    CubeGrabber cubeGrabber_;
+    SocketClient socketClient_;
 
-   wpi::log::DoubleLogEntry swerveX;
-   wpi::log::DoubleLogEntry swerveY;
+    double yawOffset_;
+
+    frc::Timer timer_;
+    double coneGrabTimerStartTime_;
+    bool coneGrabTimerStarted_;
+
+    bool cubeIntaking_, coneIntaking_, coneIntakeDown_, armsZeroed_, grabbedCone_;
+    int scoringLevel_/*, psType_*/;
+
 };
