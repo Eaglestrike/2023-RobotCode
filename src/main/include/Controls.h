@@ -14,37 +14,59 @@ class Controls
         double getXStrafe();
         double getYStrafe();
         double getTurn();
+        bool lJoyTriggerDown();
+        bool rJoyTriggerPressed();
+        bool outakePressed();
+        bool intakePressed();
+        bool lockWheels();
+        bool inchingLowerButton();
+        bool autoBalanceDown();
+
+        double xboxLJoyX();
+        double xboxLJoyY();
+        double xboxRJoyX();
+        double xboxRJoyY();
+
+        bool aDown();
+        bool bDown();
+        bool xDown();
+        bool yDown();
+        bool rBumperDown();
+        bool lBumperDown();
+        bool rXTriggerDown();
+        bool lXTriggerDown();
+        bool dPadUpPressed();
+        bool dPadDownPressed();
+        bool dPadDownDown();
+        bool dPadLeftPressed();
+        bool dPadRightPressed();
+        bool dPadRightDown();
+        bool bbLeftPresseed();
+        bool bbRightDown();
+        bool bbUpDown();
+
+        bool inchingUpDown();
+        bool inchingDownDown();
+        bool inchingLeftDown();
+        bool inchingRightDown();
 
         bool fieldOrient();
+        bool coneIntakePressed();
 
-        double getClimbPower();
-        bool getPneumatic1Toggle();
-        bool getPneumatic2Toggle();
-        bool autoClimbPressed();
-        bool autoClimbCancelled();
+        int checkScoringButtons();
+        int checkLevelButtons();
+        // int checkPSButtons();
 
-        bool intakePressed();
-        bool outakePressed();
-
-        bool shootPressed();
-        double getTurretManual();
-
-        bool increaseRange();
-        bool decreaseRange();
-
-        bool getClimbMode(){ return climbMode_; }
-        void setClimbMode(bool climbMode){ climbMode_ = climbMode; }
-
-        bool resetUnload();
-        bool manuallyOverrideTurret();
-
-        double getHoodTicks();
-        double getTurretPos();
+        bool lineupTrimXUpPressed();
+        bool lineupTrimXDownPressed();
+        bool lineupTrimYUpPressed();
+        bool lineupTrimYDownPressed();
 
     private:
-        bool climbMode_;
-
         frc::Joystick lJoy_;
         frc::Joystick rJoy_;
         frc::Joystick xbox_;
+        frc::Joystick buttonBoard_;
+
+        bool dPadUpDown_, dPadDownDown_, dPadLeftDown_, dPadRightDown_, /*intakeDown_, outakeDown_,*/ inchingUpDown_, inchingDownDown_, inchingLeftDown_, inchingRightDown_;
 };

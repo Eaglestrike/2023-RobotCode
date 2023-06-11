@@ -5,90 +5,73 @@
 #include <math.h>
 #include "Controls.h"
 #include "Constants.h"
-#include <AHRS.h>
-#include <frc/kinematics/SwerveDriveOdometry.h>
+#include "SwervePose.h"
+#include "SwervePath.h"
+#include <map>
+
 #include "SwerveModule.h"
-#include <frc/kinematics/SwerveDriveKinematics.h>
+
 #include <frc/smartdashboard/SmartDashboard.h>
-#include <frc/controller/PIDController.h>
-#include <frc/trajectory/TrajectoryConfig.h>
-#include <frc/trajectory/TrajectoryGenerator.h>
-#include <frc2/command/RamseteCommand.h>
-#include <algorithm>
-#include <memory>
-#include <frc/Filesystem.h>
-#include <frc/trajectory/TrajectoryUtil.h>
-#include <wpi/fs.h>
+#include <frc/DriverStation.h>
 
 
 class SwerveDrive
 {
     public:
-        
-        enum State{
-            DRIVE,
-            PATH_FOLLOW,
-            STOP
-        };
-        void setState(State state);
-        State getState();
-
-        SwerveDrive(AHRS * nx); //todo: add logger
+        SwerveDrive();
         void setYaw(double yaw);
         
-        void Periodic(units::meters_per_second_t vx, units::meters_per_second_t vy, 
-        units::radians_per_second_t vtheta);
+        void periodic(double yaw, double tilt, vector<double> data);
+        void teleopPeriodic(Controls* controls, bool forward, bool panic, int scoringLevel);
+        void drive(double xSpeed, double ySpeed, double turn);
+        void lockWheels();
+        void drivePose(SwervePose pose);
+        void adjustPos(SwervePose pose);
 
-        void initializeOdometry(frc::Rotation2d gyroAngle, frc::Pose2d initPose);
-        void updateOdometry(frc::Rotation2d robotAngle, frc::Pose2d robotPose);
-       
-        void initializeAutoTraj(std::string filePath);
+        void calcModules(double xSpeed, double ySpeed, /*double xAcc, double yAcc,*/ double turn, /*double turnAacc,*/ bool inVolts);
 
-        wpi::array<frc::SwerveModuleState, 4> getRealModuleStates(); //real as opposed to goal
+        void calcOdometry();
+        void reset();
 
-        void updateLimelightOdom(double turretAngle, bool inAuto); //TODO replace with apriltag
-
-        double getDistance(double turretAngle);
-        frc::ChassisSpeeds getRobotSpeeds();
         double getX();
         double getY();
-        double getRobotGoalAng(double turretAngle);
+        pair<double, double> getXYVel();
+        double getYaw();
+        void setPos(pair<double, double> xy);
 
-        void configSpeedPID(double P, double I, double D);
+        void updateAprilTagFieldXY(double tilt, vector<double> data);
+        pair<double, double> checkScoringPos(int scoringLevel);
+        void setScoringPos(int scoringPos);
+        int getScoringPos();
 
+        // void resetYawTagOffset();
+        // double getYawTagOffset();
+        
     private:
-        AHRS * navx_;
+        SwerveModule* topRight_ = new SwerveModule(SwerveConstants::TR_TURN_ID, SwerveConstants::TR_DRIVE_ID, SwerveConstants::TR_CANCODER_ID, SwerveConstants::TR_CANCODER_OFFSET);
+        SwerveModule* topLeft_ = new SwerveModule(SwerveConstants::TL_TURN_ID, SwerveConstants::TL_DRIVE_ID, SwerveConstants::TL_CANCODER_ID, SwerveConstants::TL_CANCODER_OFFSET);
+        SwerveModule* bottomRight_ = new SwerveModule(SwerveConstants::BR_TURN_ID, SwerveConstants::BR_DRIVE_ID, SwerveConstants::BR_CANCODER_ID, SwerveConstants::BR_CANCODER_OFFSET);
+        SwerveModule* bottomLeft_ = new SwerveModule(SwerveConstants::BL_TURN_ID, SwerveConstants::BL_DRIVE_ID, SwerveConstants::BL_CANCODER_ID, SwerveConstants::BL_CANCODER_OFFSET);
 
-        frc::SwerveDriveOdometry<4> * odometry_; //will need to be initialized later with selected robot start pose
-        frc::Pose2d lPose_; //public so limelight calculation will only happen once per period to save time
-        State state_;
+        SwervePath tagPath_{SwerveConstants::MAX_LA, SwerveConstants::MAX_LV, SwerveConstants::MAX_AA, SwerveConstants::MAX_AV};
 
-        wpi::array<frc::SwerveModulePosition, 4> getModulePositions();
+        double robotX_, robotY_, yaw_/*, yawTagOffset_*/;
+        TrajectoryCalc xTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
+        TrajectoryCalc yTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
+        TrajectoryCalc yawTagTraj_{SwerveConstants::MAX_AV * 0.7, SwerveConstants::MAX_AA * 0.7, 0, 0, 0, 0};
+        //double aprilTagX_, aprilTagY_;
 
-        std::pair<double, double> camToBot(double turretAngle);
-        void drive(units::meters_per_second_t vx, units::meters_per_second_t vy, units::radians_per_second_t vtheta);
-        void stop();
+        double prevTime_, dT_;
 
-        frc::DifferentialDriveWheelSpeeds getDifferentialWheelSpeeds();
-        void differentialDrive(units::volt_t leftVolts, units::volt_t rightVolts);
-        std::shared_ptr<frc2::RamseteCommand> setupRamsete(std::string filePath);
-        std::shared_ptr<frc2::RamseteCommand> ramseteCommand_; //will be set up in auto init
+        frc::Timer timer_;
+        double tagFollowingStartTime_;
 
-        frc::SwerveDriveKinematics<4> kinematics_{
-            frc::Translation2d{SwerveConstants::HALF_WIDTH, SwerveConstants::HALF_WIDTH}, frc::Translation2d{SwerveConstants::HALF_WIDTH, -SwerveConstants::HALF_WIDTH},
-            frc::Translation2d{-SwerveConstants::HALF_WIDTH, SwerveConstants::HALF_WIDTH}, frc::Translation2d{-SwerveConstants::HALF_WIDTH, -SwerveConstants::HALF_WIDTH}
-        };
+        double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_, holdingYaw_;
 
-        frc::DifferentialDriveKinematics diffDriveKinematics_{SwerveConstants::HALF_WIDTH*2};
+        bool trackingTag_, trackingPlayerStation_, foundTag_, isHoldingYaw_/*, inching_*/;
+        int setTagPos_, prevTag_, prevUniqueVal_, numLargeDiffs_;
+        double xLineupTrim_, yLineupTrim_;
 
-
-        SwerveModule flModule_{SwerveConstants::FLanglePort, SwerveConstants::FLspeedPort, SwerveConstants::FLencoder, SwerveConstants::FLOFF, false};
-        SwerveModule frModule_{SwerveConstants::FRanglePort, SwerveConstants::FRspeedPort, SwerveConstants::FRencoder, SwerveConstants::FROFF, false};
-        SwerveModule blModule_{SwerveConstants::BLanglePort, SwerveConstants::BLspeedPort, SwerveConstants::BLencoder, SwerveConstants::BLOFF, false};
-        SwerveModule brModule_{SwerveConstants::BRanglePort, SwerveConstants::BRspeedPort, SwerveConstants::BRencoder, SwerveConstants::BROFF, false};
-
-        frc2::PIDController angPID_{SwerveConstants::P , SwerveConstants::I, SwerveConstants::D};
-        frc2::PIDController speedPID_{SwerveConstants::sP , SwerveConstants::sI, SwerveConstants::sD};    
-        frc::SimpleMotorFeedforward<units::meters> speedFeedforward_{SwerveConstants::ks, SwerveConstants::kv, SwerveConstants::ka};
+        map<double, pair<pair<double, double>, pair<double, double>>> prevPoses_;
 
 };

@@ -7,41 +7,35 @@
 #include <string.h>
 #include "Controls.h"
 #include "Constants.h"
-#include <units/length.h>
-#include <frc/kinematics/SwerveDriveKinematics.h>
-#include <frc/MathUtil.h>
+#include "Helpers.h"
+#include "TrajectoryCalc.h"
 
-#define M_PI 3.14159265358979323846 //for simulation
+//#include <frc/MotorSafety.h>
+//#include <frc/smartdashboard/SmartDashboard.h>
+//#include <units/units.h>
 
 class SwerveModule
 {
     public:
-        SwerveModule(int turnID, int driveID, int cancoderID, double offset, bool inverted);
+        SwerveModule(int turnID, int driveID, int cancoderID, double offset);
+
+        void periodic(double driveSpeed, double angle, bool inVolts);
+        void move(double driveSpeed, double angle, bool inVolts);
 
         double calcAngPID(double setAngle);
         double calcDrivePID(double driveSpeed);
         double findError(double setAngle, double angle);
-
-        frc::SwerveModulePosition getPosition();
-        frc::SwerveModuleState getState();
-        frc::SwerveModuleState getOptState(frc::SwerveModuleState state);
         
-        units::meters_per_second_t getVelocityMPS();
-        double getVelocity();
-        double getYaw();
-
-        void setAngMotorVoltage(double voltage);
-        void setSpeedMotor(double power);
-        void setSpeedMotorVolts(double voltage);
+        double getDriveVelocity();
+        double getAngle();
 
         void setP(double p){ akP_ = p; }
         void setD(double d){ akD_ = d; }
 
     private:
-
-        WPI_TalonFX angleMotor_;
-        WPI_TalonFX speedMotor_;
-        WPI_CANCoder canCoder_;
+        WPI_TalonFX turnMotor_;
+        WPI_TalonFX driveMotor_;
+        WPI_CANCoder cancoder_;
 
         double maxV = 1440;
         double maxA = 14400 * 10;
@@ -50,10 +44,11 @@ class SwerveModule
         double kV = 1 / 261.864;
         double kVI = -131.727;
         double kA = 0;
-
-        units::meters_per_second_t talonVelToMps(double vel);
+        TrajectoryCalc trajectoryCalc_;
+        bool initTrajectory_;
+        double posOffset_, setTrajectoryPos_;
         
-        std::string id_;
+        string id_;
         double offset_;
         int direction_ = 1;
 
@@ -62,11 +57,11 @@ class SwerveModule
 
         double aPrevError_, aIntegralError_, dPrevError_, dIntegralError_;
 
-        double akP_ = 0.08; //TODO tune values
+        double akP_ = 0.1; //COULDO tune values 0.08, 0, 0.001 (0.1, 0, 0.001)
         double akI_ = 0.0;
         double akD_ = 0.001;
 
-        double dkP_ = 0.0; //TODO tune values
+        double dkP_ = 0.0;
         double dkI_ = 0.0;
         double dkD_ = 0.0;
 

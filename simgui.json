@@ -2,13 +2,12 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
-      "/LiveWindow/Ungrouped/navX-Sensor[4]": "Gyro"
-    }
-  },
-  "NetworkTables": {
-    "SmartDashboard": {
-      "open": true
+      "/SmartDashboard/Auto Modes": "String Chooser",
+      "/SmartDashboard/Auto Side": "String Chooser",
+      "/SmartDashboard/First Auto Stage": "String Chooser",
+      "/SmartDashboard/Fourth Auto Stage": "String Chooser",
+      "/SmartDashboard/Second Auto Stage": "String Chooser",
+      "/SmartDashboard/Third Auto Stage": "String Chooser"
     }
   }
 }
