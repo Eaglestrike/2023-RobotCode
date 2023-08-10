@@ -48,10 +48,8 @@ Robot::Robot()
             }
             else if (frc::DriverStation::IsTeleop())
             {
-                bool armMoving = (arm_.getState() != TwoJointArm::STOPPED && arm_.getState() != TwoJointArm::HOLDING_POS);
                 // bool armOut = (arm_.getPosition() != TwoJointArmProfiles::STOWED /* && arm_.getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_.getPosition() != TwoJointArmProfiles::GROUND);
-                bool armOut = (arm_.getPosition() == TwoJointArmProfiles::MID || arm_.getPosition() == TwoJointArmProfiles::HIGH || arm_.getPosition() == TwoJointArmProfiles::CUBE_MID || arm_.getPosition() == TwoJointArmProfiles::CUBE_HIGH); // TODO make this based on xy position
-                swerveDrive_.teleopPeriodic(arm_.isForward(), (armMoving || armOut), scoringLevel_);
+                swerveDrive_.teleopPeriodic(arm_.isForward(), (arm_.isArmMoving() || arm_.isArmOut()), scoringLevel_);
             }
 
             // if (frc::DriverStation::IsEnabled())
@@ -289,23 +287,19 @@ void Robot::AutonomousPeriodic()
     if (cubeIntaking_)
     {
         intakesNeededDown.first = true;
-        if (arm_.isForward())
-        {
-            if (arm_.isForward()) // Remove unecessary if??????
+        if (arm_.isForward()) {
+            if (arm_.isArmOut())
             {
-                if (arm_.getPosition() == TwoJointArmProfiles::HIGH || arm_.getPosition() == TwoJointArmProfiles::MID || arm_.getPosition() == TwoJointArmProfiles::CUBE_HIGH || arm_.getPosition() == TwoJointArmProfiles::CUBE_MID)
-                {
-                    arm_.toggleForwardExtendedToCubeIntake();
-                }
-                else if (arm_.getPosition() != TwoJointArmProfiles::STOWED)
-                {
-                    arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                }
-                else
-                {
-                    // arm_.toggleForwardCubeIntake();//NEUTRAL STOW
-                    arm_.toggleForward(); // NEUTRAL STOW
-                }
+                arm_.toggleForwardExtendedToCubeIntake();
+            }
+            else if (arm_.getPosition() != TwoJointArmProfiles::STOWED)
+            {
+                arm_.setPosTo(TwoJointArmProfiles::STOWED);
+            }
+            else
+            {
+                // arm_.toggleForwardCubeIntake();//NEUTRAL STOW
+                arm_.toggleForward(); // NEUTRAL STOW
             }
         }
         else
@@ -674,7 +668,7 @@ void Robot::TeleopPeriodic()
                         {
                             arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
                         }
-                        else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (arm_.getState() == TwoJointArm::HOLDING_POS || arm_.getState() == TwoJointArm::STOPPED))
+                        else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving())
                         {
                             arm_.setPosTo(TwoJointArmProfiles::STOWED);
                         }
@@ -934,7 +928,7 @@ void Robot::TeleopPeriodic()
             intakesNeededDown.first = true;
             if (arm_.isForward())
             {
-                if (arm_.getPosition() == TwoJointArmProfiles::HIGH || arm_.getPosition() == TwoJointArmProfiles::MID || arm_.getPosition() == TwoJointArmProfiles::CUBE_HIGH || arm_.getPosition() == TwoJointArmProfiles::CUBE_MID)
+                if (arm_.isArmOut())
                 {
                     arm_.toggleForwardExtendedToCubeIntake();
                 }
@@ -1119,7 +1113,7 @@ void Robot::TeleopPeriodic()
             {
                 arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
             }
-            else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (arm_.getState() == TwoJointArm::HOLDING_POS || arm_.getState() == TwoJointArm::STOPPED))
+            else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving()))
             {
                 arm_.setPosTo(TwoJointArmProfiles::STOWED);
             }
