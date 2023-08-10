@@ -18,11 +18,10 @@
 #include "AHRS.h"
 
 #include "GeneralConstants.h"
+
+#include "Controls/Controller.h"
+
 #include "AutoPaths.h"
-#include "Controls/Controls.h"
-
-#include "Arm/TwoJointArm.h"
-
 #include "Drivebase/SwerveDrive.h"
 
 #include "Intake/PneumaticsIntake.h"
@@ -54,10 +53,10 @@ private:
     AHRS *navx_;
     frc::Compressor PCM{0, frc::PneumaticsModuleType::CTREPCM};
 
-    Controls* controls_ = new Controls();
-    SwerveDrive* swerveDrive_ = new SwerveDrive();
-    TwoJointArm* arm_ = new TwoJointArm();
-    AutoPaths autoPaths_;
+    Controller controls_;
+    SwerveDrive swerveDrive_;
+    TwoJointArm arm_;
+    AutoPaths autoPaths_{swerveDrive_, arm_};
     PneumaticsIntake cubeIntake_{false, false};
     CubeGrabber cubeGrabber_;
     SocketClient socketClient_;

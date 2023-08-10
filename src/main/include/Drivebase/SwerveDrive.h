@@ -5,7 +5,7 @@
 #include <math.h>
 #include <map>
 
-#include "Controls/Controls.h"
+#include "Controls/Controller.h"
 
 #include "SwerveConstants.h"
 #include "SwervePose.h"
@@ -23,7 +23,7 @@ class SwerveDrive
         void setYaw(double yaw);
         
         void periodic(double yaw, double tilt, vector<double> data);
-        void teleopPeriodic(Controls* controls, bool forward, bool panic, int scoringLevel);
+        void teleopPeriodic(bool forward, bool panic, int scoringLevel);
         void drive(double xSpeed, double ySpeed, double turn);
         void lockWheels();
         void drivePose(SwervePose pose);
@@ -49,6 +49,8 @@ class SwerveDrive
         // double getYawTagOffset();
         
     private:
+        Controller controls_;
+
         SwerveModule* topRight_ = new SwerveModule(SwerveConstants::TR_TURN_ID, SwerveConstants::TR_DRIVE_ID, SwerveConstants::TR_CANCODER_ID, SwerveConstants::TR_CANCODER_OFFSET);
         SwerveModule* topLeft_ = new SwerveModule(SwerveConstants::TL_TURN_ID, SwerveConstants::TL_DRIVE_ID, SwerveConstants::TL_CANCODER_ID, SwerveConstants::TL_CANCODER_OFFSET);
         SwerveModule* bottomRight_ = new SwerveModule(SwerveConstants::BR_TURN_ID, SwerveConstants::BR_DRIVE_ID, SwerveConstants::BR_CANCODER_ID, SwerveConstants::BR_CANCODER_OFFSET);

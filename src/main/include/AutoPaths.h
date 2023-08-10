@@ -37,7 +37,7 @@ class AutoPaths
             DRIVE_BACK_DUMB,
             WAIT_5_SECONDS
         };
-        AutoPaths(SwerveDrive* swerveDrive, TwoJointArm* arm);
+        AutoPaths(SwerveDrive& swerveDrive, TwoJointArm& arm);
         void setActions(Path a1, Path a2, Path a3, Path a4);
         vector<Path> getActions();
 
