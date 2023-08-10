@@ -6,7 +6,6 @@
 #include <ctre/Phoenix.h>
 #include <frc/smartdashboard/SmartDashboard.h>
 
-#include "Controls/Controls.h"
 #include "Helpers/Helpers.h"
 #include "Helpers/TrajectoryCalc.h"
 

@@ -19,7 +19,7 @@
 
 #include "GeneralConstants.h"
 
-#include "Controls/Controller.h"
+#include "Controller/Controller.h"
 
 #include "AutoPaths.h"
 #include "Drivebase/SwerveDrive.h"

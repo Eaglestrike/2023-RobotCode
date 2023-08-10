@@ -8,7 +8,7 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
-#include "Controls/ControllerMap.h"
+#include "Controller/ControllerMap.h"
 
 using namespace Actions;
 
@@ -407,10 +407,11 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    swerveDrive_.setScoringPos(controls_.checkScoringButtons());
-    if (controls_.checkLevelButtons() != -1)
+    swerveDrive_.setScoringPos(controls_.getValue<int>(ControllerMapData::SCORING_POS));
+    int level = controls_.getValue(ControllerMapData::GET_LEVEL);
+    if (level != -1)
     {
-        scoringLevel_ = controls_.checkLevelButtons();
+        scoringLevel_ = level;
     }
 
     // if (controls_.checkPSButtons() != -1)
@@ -467,25 +468,24 @@ void Robot::TeleopPeriodic()
         armsZeroed_ = true;
     }
 
-    // bool rBumperPressed = controls_.rBumperPressed();
-    bool dPadLeftPressed = controls_.dPadLeftPressed();
-    bool dPadRightPressed = controls_.dPadRightPressed();
-    bool coneIntakePressed = controls_.coneIntakePressed();
-    // bool dPadUpPressed = controls_.dPadUpPressed();
-    bool bbLeftPressed = controls_.bbLeftPresseed();
-
-    if (controls_.lXTriggerDown())
+    if (controls_.getTriggerDown(MANUAL_CONTROL))
     {
-        arm_.manualControl(controls_.xboxLJoyY() * abs(controls_.xboxLJoyY()), controls_.xboxRJoyY() * abs(controls_.xboxRJoyY()), true);
+        double thetaVel = controls_.getRawAxis(MANUAL_THETA);
+        thetaVel *= abs(thetaVel); //Squared Control -> contact Caleb bc he doesn't know the name, used for driver experience
+        double phiVel = controls_.getRawAxis(MANUAL_PHI);
+        phiVel *= abs(phiVel);
+        arm_.manualControl(thetaVel, phiVel, true);
         cubeIntaking_ = false;
         coneIntaking_ = false;
         coneIntakeDown_ = false;
     }
-    else if (controls_.bbUpDown())
+    else if (controls_.getPressed(MANUAL_CONTROL_2))
     {
-        arm_.manualControl(controls_.xboxLJoyY() * abs(controls_.xboxLJoyY()), 0, false);
+        double thetaVel = controls_.getRawAxis(MANUAL_THETA_2);
+        thetaVel *= abs(thetaVel); //Squared control thing
+        arm_.manualControl(thetaVel, 0, false);
     }
-    else if (controls_.lJoyTriggerDown() && armsZeroed_)
+    else if (controls_.getPressed(SCORE) && armsZeroed_)
     {
         pair<double, double> scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
         if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
@@ -623,11 +623,11 @@ void Robot::TeleopPeriodic()
                     }
                     else
                     {
-                        if (controls_.xDown())
+                        if (controls_.getPressed(RAM_PLAYER_STATION))
                         {
                             arm_.setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
                         }
-                        else if (controls_.bDown())
+                        else if (controls_.getPressed(GO_MID))
                         {
                             arm_.setPosTo(TwoJointArmProfiles::MID);
                         }
@@ -777,14 +777,14 @@ void Robot::TeleopPeriodic()
             arm_.stop();
         }
 
-        if (controls_.xDown())
+        if (controls_.getPressed(RAM_PLAYER_STATION))
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
                 arm_.setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
             }
         }
-        else if (controls_.bDown())
+        else if (controls_.getPressed(GO_MID))
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
@@ -810,14 +810,14 @@ void Robot::TeleopPeriodic()
                 }
             }
         }
-        else if (controls_.aDown())
+        else if (controls_.getPressed(STOW))
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
                 arm_.setPosTo(TwoJointArmProfiles::STOWED);
             }
         }
-        else if (controls_.yDown())
+        else if (controls_.getPressed(GO_HIGH))
         {
             if (!coneIntaking_ && !cubeIntaking_)
             {
@@ -832,7 +832,7 @@ void Robot::TeleopPeriodic()
                 }
             }
         }
-        else if (controls_.rBumperDown())
+        else if (controls_.getPressed(FLIP_ARM))
         {
             // if (arm_.isForward() && arm_.getPosition() == TwoJointArmProfiles::STOWED) // TODO check if wanted w/ operator
             // {
@@ -853,7 +853,7 @@ void Robot::TeleopPeriodic()
                 }
             }
         }
-        else if (dPadLeftPressed)
+        else if (controls_.getPOVDown(STOW_POV_2))
         {
             if (arm_.getState() == TwoJointArm::HOLDING_POS)
             {
@@ -886,7 +886,7 @@ void Robot::TeleopPeriodic()
         //         coneIntaking_ = true;
         //     }
         // }
-        else if (bbLeftPressed)
+        else if (controls_.getPressed(FLIP_ARM_2))
         {
             // if (cubeIntaking_ && arm_.getState() == TwoJointArm::HOLDING_POS)//NEUTRAL STOW
             // {
@@ -914,7 +914,7 @@ void Robot::TeleopPeriodic()
         arm_.stop();
     }
 
-    if (controls_.lBumperDown())
+    if (controls_.getPressed(STOP_EVERYTHING))
     {
         arm_.stop();
         // arm_.resetIntaking();
@@ -1090,7 +1090,7 @@ void Robot::TeleopPeriodic()
     //     arm_.setPosTo(TwoJointArmProfiles::STOWED);
     // }
 
-    if (controls_.rJoyTriggerPressed())
+    if (controls_.getPressed(TOGGLE_CLAW))
     {
         if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
         {
@@ -1098,7 +1098,7 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if (/*dPadRightPressed*/ controls_.dPadRightDown())
+    if (/*dPadRightPressed*/ controls_.getPOVDown(STOW_POV))
     {
         if (!arm_.isForward())
         {
@@ -1129,10 +1129,8 @@ void Robot::TeleopPeriodic()
         //     coneIntakeDown_ = !coneIntakeDown_;
         // }
     }
-
-    bool intakePressed = controls_.intakePressed();
-    bool outakePressed = controls_.outakePressed();
-    if (intakePressed)
+    
+    if (controls_.getPressed(INTAKE))
     {
         if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
         {
@@ -1146,7 +1144,7 @@ void Robot::TeleopPeriodic()
             }
         }
     }
-    else if (outakePressed)
+    else if (controls_.getPressed(OUTAKE))
     {
         if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
         {
@@ -1161,8 +1159,8 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    bool cutoutIntakePressed = controls_.dPadUpPressed();
-    bool cutoutOutakePressed = controls_.dPadDownPressed();
+    bool cutoutIntakePressed = controls_.getPOVDown(CUTOUT_INTAKE);
+    bool cutoutOutakePressed = controls_.getPOVDown(CUTOUT_OUTAKE);
     if(cutoutIntakePressed)
     {
         cubeGrabber_.Intake();
@@ -1242,19 +1240,7 @@ void Robot::DisabledPeriodic()
     // frc::SmartDashboard::PutNumber("PS", controls_.checkPSButtons());
 
     // Calling all the pressed functions so that they don't buffer
-    controls_.dPadUpPressed();
-    controls_.dPadDownPressed();
-    controls_.dPadLeftPressed();
-    controls_.dPadRightPressed();
-    controls_.bbLeftPresseed();
-    controls_.intakePressed();
-    controls_.outakePressed();
-    controls_.coneIntakePressed();
-    controls_.rJoyTriggerPressed();
-    controls_.lineupTrimXUpPressed();
-    controls_.lineupTrimXDownPressed();
-    controls_.lineupTrimYDownPressed();
-    controls_.lineupTrimYUpPressed();
+    controls_.stopBuffer();
 }
 
 void Robot::TestInit() {}

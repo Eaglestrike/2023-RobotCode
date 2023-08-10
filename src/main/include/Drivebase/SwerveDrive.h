@@ -5,8 +5,6 @@
 #include <math.h>
 #include <map>
 
-#include "Controls/Controller.h"
-
 #include "SwerveConstants.h"
 #include "SwervePose.h"
 #include "SwervePath.h"

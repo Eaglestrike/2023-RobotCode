@@ -11,7 +11,6 @@
 #include <frc/Encoder.h>
 #include <frc/DutyCycleEncoder.h>
 
-#include "Controls/Controls.h"
 #include "Helpers/Helpers.h"
 #include "Helpers/TrajectoryCalc.h"
 #include "Sim/TalonFXSim.h"

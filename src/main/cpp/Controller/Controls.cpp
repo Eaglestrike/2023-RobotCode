@@ -1,4 +1,4 @@
-#include "Controls/Controls.h"
+#include "Controller/Controls.h"
 
 Controls::Controls() : lJoy_{InputConstants::LJOY_PORT}, rJoy_{InputConstants::RJOY_PORT}, xbox_{InputConstants::XBOX_PORT}, buttonBoard_{InputConstants::BUTTON_BOARD_PORT}
 {
@@ -248,7 +248,6 @@ bool Controls::dPadRightPressed()
         dPadRightDown_ = false;
         return false;
     }
-
     // return (xbox_.GetPOV() < 100 && xbox_.GetPOV() > 80);
 }
 

@@ -16,6 +16,9 @@ CubeGrabber::State CubeGrabber::getState() {
  * Spins the motors such that they will intake a cube
 */
 void CubeGrabber::Intake() {
+    if(grabber_status == State::INTAKING){
+        return;
+    }
     grabber_status = INTAKING;
     left_motor.SetVoltage(units::volt_t{CubeGrabberConstants::CLOCKWISE_VOLTAGE});
     right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::CLOCKWISE_VOLTAGE});
