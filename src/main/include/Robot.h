@@ -27,6 +27,7 @@
 #include "Intake/PneumaticsIntake.h"
 #include "Intake/CubeGrabber.h"
 #include "Vision/SocketClient.h"
+#include "Vision/VisionConstants.h"
 
 class Robot : public frc::TimedRobot
 {
@@ -59,7 +60,7 @@ private:
     AutoPaths autoPaths_{swerveDrive_, arm_};
     PneumaticsIntake cubeIntake_{false, false};
     CubeGrabber cubeGrabber_;
-    SocketClient socketClient_;
+    SocketClient socketClient_{SocketConstants::HOST, SocketConstants::PORT, SocketConstants::STALE_TIME, SocketConstants::DEAD_TIME};
 
     double yawOffset_;
 

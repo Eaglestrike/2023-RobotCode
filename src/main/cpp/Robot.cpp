@@ -12,7 +12,7 @@
 
 using namespace Actions;
 
-Robot::Robot() : socketClient_("10.1.14.43", 5807, 500, 5000)
+Robot::Robot()
 {
     AddPeriodic(
         [&]
