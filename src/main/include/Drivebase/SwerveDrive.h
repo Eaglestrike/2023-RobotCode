@@ -1,17 +1,19 @@
 #pragma once
 
-#include <ctre/Phoenix.h>
 #include <iostream>
-#include <math.h>
+#include <vector>
+#include <utility>
 #include <map>
+
+#include <ctre/Phoenix.h>
+
+#include <frc/smartdashboard/SmartDashboard.h>
+#include <frc/DriverStation.h>
 
 #include "SwerveConstants.h"
 #include "SwervePose.h"
 #include "SwervePath.h"
 #include "SwerveModule.h"
-
-#include <frc/smartdashboard/SmartDashboard.h>
-#include <frc/DriverStation.h>
 
 class SwerveDrive
 {
@@ -19,7 +21,7 @@ class SwerveDrive
         SwerveDrive();
         void setYaw(double yaw);
         
-        void periodic(double yaw, double tilt, vector<double> data);
+        void periodic(double yaw, double tilt, std::vector<double> data);
         void trim(double xLineupTrim, double yLineupTrim_);
         void inch(double inchUp, double inchDown, double inchLeft, double inchRight, double isInch);
         void teleopPeriodic(bool score, bool forward, bool panic, int scoringLevel, bool islockWheels, bool autoBalance);
@@ -38,12 +40,12 @@ class SwerveDrive
 
         double getX();
         double getY();
-        pair<double, double> getXYVel();
+        std::pair<double, double> getXYVel();
         double getYaw();
-        void setPos(pair<double, double> xy);
+        void setPos(std::pair<double, double> xy);
 
-        void updateAprilTagFieldXY(double tilt, vector<double> data);
-        pair<double, double> checkScoringPos(int scoringLevel);
+        void updateAprilTagFieldXY(double tilt, std::vector<double> data);
+        std::pair<double, double> checkScoringPos(int scoringLevel);
         void setScoringPos(int scoringPos);
         int getScoringPos();
 
@@ -81,6 +83,6 @@ class SwerveDrive
         int setTagPos_, prevTag_, prevUniqueVal_, numLargeDiffs_;
         double xLineupTrim_, yLineupTrim_;
 
-        map<double, pair<pair<double, double>, pair<double, double>>> prevPoses_;
+        std::map<double, std::pair<std::pair<double, double>, std::pair<double, double>>> prevPoses_;
 
 };

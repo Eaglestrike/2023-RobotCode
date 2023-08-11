@@ -44,7 +44,7 @@ class AutoPaths
         };
         AutoPaths(SwerveDrive* swerveDrive, TwoJointArm* arm);
         void setActions(Path a1, Path a2, Path a3, Path a4);
-        vector<Path> getActions();
+        std::vector<Path> getActions();
 
         void startTimer();
         void startAutoTimer();
@@ -54,7 +54,7 @@ class AutoPaths
         void periodic();
         void setGyros(double yaw, double pitch, double roll);
         double initYaw();
-        pair<double, double> initPos();
+        std::pair<double, double> initPos();
 
         int pointNum();
 
@@ -74,7 +74,7 @@ class AutoPaths
         Poses::Pose1D getYProfile();
 
     private:
-        vector<Path> actions_;
+        std::vector<Path> actions_;
         Path path_;
         SwerveDrive* swerveDrive_;
         TwoJointArm* arm_;
@@ -91,9 +91,9 @@ class AutoPaths
         double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_, autoStartTime_, sendingItTime_;
         bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, slowTraj_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_, sendingIt_, firstCubeArmSafety_, hitChargeStation_;
 
-        //vector<SwervePath> swervePaths_;
+        //std::vector<SwervePath> swervePaths_;
         int actionNum_;
-        vector<SwervePose> swervePoints_;
+        std::vector<Poses::SwervePose> swervePoints_;
         SwervePath currPath_{SwerveConstants::MAX_LA, SwerveConstants::MAX_LV, SwerveConstants::MAX_AA, SwerveConstants::MAX_AV};
         int pointNum_;
 

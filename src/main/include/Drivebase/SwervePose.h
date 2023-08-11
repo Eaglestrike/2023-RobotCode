@@ -15,6 +15,7 @@ namespace Poses{
         double xAcc = 0.0;
         double yAcc = 0.0;
         double yawAcc = 0.0;
+        double yawDist = 0.0;
     };
 
     /// @brief Linear distance from start to finish
@@ -78,5 +79,20 @@ namespace Poses{
     static inline bool isStationary(SwervePose pose){
         return pose.xVel == 0 && pose.yVel == 0 && pose.yawVel == 0 &&
                pose.xAcc == 0 && pose.yAcc == 0 && pose.yawAcc == 0;
+    }
+
+    /// @brief Returns if everything's zero
+    /// @param pose SwervePose
+    /// @return if everything's zero
+    static inline bool isZero(SwervePose pose){
+        return pose.x == 0.0 &&
+               pose.y == 0.0 &&
+               pose.yaw == 0.0 &&
+               pose.xVel == 0.0 &&
+               pose.yVel == 0.0 &&
+               pose.yawVel == 0.0 &&
+               pose.xAcc == 0.0 &&
+               pose.yAcc == 0.0 &&
+               pose.yawAcc == 0.0;
     }
 };

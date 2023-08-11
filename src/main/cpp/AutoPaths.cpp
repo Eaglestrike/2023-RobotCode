@@ -45,11 +45,11 @@ void AutoPaths::setPath(Path path)
     {
     case BIG_BOY:
     {
-        swervePoints_.push_back(SwervePose(0, 1, 0)); //Yaw = 0
-        swervePoints_.push_back(SwervePose(1, 1, 0)); //0.1
-        swervePoints_.push_back(SwervePose(1, 0, 90)); //1
-        swervePoints_.push_back(SwervePose(0, 1, 0)); //10
-        swervePoints_.push_back(SwervePose(0, 0, -90)); //1
+        swervePoints_.push_back(SwervePose(0, 1, 0, 0,0,0, 0,0,0, 0)); //YawDist = 0
+        swervePoints_.push_back(SwervePose(1, 1, 0, 0,0,0, 0,0,0, 0.1)); //0.1
+        swervePoints_.push_back(SwervePose(1, 0, 90, 0,0,0, 0,0,0, 1)); //1
+        swervePoints_.push_back(SwervePose(0, 1, 0, 0,0,0, 0,0,0, 10)); //10
+        swervePoints_.push_back(SwervePose(0, 0, -90, 0,0,0, 0,0,0, 1)); //1
 
         break;
     }
@@ -1543,7 +1543,7 @@ void AutoPaths::periodic()
             }
         }
 
-        if (pose != nullptr)
+        if (!isZero(pose))
         {
             if (timer_.GetFPGATimestamp().value() - autoStartTime_ > 14.9 && (path_ == SECOND_CUBE_DOCK || path_ == FIRST_CUBE_DOCK || path_ == SECOND_CONE_DOCK || path_ == FIRST_CONE_DOCK || path_ == AUTO_DOCK))
             {
@@ -1554,11 +1554,10 @@ void AutoPaths::periodic()
                 // frc::SmartDashboard::PutNumber("x thing", pose->getXVel());
                 // frc::SmartDashboard::PutNumber("y thing", pose->getYVel());
                 // frc::SmartDashboard::PutNumber("yaw thing", pose->getYawVel());
-                swerveDrive_->drivePose(*pose);
+                swerveDrive_->drivePose(pose);
             }
             // delete pose;
         }
-        delete pose;
     }
     else if (path_ == WAIT_5_SECONDS)
     {
@@ -2477,7 +2476,7 @@ double AutoPaths::initYaw()
     }
 }
 
-pair<double, double> AutoPaths::initPos()
+std::pair<double, double> AutoPaths::initPos()
 {
     switch (actions_[0])
     {

@@ -4,7 +4,6 @@
 #include "math.h"
 #include "iostream"
 
-#include "Helpers/Helpers.h"
 #include "SwerveTrajectory.h"
 #include "SwervePose.h"
 
@@ -25,15 +24,15 @@ class SwervePath
         void generateTrajectory(bool spline);
         void generateLinearTrajectory();
         void generateSplineTrajectory();
-        void addPoint(SwervePose point);
+        void addPoint(Poses::SwervePose point);
         
         void reset();
 
-        SwervePose getPose(double time, bool& end);
+        Poses::SwervePose getPose(double time, bool& end);
 
     private:
         double MAX_LA, MAX_LV, MAX_AA, MAX_AV, klP_, klD_, kaP_, kaD_, klV_, klA_, kaV_, kaA_;
 
-        std::vector<SwervePose> points_;
+        std::vector<Poses::SwervePose> points_;
         std::vector<SwerveTrajectory> trajectories_;
 };

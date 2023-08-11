@@ -34,7 +34,7 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
             // frc::SmartDashboard::PutNumber("Pitch Raw", navx_->GetPitch());
             // frc::SmartDashboard::PutNumber("Roll Raw", navx_->GetRoll());
 
-            vector<double> data = socketClient_.GetData();
+            std::vector<double> data = socketClient_.GetData();
             swerveDrive_.periodic(yaw, tilt, data);
 
             arm_.periodic();
@@ -203,9 +203,9 @@ void Robot::RobotInit()
     {
         navx_ = new AHRS(frc::SerialPort::kUSB);
     }
-    catch (const exception &e)
+    catch (const std::exception &e)
     {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     }
     navx_->ZeroYaw();
 }
@@ -287,7 +287,7 @@ void Robot::AutonomousInit()
     navx_->ZeroYaw();
     yawOffset_ = autoPaths_.initYaw();
 
-    pair<double, double> startXY = autoPaths_.initPos();
+    std::pair<double, double> startXY = autoPaths_.initPos();
     if (abs(swerveDrive_.getX() - startXY.first) > 1 || abs(swerveDrive_.getY() - startXY.second) > 1)
     {
         // frc::SmartDashboard::PutBoolean("F", true); 
@@ -305,7 +305,7 @@ void Robot::AutonomousPeriodic()
     TwoJointArmProfiles::Positions armPosition = autoPaths_.getArmPosition();
     bool forward = autoPaths_.getForward();
 
-    pair<bool, bool> intakesNeededDown = arm_.intakesNeededDown();
+    std::pair<bool, bool> intakesNeededDown = arm_.intakesNeededDown();
     cubeIntaking_ = autoPaths_.cubeIntaking();
     coneIntaking_ = autoPaths_.coneIntaking();
 
@@ -438,7 +438,7 @@ void Robot::TeleopPeriodic()
     //     psType_ = controls_.checkPSButtons();
     // }
 
-    pair<bool, bool> intakesNeededDown = arm_.intakesNeededDown();
+    std::pair<bool, bool> intakesNeededDown = arm_.intakesNeededDown();
     bool coneIntakeHalfway = false;
 
     if (controls_.getPressed(AUTO_BALANCE))
@@ -506,7 +506,7 @@ void Robot::TeleopPeriodic()
     }
     else if (controls_.getPressed(SCORE) && armsZeroed_)
     {
-        pair<double, double> scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
+        std::pair<double, double> scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
         if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
         {
             // Do nothing?

@@ -1,6 +1,6 @@
 #include "Drivebase/SwerveDrive.h"
 
-#include "Drivebase/SwerveConstants.h"
+#include <math.h>
 
 #include "Helpers/GeneralPoses.h"
 using namespace Poses;
@@ -42,7 +42,7 @@ void SwerveDrive::setYaw(double yaw)
     yaw_ = yaw;
 }
 
-void SwerveDrive::periodic(double yaw, double tilt, vector<double> data)
+void SwerveDrive::periodic(double yaw, double tilt, std::vector<double> data)
 {
     setYaw(yaw);
     calcOdometry();
@@ -214,7 +214,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         }
         else if (panic)
         {
-            turn = clamp(turn, -0.075, 0.075);
+            turn = std::clamp(turn, -0.075, 0.075);
         }
 
         drive(xStrafe, yStrafe, turn);
@@ -226,7 +226,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         if (inchUp)
         //         {
         //             inching_ = true;
-        //             pair<double, double> vel = getXYVel();
+        //             std::pair<double, double> vel = getXYVel();
         //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
@@ -241,7 +241,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         else if (inchDown)
         //         {
         //             inching_ = true;
-        //             pair<double, double> vel = getXYVel();
+        //             std::pair<double, double> vel = getXYVel();
         //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
@@ -256,7 +256,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         else if (inchLeft)
         //         {
         //             inching_ = true;
-        //             pair<double, double> vel = getXYVel();
+        //             std::pair<double, double> vel = getXYVel();
         //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
@@ -271,7 +271,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         else if (inchRight)
         //         {
         //             inching_ = true;
-        //             pair<double, double> vel = getXYVel();
+        //             std::pair<double, double> vel = getXYVel();
         //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
@@ -320,7 +320,7 @@ void SwerveDrive::setTarget(double xStrafe, double yStrafe, double rotation){
 }
 
 void SwerveDrive::manualScore(int scoringLevel, bool panic){
-    pair<double, double> scoringPos = checkScoringPos(scoringLevel);
+    std::pair<double, double> scoringPos = checkScoringPos(scoringLevel);
     // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
     // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
     if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
@@ -371,7 +371,7 @@ void SwerveDrive::manualScore(int scoringLevel, bool panic){
         }
         else if (panic)
         {
-            turn = clamp(turn, -0.075, 0.075);
+            turn = std::clamp(turn, -0.075, 0.075);
         }
 
         drive(xStrafe, yStrafe, turn);
@@ -490,7 +490,7 @@ void SwerveDrive::manualScore(int scoringLevel, bool panic){
     //         double turn = controls->getTurn();
     //         if (panic)
     //         {
-    //             turn = clamp(turn, -0.075, 0.075);
+    //             turn = std::clamp(turn, -0.075, 0.075);
     //         }
     //         trackingTag_ = false;
     //         drive(xStrafe, yStrafe, turn);
@@ -620,7 +620,7 @@ void SwerveDrive::drivePose(const SwervePose pose)
     double yawVel = pose.yawVel;
 
     // HERE
-    //  setPos(pair<double, double>{pose.x, pose.y});
+    //  setPos(std::pair<double, double>{pose.x, pose.y});
     //  setYaw(pose.yaw);
 
     if (isMoving(pose) || frc::DriverStation::IsTeleop())
@@ -940,7 +940,7 @@ void SwerveDrive::calcOdometry()
     //     return;
     // }
 
-    pair<double, double> xyVel = getXYVel();
+    std::pair<double, double> xyVel = getXYVel();
 
     // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
     // {
@@ -959,12 +959,12 @@ void SwerveDrive::calcOdometry()
 
     if (foundTag_)
     {
-        pair<double, double> xy = {robotX_, robotY_};
-        pair<pair<double, double>, pair<double, double>> pose{xy, xyVel};
+        std::pair<double, double> xy = {robotX_, robotY_};
+        std::pair<std::pair<double, double>, std::pair<double, double>> pose{xy, xyVel};
 
-        prevPoses_.insert(pair<double, pair<pair<double, double>, pair<double, double>>>{time, pose});
+        prevPoses_.insert(std::pair<double, std::pair<std::pair<double, double>, std::pair<double, double>>>{time, pose});
 
-        map<double, pair<pair<double, double>, pair<double, double>>>::iterator it;
+        std::map<double, std::pair<std::pair<double, double>, std::pair<double, double>>>::iterator it;
         for (it = prevPoses_.begin(); it->first < (time - SwerveConstants::POSE_HISTORY_LENGTH); prevPoses_.erase(it++))
             ;
 
@@ -1000,9 +1000,9 @@ double SwerveDrive::getY()
 }
 
 /**
- * Returns pair of xy velocities
+ * Returns std::pair of xy velocities
  */
-pair<double, double> SwerveDrive::getXYVel()
+std::pair<double, double> SwerveDrive::getXYVel()
 {
     // Get robot oriented x,y velocities of each swerve module
     double frX = -topRight_->getDriveVelocity() * sin(topRight_->getAngle() * M_PI / 180);
@@ -1043,7 +1043,7 @@ double SwerveDrive::getYaw()
  * Setter for position
  * @param xy
  */
-void SwerveDrive::setPos(pair<double, double> xy)
+void SwerveDrive::setPos(std::pair<double, double> xy)
 {
     robotX_ = xy.first;
     robotY_ = xy.second;
@@ -1052,12 +1052,12 @@ void SwerveDrive::setPos(pair<double, double> xy)
 /**
  * Using april tags to update field odometry
  */
-void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
+void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
 {
     //-1 is no april tag
     // double defaultVal[] = {-1};
     // Get data from SmartDashboard/Networktables
-    // vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
+    // std::vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
 
     if (data.at(0) == -1) // No april tag data
     {
@@ -1208,7 +1208,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
         //      robotY_ += (-robotY_ + aprilTagY) * 0.01;
         //  }
 
-        // pair<double, double> xyVel = getXYVel();
+        // std::pair<double, double> xyVel = getXYVel();
         // double vel = sqrt(xyVel.first * xyVel.first + xyVel.second * xyVel.second);
 
         // robotX_ += (-robotX_ + aprilTagX) * (0.1 / (1 + 1 * vel));
@@ -1256,7 +1256,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
                 numLargeDiffs_ = 0;
             }
 
-            map<double, pair<pair<double, double>, pair<double, double>>>::iterator it;
+            std::map<double, std::pair<std::pair<double, double>, std::pair<double, double>>>::iterator it;
             for (it = prevPoses_.begin(); it != prevPoses_.end(); it++)
             {
                 it->second.first.first += xDiff * multiplier / (1.0 + 0.1 * vel);
@@ -1287,7 +1287,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, vector<double> data)
 /// @brief gets the target scoring position
 /// @param scoringLevel target scoring level [1, 9]
 /// @return {wantedtX, wantedtY} or {0,0} if invalid data
-pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
+std::pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
 {
     // If tag not found
     if (!foundTag_)
