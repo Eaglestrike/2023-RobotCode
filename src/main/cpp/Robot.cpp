@@ -25,9 +25,9 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
             frc::SmartDashboard::PutBoolean("Camera Connection", socketClient_.HasConn());
 
             double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
-            double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
-            double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
-            double tilt = pitch * sin(ang) - roll * cos(ang);
+            double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees [-180, 180]
+            double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees [-180, 180]
+            double tilt = pitch * sin(ang) - roll * cos(ang); //Field-oriented tilt
             frc::SmartDashboard::PutNumber("Tilt", tilt);
             frc::SmartDashboard::PutNumber("Pitch", pitch);
             frc::SmartDashboard::PutNumber("Roll", roll);
@@ -65,13 +65,15 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
                                   controls_.getPOVDown(INCH_RIGHT),
                                   controls_.getPressed(SLOW_MODE));
 
+                //Panic if arm is out or moving
+                swerveDrive_.setPanic((armMoving || armOut));
+
                 //Shift odometry
                 double lineupTrimX = controls_.getValue(ControllerMapData::GET_TRIM_X, 0.0);
                 double lineupTrimY = controls_.getValue(ControllerMapData::GET_TRIM_Y, 0.0);
                 swerveDrive_.trim(lineupTrimX, lineupTrimY);
                 swerveDrive_.teleopPeriodic(controls_.getPressed(SCORE),
                                             arm_.isForward(),
-                                            (armMoving || armOut),
                                             scoringLevel_,
                                             controls_.getPressed(LOCK_WHEELS),
                                             controls_.getPressed(AUTO_BALANCE));
@@ -461,7 +463,7 @@ void Robot::TeleopPeriodic()
         else
         {
             double output = -SwerveConstants::AUTOKTILT * tilt;
-            swerveDrive_.drive(output, 0, 0);
+            swerveDrive_.drive({output, 0}, 0);
         }
     }
 

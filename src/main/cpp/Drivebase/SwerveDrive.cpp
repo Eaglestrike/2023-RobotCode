@@ -44,6 +44,7 @@ void SwerveDrive::setYaw(double yaw)
 
 void SwerveDrive::periodic(double yaw, double tilt, std::vector<double> data)
 {
+    config_.isBlue = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
     setYaw(yaw);
     calcOdometry();
     updateAprilTagFieldXY(tilt, data);
@@ -61,20 +62,16 @@ void SwerveDrive::trim(double xTrimDirection, double yTrimDirection){
 }
 
 /// @brief Basically if the POV is pressed of the slow button is pressed, either will just engage in a slow control
-/// @param inchUp 
-/// @param inchDown 
-/// @param inchLeft 
-/// @param inchRight 
-/// @param slow 
+/// @param inchUp bool
+/// @param inchDown bool
+/// @param inchLeft bool
+/// @param inchRight bool
+/// @param slow bool
 void SwerveDrive::inch(double inchUp, double inchDown, double inchLeft, double inchRight, double slow){
-    inchUp_ = inchUp;
-    inchDown_ = inchDown;
-    inchLeft_ = inchLeft;
-    inchRight_ = inchRight;
-    slow_ = slow;
+    config_.isSlow = slow || inchUp || inchDown || inchLeft || inchRight;
 }
 
-void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scoringLevel, bool islockWheels, bool autoBalance)
+void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, bool islockWheels, bool autoBalance)
 {
     // frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
@@ -84,7 +81,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
     {
         if (!trackingTag_)
         {
-            manualScore(scoringLevel, panic);
+            manualScore(scoringLevel);
         }
 
         // bool end = false;
@@ -124,13 +121,13 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
             //     }
             // }
             double xStrafe;
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            if (config_.isBlue)
             {
-                xStrafe = yStrafe_ * SwerveConstants::MAX_TELE_VEL;
+                xStrafe = strafe_.getY() * SwerveConstants::MAX_TELE_VEL;
             }
             else
             {
-                xStrafe = -yStrafe_ * SwerveConstants::MAX_TELE_VEL;
+                xStrafe = -strafe_.getY() * SwerveConstants::MAX_TELE_VEL;
             }
             SwervePose wantedPose = SwerveFromPose1D({getX(), xStrafe, 0}, yProfile, yawProfile);
             
@@ -166,58 +163,18 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
     {
         trackingTag_ = false;
         trackingPlayerStation_ = false;
-        double xStrafe, yStrafe;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        Vector fieldStrafe;
+        if (config_.isBlue)
         {
-            xStrafe = yStrafe_;
-            yStrafe = -xStrafe_;
+            fieldStrafe = strafe_.rotateClockwise90();
         }
         else
         {
-            xStrafe = -yStrafe_;
-            yStrafe = xStrafe_;
+            fieldStrafe = strafe_.rotateCounterclockwise90();
         }
         double turn = rotation_;
 
-        //inching is moving the robot
-
-        if (slow_ || inchUp_ || inchDown_ || inchLeft_ || inchRight_)
-        {
-            double ang = atan2(yStrafe, xStrafe);
-            double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
-            if (vel != 0)
-            {
-                vel *= 0.60;
-                vel += 0.40;
-            }
-
-            vel *= 0.15;
-            // frc::SmartDashboard::PutNumber("VEL", vel);
-
-            xStrafe = vel * cos(ang);
-            yStrafe = vel * sin(ang);
-
-            turn *= 0.3; // 0.15
-            // frc::SmartDashboard::PutNumber("Turn", turn);
-            if (abs(turn) < 0.3 * 0.3 * 0.2)
-            {
-                turn = 0;
-            }
-            // if (turn > 0)
-            // {
-            //     turn += 0.05; // 0.05
-            // }
-            // else if (turn < 0)
-            // {
-            //     turn -= 0.05;
-            // }
-        }
-        else if (panic)
-        {
-            turn = std::clamp(turn, -0.075, 0.075);
-        }
-
-        drive(xStrafe, yStrafe, turn);
+        drive(strafe_, turn);
 
         // if (abs(xStrafe) < 0.005 && abs(yStrafe) < 0.005 && abs(turn) < 0.02)
         // {
@@ -227,7 +184,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         {
         //             inching_ = true;
         //             std::pair<double, double> vel = getXYVel();
-        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
         //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
@@ -242,7 +199,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         {
         //             inching_ = true;
         //             std::pair<double, double> vel = getXYVel();
-        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
         //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
@@ -257,7 +214,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         {
         //             inching_ = true;
         //             std::pair<double, double> vel = getXYVel();
-        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
         //                 yTagTraj_.generateTrajectory(robotY_, robotY_ + SwerveConstants::INCHING_DIST, vel.second);
@@ -272,7 +229,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
         //         {
         //             inching_ = true;
         //             std::pair<double, double> vel = getXYVel();
-        //             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
         //                 yTagTraj_.generateTrajectory(robotY_, robotY_ - SwerveConstants::INCHING_DIST, vel.second);
@@ -314,67 +271,62 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scori
 /// @param yStrafe [-1.0, 1.0]
 /// @param rotation [-1.0, 1.0]
 void SwerveDrive::setTarget(double xStrafe, double yStrafe, double rotation){
-    xStrafe_ = xStrafe;
-    yStrafe_ = yStrafe;
     rotation_ = rotation;
+    strafe_ = {xStrafe, yStrafe};
+    if (config_.isBlue){
+        strafe_.rotateClockwise90This();
+    }
+    else{
+        strafe_.rotateCounterclockwise90This();
+    }
+    if(config_.isSlow){ //Reduce speed of robot
+        double vel = strafe_.getMagnitude();
+        double newVel = vel;
+        if (vel != 0)
+        {
+            newVel *= 0.09;
+            newVel += 0.06;
+            strafe_ *= newVel/vel;
+        }
+
+        rotation_ *= 0.3; // 0.15
+        if (abs(rotation_) < 0.3 * 0.3 * 0.2)
+        {
+            rotation_ = 0;
+        }
+        // if (rotation_ > 0)
+        // {
+        //     rotation_ += 0.05; // 0.05
+        // }
+        // else if (rotation_ < 0)
+        // {
+        //     rotation_ -= 0.05;
+        // }
+    }
+    else if(config_.isPanic){
+        rotation_ = std::clamp(rotation_, -0.075, 0.075);
+    }
 }
 
-void SwerveDrive::manualScore(int scoringLevel, bool panic){
+/// @brief if the arm is out or not, do not swing arm like sling
+/// @param panic if to slow down rotation or not
+void SwerveDrive::setPanic(bool panic){
+    config_.isPanic = panic;
+}
+
+void SwerveDrive::manualScore(int scoringLevel){
     std::pair<double, double> scoringPos = checkScoringPos(scoringLevel);
     // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
     // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
     if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
     {
-        double xStrafe, yStrafe;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        {
-            xStrafe = yStrafe_; //Joystick relative to field coordinates is rotated
-            yStrafe = -xStrafe_;
-        }
-        else
-        {
-            xStrafe = -yStrafe_; //Joystick relative to field coordinates is rotated
-            yStrafe = xStrafe_; 
-        }
+        Vector fieldStrafe;
+        
         double turn = rotation_;
 
-        if (slow_ || inchUp_ || inchDown_ || inchLeft_ || inchRight_)
-        {
-            double ang = atan2(yStrafe, xStrafe);
-            double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
-            if (vel != 0)
-            {
-                vel *= 0.60;
-                vel += 0.40;
-            }
+        
 
-            vel *= 0.15;
-            // frc::SmartDashboard::PutNumber("VEL", vel);
-
-            xStrafe = vel * cos(ang);
-            yStrafe = vel * sin(ang);
-
-            turn *= 0.3; // 0.15
-            // frc::SmartDashboard::PutNumber("Turn", turn);
-            if (abs(turn) < 0.3 * 0.3 * 0.2)
-            {
-                turn = 0;
-            }
-            // if (turn > 0)
-            // {
-            //     turn += 0.05; // 0.05
-            // }
-            // else if (turn < 0)
-            // {
-            //     turn -= 0.05;
-            // }
-        }
-        else if (panic)
-        {
-            turn = std::clamp(turn, -0.075, 0.075);
-        }
-
-        drive(xStrafe, yStrafe, turn);
+        drive(strafe_, rotation_);
         return;
     }
 
@@ -384,7 +336,7 @@ void SwerveDrive::manualScore(int scoringLevel, bool panic){
     double wantedY = scoringPos.second;
     double wantedYaw;
     bool playerStation = false;
-    // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    // if (config_.isBlue)
     // {
     //     if (forward)
     //     {
@@ -456,12 +408,12 @@ void SwerveDrive::manualScore(int scoringLevel, bool panic){
         wantedYaw = -90;
     }
 
-    if ((setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) || (setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kRed))
+    if ((setTagPos_ == 9 && config_.isBlue) || (setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kRed))
     {
         wantedYaw += 5;
     }
 
-    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    if (config_.isBlue)
     {
         playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
     }
@@ -474,10 +426,10 @@ void SwerveDrive::manualScore(int scoringLevel, bool panic){
 
     // if (playerStation)
     // {
-    //     if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
+    //     if ((config_.isBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
     //     {
     //         double xStrafe, yStrafe;
-    //         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    //         if (config_.isBlue)
     //         {
     //             xStrafe = controls->getYStrafe();
     //             yStrafe = -controls->getXStrafe();
@@ -511,8 +463,10 @@ void SwerveDrive::manualScore(int scoringLevel, bool panic){
 /*
  * Drives the robot at the speed and angle
  */
-void SwerveDrive::drive(double xSpeed, double ySpeed, double turn)
+void SwerveDrive::drive(Vector strafe, double turn)
 {
+    double xSpeed = strafe_.getX();
+    double ySpeed = strafe_.getY();
     if (turn == 0)
     {
         if (!isHoldingYaw_)
@@ -942,7 +896,7 @@ void SwerveDrive::calcOdometry()
 
     std::pair<double, double> xyVel = getXYVel();
 
-    // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    // if(config_.isBlue)
     // {
     //     robotX_ += rotatedY * dT_; //Changed here on purpose to switch cords cause the field isn't mirrored and I hate it
     //     robotY_ -= rotatedX * dT_;
@@ -1307,7 +1261,7 @@ std::pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO
     }
 
     double wantedX, wantedY;
-    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    if (config_.isBlue)
     {
         if (robotX_ > FieldConstants::FIELD_LENGTH / 2)
         {
@@ -1369,7 +1323,7 @@ std::pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO
         }
     }
     double xTrim, yTrim;
-    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    if (config_.isBlue)
     {
         xTrim = yLineupTrim_;
         yTrim = -xLineupTrim_;
@@ -1399,7 +1353,7 @@ std::pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO
     //     return -1;
     // }
 
-    // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    // if (config_.isBlue)
     // {
     //     if (robotX_ >= FieldConstants::TAG_XY[0][0]) //TODO make parameters better for all TAG_XY, probably make it check y first
     //     {

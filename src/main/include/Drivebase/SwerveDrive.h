@@ -10,6 +10,8 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
+#include "Helpers/Point.h"
+
 #include "SwerveConstants.h"
 #include "SwervePose.h"
 #include "SwervePath.h"
@@ -18,17 +20,25 @@
 class SwerveDrive
 {
     public:
+        struct Config{
+            bool isBlue; //What side the robot is
+            bool isSlow = false;
+            bool isPanic = false;
+        };
         SwerveDrive();
         void setYaw(double yaw);
         
         void periodic(double yaw, double tilt, std::vector<double> data);
         void trim(double xLineupTrim, double yLineupTrim_);
         void inch(double inchUp, double inchDown, double inchLeft, double inchRight, double isInch);
-        void teleopPeriodic(bool score, bool forward, bool panic, int scoringLevel, bool islockWheels, bool autoBalance);
-        void setTarget(double xStrafe, double yStrafe, double rotation);
-        void manualScore(int scoringLevel, bool panic);
+        void teleopPeriodic(bool score, bool forward, int scoringLevel, bool islockWheels, bool autoBalance);
 
-        void drive(double xSpeed, double ySpeed, double turn);
+        void setTarget(double xStrafe, double yStrafe, double rotation);
+        void setPanic(bool panic);
+
+        void manualScore(int scoringLevel);
+
+        void drive(Vector strafe, double turn);
         void lockWheels();
         void drivePose(const Poses::SwervePose pose);
         void adjustPos(const Poses::SwervePose pose);
@@ -53,11 +63,10 @@ class SwerveDrive
         // double getYawTagOffset();
         
     private:
-        double xStrafe_;
-        double yStrafe_;
+        Vector strafe_; //Field oriented
         double rotation_;
 
-        bool inchUp_, inchDown_, inchLeft_, inchRight_, slow_;
+        Config config_;
 
         SwerveModule* topRight_ = new SwerveModule(SwerveConstants::TR_TURN_ID, SwerveConstants::TR_DRIVE_ID, SwerveConstants::TR_CANCODER_ID, SwerveConstants::TR_CANCODER_OFFSET);
         SwerveModule* topLeft_ = new SwerveModule(SwerveConstants::TL_TURN_ID, SwerveConstants::TL_DRIVE_ID, SwerveConstants::TL_CANCODER_ID, SwerveConstants::TL_CANCODER_OFFSET);

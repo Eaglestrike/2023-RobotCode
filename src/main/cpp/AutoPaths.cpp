@@ -884,7 +884,7 @@ void AutoPaths::periodic()
     {
         if (actionNum_ > static_cast<int>(actions_.size()) - 1)
         {
-            swerveDrive_->drive(0, 0, 0);
+            swerveDrive_->drive({0, 0}, 0);
             return;
         }
 
@@ -2007,7 +2007,7 @@ void AutoPaths::periodic()
                 else
                 {
                     double output = -SwerveConstants::AUTOKTILT * tilt;
-                    swerveDrive_->drive(output, 0, 0);
+                    swerveDrive_->drive({output, 0}, 0);
                 }
             }
         }
@@ -2165,13 +2165,13 @@ void AutoPaths::periodic()
                         {
                             frc::SmartDashboard::PutBoolean("Sending it Fast", true);
                             frc::SmartDashboard::PutBoolean("Sending it Medium", false);
-                            swerveDrive_->drive(-SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
+                            swerveDrive_->drive({-SwerveConstants::SENDING_IT_FAST_SPEED, 0}, 0);
                         }
                         else
                         {
                             frc::SmartDashboard::PutBoolean("Sending it Fast", false);
                             frc::SmartDashboard::PutBoolean("Sending it Medium", true);
-                            swerveDrive_->drive(-SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
+                            swerveDrive_->drive({-SwerveConstants::SENDING_IT_MED_SPEED, 0}, 0);
                         }
                     }
                     else
@@ -2180,13 +2180,13 @@ void AutoPaths::periodic()
                         {
                             frc::SmartDashboard::PutBoolean("Sending it Fast", true);
                             frc::SmartDashboard::PutBoolean("Sending it Medium", false);
-                            swerveDrive_->drive(SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
+                            swerveDrive_->drive({SwerveConstants::SENDING_IT_FAST_SPEED, 0}, 0);
                         }
                         else
                         {
                             frc::SmartDashboard::PutBoolean("Sending it Fast", false);
                             frc::SmartDashboard::PutBoolean("Sending it Medium", true);
-                            swerveDrive_->drive(SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
+                            swerveDrive_->drive({SwerveConstants::SENDING_IT_MED_SPEED, 0}, 0);
                         }
                     }
                 }
@@ -2207,7 +2207,7 @@ void AutoPaths::periodic()
                     {
                         frc::SmartDashboard::PutBoolean("Balanced", false);
                         double output = -SwerveConstants::AUTOKTILT * tilt;
-                        swerveDrive_->drive(output, 0, 0);
+                        swerveDrive_->drive({output, 0}, 0);
                     }
                 }
             }
@@ -2262,22 +2262,22 @@ void AutoPaths::periodic()
                 {
                     if (abs(tilt) < 12)
                     {
-                        swerveDrive_->drive(SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
+                        swerveDrive_->drive({SwerveConstants::SENDING_IT_FAST_SPEED, 0}, 0);
                     }
                     else
                     {
-                        swerveDrive_->drive(SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
+                        swerveDrive_->drive({SwerveConstants::SENDING_IT_MED_SPEED, 0}, 0);
                     }
                 }
                 else
                 {
                     if (abs(tilt) < 12)
                     {
-                        swerveDrive_->drive(-SwerveConstants::SENDING_IT_FAST_SPEED, 0, 0);
+                        swerveDrive_->drive({-SwerveConstants::SENDING_IT_FAST_SPEED, 0}, 0);
                     }
                     else
                     {
-                        swerveDrive_->drive(-SwerveConstants::SENDING_IT_MED_SPEED, 0, 0);
+                        swerveDrive_->drive({-SwerveConstants::SENDING_IT_MED_SPEED, 0}, 0);
                     }
                 }
             }
@@ -2294,7 +2294,7 @@ void AutoPaths::periodic()
                 else
                 {
                     double output = -SwerveConstants::AUTOKTILT * tilt;
-                    swerveDrive_->drive(output, 0, 0);
+                    swerveDrive_->drive({output, 0}, 0);
                 }
             }
         }
@@ -2331,22 +2331,22 @@ void AutoPaths::periodic()
         {
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                swerveDrive_->drive(0.5, 0, 0);
+                swerveDrive_->drive({0.5, 0}, 0);
             }
             else
             {
-                swerveDrive_->drive(-0.5, 0, 0);
+                swerveDrive_->drive({-0.5, 0}, 0);
             }
         }
         else if (comingDownChargingStation_ && !taxied_)
         {
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                swerveDrive_->drive(0.35, 0, 0);
+                swerveDrive_->drive({0.35, 0}, 0);
             }
             else
             {
-                swerveDrive_->drive(-0.35, 0, 0);
+                swerveDrive_->drive({-0.35, 0}, 0);
             }
 
             taxied_ = (abs(tilt) < 3);
@@ -2363,11 +2363,11 @@ void AutoPaths::periodic()
                 {
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                     {
-                        swerveDrive_->drive(-0.35, 0, 0);
+                        swerveDrive_->drive({-0.35, 0}, 0);
                     }
                     else
                     {
-                        swerveDrive_->drive(0.35, 0, 0);
+                        swerveDrive_->drive({0.35, 0}, 0);
                     }
                 }
             }
@@ -2381,7 +2381,7 @@ void AutoPaths::periodic()
                 else
                 {
                     double output = -SwerveConstants::AUTOKTILT * tilt;
-                    swerveDrive_->drive(output, 0, 0);
+                    swerveDrive_->drive({output, 0}, 0);
                 }
             }
         }
@@ -2415,16 +2415,16 @@ void AutoPaths::periodic()
         {
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                swerveDrive_->drive(0.2, 0, 0);
+                swerveDrive_->drive({0.2, 0}, 0);
             }
             else
             {
-                swerveDrive_->drive(-0.2, 0, 0);
+                swerveDrive_->drive({-0.2, 0}, 0);
             }
         }
         else
         {
-            swerveDrive_->drive(0, 0, 0);
+            swerveDrive_->drive({0, 0}, 0);
         }
 
         break;
