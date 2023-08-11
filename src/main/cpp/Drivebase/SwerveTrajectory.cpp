@@ -1,5 +1,7 @@
 #include "Drivebase/SwerveTrajectory.h"
 
+using namespace Poses;
+
 SwerveTrajectory::SwerveTrajectory(SwervePose startPose, SwervePose endPose, double yawAccelTime, double yawCruiseTime, double yawCruiseDist, double yawCruiseVel, 
         double linYawAccelTime, double linYawCruiseTime, double linYawCruiseDist, double linYawCruiseVel, 
         double linYawDeccelTime, double actualYawDist, double endVel, 
@@ -19,7 +21,7 @@ SwervePose SwerveTrajectory::getPose(double time)
 {
     double x, y, yaw, xVel, yVel, yawVel, xAcc, yAcc, yawAcc;
     //double dist = startPose_.distTo(endPose_);
-    double ang = startPose_.angTo(endPose_);
+    double ang = SwervePoseAng(startPose_, endPose_);
     double yawTime = yawAccelTime_ * 2 + yawCruiseTime_;
 
     double linAcc, linVel, linDist;
@@ -30,7 +32,7 @@ SwervePose SwerveTrajectory::getPose(double time)
         {
             yawAcc = (onlyYaw) ? MAX_AA  * yawDirection_: MAX_AA * 0.5 * yawDirection_;
             yawVel = time * yawAcc;
-            yaw = startPose_.getYaw() + yawVel * 0.5 * time;
+            yaw = startPose_.yaw + yawVel * 0.5 * time;
             Helpers::normalizeAngle(yaw);
         }
         else if(time < yawAccelTime_ + yawCruiseTime_)
@@ -38,14 +40,14 @@ SwervePose SwerveTrajectory::getPose(double time)
             double prevYawAcc = (onlyYaw) ? MAX_AA  * yawDirection_: MAX_AA * 0.5 * yawDirection_;
             yawAcc = 0;
             yawVel = yawCruiseVel_;
-            yaw = startPose_.getYaw() + yawAccelTime_ * yawAccelTime_ * 0.5 * prevYawAcc + yawVel * (time - yawAccelTime_);
+            yaw = startPose_.yaw + yawAccelTime_ * yawAccelTime_ * 0.5 * prevYawAcc + yawVel * (time - yawAccelTime_);
             Helpers::normalizeAngle(yaw);
         }
         else
         {
             yawAcc = (onlyYaw) ? -MAX_AA * yawDirection_ : -MAX_AA * 0.5 * yawDirection_;
             yawVel = yawCruiseVel_ + (time - yawAccelTime_ - yawCruiseTime_) * yawAcc;
-            yaw = startPose_.getYaw() + yawAccelTime_ * yawAccelTime_ * 0.5 * -yawAcc + yawCruiseVel_ * yawCruiseTime_ + (time - yawAccelTime_ - yawCruiseTime_) * (yawVel + yawCruiseVel_) / 2;
+            yaw = startPose_.yaw + yawAccelTime_ * yawAccelTime_ * 0.5 * -yawAcc + yawCruiseVel_ * yawCruiseTime_ + (time - yawAccelTime_ - yawCruiseTime_) * (yawVel + yawCruiseVel_) / 2;
             Helpers::normalizeAngle(yaw);
         }
 
@@ -86,7 +88,7 @@ SwervePose SwerveTrajectory::getPose(double time)
     }
     else if (time < (yawTime + linAccelTime_ + linCruiseTime_ + linDeccelTime_))
     {
-        yaw = endPose_.getYaw();
+        yaw = endPose_.yaw;
         Helpers::normalizeAngle(yaw);
         yawVel = 0;
         yawAcc = 0;
@@ -115,11 +117,11 @@ SwervePose SwerveTrajectory::getPose(double time)
         return endPose_;
     }
 
-    x = startPose_.getX() + sin(ang * M_PI / 180) * linDist;
+    x = startPose_.x + sin(ang * M_PI / 180) * linDist;
     xVel = sin(ang * M_PI / 180) * linVel;
     xAcc = sin(ang * M_PI / 180) * linAcc;
 
-    y = startPose_.getY() + cos(ang * M_PI / 180) * linDist;
+    y = startPose_.y + cos(ang * M_PI / 180) * linDist;
     yVel = cos(ang * M_PI / 180) * linVel;
     yAcc = cos(ang * M_PI / 180) * linAcc;
 
