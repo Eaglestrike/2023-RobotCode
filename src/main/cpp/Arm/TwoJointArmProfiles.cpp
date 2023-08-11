@@ -1,5 +1,7 @@
 #include "Arm/TwoJointArmProfiles.h"
 
+using namespace Poses;
+
 TwoJointArmProfiles::TwoJointArmProfiles()
 {
     hasProfiles_ = false;
@@ -22,7 +24,7 @@ void TwoJointArmProfiles::readProfiles()
 			}
 
 			std::pair<Positions, Positions> key{static_cast<Positions>(i), static_cast<Positions>(j)};
-			std::map<double, std::pair<std::tuple<double, double, double>, std::tuple<double, double, double>>> profile;
+			std::map<double, std::pair<Pose1D, Pose1D>> profile;
             std::string fileName = frc::filesystem::GetDeployDirectory() + "/" + std::to_string(i) + std::to_string(j) + ".csv";
 
             std::ifstream infile(fileName);
@@ -101,17 +103,17 @@ void TwoJointArmProfiles::readProfiles()
 
                 if (valid)
                 {
-                    std::tuple<double, double, double> theta{thetaPos, thetaVel, thetaAcc};
-                    std::tuple<double, double, double> phi{phiPos, phiVel, phiAcc};
-                    std::pair<std::tuple<double, double, double>, std::tuple<double, double, double>> fullAngPose{theta, phi};
-                    std::pair<double, std::pair<std::tuple<double, double, double>, std::tuple<double, double, double>>> angPoint{time, fullAngPose};
+                    Pose1D theta{thetaPos, thetaVel, thetaAcc};
+                    Pose1D phi{phiPos, phiVel, phiAcc};
+                    std::pair<Pose1D, Pose1D> fullAngPose{theta, phi};
+                    std::pair<double, std::pair<Pose1D, Pose1D>> angPoint{time, fullAngPose};
 
                     profile.insert(angPoint);
 
                 }
             }
             
-            std::pair<std::pair<Positions, Positions>, std::map<double, std::pair<std::tuple<double, double, double>, std::tuple<double, double, double>>>> positionMapPoint{ key, profile };
+            std::pair<std::pair<Positions, Positions>, std::map<double, std::pair<Pose1D, Pose1D>>> positionMapPoint{ key, profile };
             profiles_.insert(positionMapPoint);
 
             //std::pair<Positions, Positions> testKey{ STOWED, HIGH };
@@ -127,26 +129,26 @@ void TwoJointArmProfiles::readProfiles()
     hasProfiles_ = true;
 }
 
-std::tuple<double, double, double> TwoJointArmProfiles::getThetaProfile(std::pair<Positions, Positions> key, double time)
+Pose1D TwoJointArmProfiles::getThetaProfile(std::pair<Positions, Positions> key, double time)
 {
     auto profile = profiles_.at(key).upper_bound(time);
     if(profile == profiles_.at(key).end())
     {
         --profile;
-        return std::tuple<double, double, double>{get<0>(profile->second.first), 0, 0};
+        return Pose1D{profile->second.first.pos, 0, 0};
     }
 
     --profile;
    return profile->second.first;
 }
 
-std::tuple<double, double, double> TwoJointArmProfiles::getPhiProfile(std::pair<Positions, Positions> key, double time)
+Pose1D TwoJointArmProfiles::getPhiProfile(std::pair<Positions, Positions> key, double time)
 {
     auto profile = profiles_.at(key).upper_bound(time);
     if (profile == profiles_.at(key).end())
     {
         --profile;
-        return std::tuple<double, double, double>{get<0>(profile->second.second), 0, 0};
+        return Pose1D{profile->second.second.pos, 0, 0};
     }
 
     --profile;

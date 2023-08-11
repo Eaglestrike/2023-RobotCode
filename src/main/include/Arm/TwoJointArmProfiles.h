@@ -8,6 +8,8 @@
 #include "frc/Filesystem.h"
 #include <frc/smartdashboard/SmartDashboard.h>
 
+#include "Helpers/GeneralPoses.h"
+
 class TwoJointArmProfiles
 {
 public:
