@@ -1876,6 +1876,13 @@ bool TwoJointArm::isForward()
     return forward_;
 }
 
+bool TwoJointArm::isArmOut() {
+    return position_ == TwoJointArmProfiles::MID || position_ == TwoJointArmProfiles::HIGH || position_ == TwoJointArmProfiles::CUBE_MID || position_ == TwoJointArmProfiles::CUBE_HIGH;
+}
+
+bool TwoJointArm::isArmMoving() {
+   return state_ != TwoJointArm::STOPPED && state_ != TwoJointArm::HOLDING_POS; 
+}
 // bool TwoJointArm::intaking()
 // {
 //     return intaking_;

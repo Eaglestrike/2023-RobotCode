@@ -64,6 +64,8 @@ class TwoJointArm
         bool shoulderBrakeEngaged();
         bool elbowBrakeEngaged();
         bool isForward();
+        bool isArmOut();
+        bool isArmMoving();
         // bool intaking();
 
         void checkPos();
