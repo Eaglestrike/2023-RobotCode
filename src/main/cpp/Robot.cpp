@@ -12,7 +12,8 @@
 
 using namespace Actions;
 
-Robot::Robot() : socketClient_("10.1.14.43", 5807, 500, 5000)
+Robot::Robot() : socketClient_("10.1.14.43", 5807, 500, 5000),
+                autoPaths_(&swerveDrive_, &arm_)
 {
     AddPeriodic(
         [&]
@@ -51,7 +52,30 @@ Robot::Robot() : socketClient_("10.1.14.43", 5807, 500, 5000)
                 bool armMoving = (arm_.getState() != TwoJointArm::STOPPED && arm_.getState() != TwoJointArm::HOLDING_POS);
                 // bool armOut = (arm_.getPosition() != TwoJointArmProfiles::STOWED /* && arm_.getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_.getPosition() != TwoJointArmProfiles::GROUND);
                 bool armOut = (arm_.getPosition() == TwoJointArmProfiles::MID || arm_.getPosition() == TwoJointArmProfiles::HIGH || arm_.getPosition() == TwoJointArmProfiles::CUBE_MID || arm_.getPosition() == TwoJointArmProfiles::CUBE_HIGH); // TODO make this based on xy position
-                swerveDrive_.teleopPeriodic(arm_.isForward(), (armMoving || armOut), scoringLevel_);
+
+                //Pass controller swerve data to swerve
+                double xStrafe = controls_.getWithDeadContinuous(XSTRAFE, 0.07);
+                double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE, 0.07);
+                double rotation = controls_.getWithDeadContinuous(ROTATION, 0.07);
+                swerveDrive_.setTarget(xStrafe, yStrafe, rotation);
+
+                //Inch/slow down robot
+                swerveDrive_.inch(controls_.getPOVDown(INCH_UP),
+                                  controls_.getPOVDown(INCH_DOWN),
+                                  controls_.getPOVDown(INCH_LEFT),
+                                  controls_.getPOVDown(INCH_RIGHT),
+                                  controls_.getPressed(SLOW_MODE));
+
+                //Shift odometry
+                double lineupTrimX = controls_.getValue(ControllerMapData::GET_TRIM_X);
+                double lineupTrimY = controls_.getValue(ControllerMapData::GET_TRIM_Y);
+                swerveDrive_.trim(lineupTrimX, lineupTrimY);
+                swerveDrive_.teleopPeriodic(controls_.getPressed(SCORE),
+                                            arm_.isForward(),
+                                            (armMoving || armOut),
+                                            scoringLevel_,
+                                            controls_.getPressed(LOCK_WHEELS),
+                                            controls_.getPressed(AUTO_BALANCE));
             }
 
             // if (frc::DriverStation::IsEnabled())

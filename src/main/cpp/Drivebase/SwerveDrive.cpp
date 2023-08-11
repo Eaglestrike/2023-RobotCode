@@ -1,5 +1,7 @@
 #include "Drivebase/SwerveDrive.h"
 
+#include "Drivebase/SwerveConstants.h"
+
 /*
  * Constructor
  */
@@ -44,258 +46,36 @@ void SwerveDrive::periodic(double yaw, double tilt, vector<double> data)
     updateAprilTagFieldXY(tilt, data);
 }
 
-void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, int scoringLevel)
+/// @brief Trims the robot's alignment in the direction give. Shifts odometry
+/// @param xTrimDirection the trim x in inches
+/// @param yTrimDirection the trim y in inches
+void SwerveDrive::trim(double xTrimDirection, double yTrimDirection){
+    xLineupTrim_ += xTrimDirection*SwerveConstants::TRIMMING_DIST;
+    yLineupTrim_ += yTrimDirection*SwerveConstants::TRIMMING_DIST;
+
+    frc::SmartDashboard::PutNumber("X Trim", xLineupTrim_ / 0.0254);
+    frc::SmartDashboard::PutNumber("Y Trim", yLineupTrim_ / 0.0254);
+}
+
+void SwerveDrive::inch(double inchUp, double inchDown, double inchLeft, double inchRight, double slow){
+    bool inchUp_ = inchUp;
+    bool inchDown_ = inchDown;
+    bool inchLeft_ = inchLeft;
+    bool inchRight_ = inchRight;
+    bool slow_ = slow;
+}
+
+void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scoringLevel, bool islockWheels, bool autoBalance)
 {
     // frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
 
-    if (controls->lineupTrimXUpPressed())
-    {
-        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        // {
-        //     xLineupTrim_ -= 0.0254;
-        // }
-        // else
-        // {
-        //     xLineupTrim_ += 0.0254;
-        // }
-        xLineupTrim_ += 0.0254;
-    }
-    else if (controls->lineupTrimXDownPressed())
-    {
-        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        // {
-        //     xLineupTrim_ += 0.0254;
-        // }
-        // else
-        // {
-        //     xLineupTrim_ -= 0.0254;
-        // }
-        xLineupTrim_ -= 0.0254;
-    }
-    else if (controls->lineupTrimYUpPressed())
-    {
-        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        // {
-        //     yLineupTrim_ += 0.0254;
-        // }
-        // else
-        // {
-        //     yLineupTrim_ -= 0.0254;
-        // }
-        yLineupTrim_ += 0.0254;
-    }
-    else if (controls->lineupTrimYDownPressed())
-    {
-        // if(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-        // {
-        //     yLineupTrim_ -= 0.0254;
-        // }
-        // else
-        // {
-        //     yLineupTrim_ += 0.0254;
-        // }
-        yLineupTrim_ -= 0.0254;
-    }
-
-    frc::SmartDashboard::PutNumber("X Trim", xLineupTrim_ / 0.0254);
-    frc::SmartDashboard::PutNumber("Y Trim", yLineupTrim_ / 0.0254);
-
     // frc::SmartDashboard::PutBoolean("LJT", controls->lJoyTriggerDown());
-    if (controls->lJoyTriggerDown())
+    if (score)
     {
         if (!trackingTag_)
         {
-            pair<double, double> scoringPos = checkScoringPos(scoringLevel);
-            // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
-            // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
-            if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
-            {
-                double xStrafe, yStrafe;
-                if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-                {
-                    xStrafe = controls->getYStrafe();
-                    yStrafe = -controls->getXStrafe();
-                }
-                else
-                {
-                    xStrafe = -controls->getYStrafe();
-                    yStrafe = controls->getXStrafe();
-                }
-                double turn = controls->getTurn();
-
-                bool inchUp = controls->inchingUpDown();
-                bool inchDown = controls->inchingDownDown();
-                bool inchLeft = controls->inchingLeftDown();
-                bool inchRight = controls->inchingRightDown();
-
-                if (controls->inchingLowerButton() || inchUp || inchDown || inchLeft || inchRight)
-                {
-                    double ang = atan2(yStrafe, xStrafe);
-                    double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
-                    if (vel != 0)
-                    {
-                        vel *= 0.60;
-                        vel += 0.40;
-                    }
-
-                    vel *= 0.15;
-                    // frc::SmartDashboard::PutNumber("VEL", vel);
-
-                    xStrafe = vel * cos(ang);
-                    yStrafe = vel * sin(ang);
-
-                    turn *= 0.3; // 0.15
-                    // frc::SmartDashboard::PutNumber("Turn", turn);
-                    if (abs(turn) < 0.3 * 0.3 * 0.2)
-                    {
-                        turn = 0;
-                    }
-                    // if (turn > 0)
-                    // {
-                    //     turn += 0.05; // 0.05
-                    // }
-                    // else if (turn < 0)
-                    // {
-                    //     turn -= 0.05;
-                    // }
-                }
-                else if (panic)
-                {
-                    turn = clamp(turn, -0.075, 0.075);
-                }
-
-                drive(xStrafe, yStrafe, turn);
-                return;
-            }
-
-            holdingYaw_ = false;
-
-            double wantedX = scoringPos.first;
-            double wantedY = scoringPos.second;
-            double wantedYaw;
-            bool playerStation = false;
-            // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-            // {
-            //     if (forward)
-            //     {
-            //         wantedYaw = 90.0;
-            //         if (scoringPos.first > 6.0)
-            //         {
-            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-            //             wantedYaw *= -1;
-            //             playerStation = true;
-            //         }
-            //         else
-            //         {
-            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         wantedYaw = -90.0;
-            //         if (scoringPos.first > 6.0)
-            //         {
-            //             wantedYaw *= -1;
-            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-            //             playerStation = true;
-            //         }
-            //         else
-            //         {
-            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-            //         }
-            //     }
-            // }
-            // else
-            // {
-            //     if (forward)
-            //     {
-            //         wantedYaw = -90.0;
-            //         if (scoringPos.first < 6.0)
-            //         {
-            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-            //             wantedYaw *= -1;
-            //             playerStation = true;
-            //         }
-            //         else
-            //         {
-            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         wantedYaw = 90.0;
-            //         if (scoringPos.first < 6.0)
-            //         {
-            //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-            //             wantedYaw *= -1;
-            //             playerStation = true;
-            //         }
-            //         else
-            //         {
-            //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-            //         }
-            //     }
-            // }
-
-            if (yaw_ > 0)
-            {
-                wantedYaw = 90;
-            }
-            else
-            {
-                wantedYaw = -90;
-            }
-
-            if ((setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) || (setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kRed))
-            {
-                wantedYaw += 5;
-            }
-
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-            {
-                playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
-            }
-            else
-            {
-                playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
-            }
-            wantedY += (wantedYaw > 0) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
-            trackingPlayerStation_ = playerStation;
-
-            // if (playerStation)
-            // {
-            //     if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
-            //     {
-            //         double xStrafe, yStrafe;
-            //         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-            //         {
-            //             xStrafe = controls->getYStrafe();
-            //             yStrafe = -controls->getXStrafe();
-            //         }
-            //         else
-            //         {
-            //             xStrafe = -controls->getYStrafe();
-            //             yStrafe = controls->getXStrafe();
-            //         }
-            //         double turn = controls->getTurn();
-            //         if (panic)
-            //         {
-            //             turn = clamp(turn, -0.075, 0.075);
-            //         }
-            //         trackingTag_ = false;
-            //         drive(xStrafe, yStrafe, turn);
-            //         return;
-            //     }
-            // }
-
-            frc::SmartDashboard::PutNumber("WX", wantedX);
-            frc::SmartDashboard::PutNumber("WY", wantedY);
-            xTagTraj_.generateTrajectory(robotX_, wantedX, (getXYVel().first));
-            yTagTraj_.generateTrajectory(robotY_, wantedY, (getXYVel().second));
-            yawTagTraj_.generateTrajectory(yaw_, wantedYaw, 0);
-
-            trackingTag_ = true;
+            manualScore(scoringLevel, panic);
         }
 
         // bool end = false;
@@ -336,11 +116,11 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             double xStrafe;
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                xStrafe = controls->getYStrafe() * SwerveConstants::MAX_TELE_VEL;
+                xStrafe = yStrafe_ * SwerveConstants::MAX_TELE_VEL;
             }
             else
             {
-                xStrafe = -controls->getYStrafe() * SwerveConstants::MAX_TELE_VEL;
+                xStrafe = -yStrafe_ * SwerveConstants::MAX_TELE_VEL;
             }
             SwervePose *wantedPose = new SwervePose(getX(), get<2>(yProfile), get<2>(yawProfile), xStrafe, get<1>(yProfile), get<1>(yawProfile), 0, get<0>(yProfile), get<0>(yawProfile));
             // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
@@ -369,33 +149,30 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
             delete wantedPose;
         }
     }
-    else if (controls->lockWheels())
+    else if (islockWheels)
     {
         lockWheels();
     }
-    else if (!controls->autoBalanceDown())
+    else if (!autoBalance)
     {
         trackingTag_ = false;
         trackingPlayerStation_ = false;
         double xStrafe, yStrafe;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            xStrafe = controls->getYStrafe();
-            yStrafe = -controls->getXStrafe();
+            xStrafe = yStrafe_;
+            yStrafe = -xStrafe_;
         }
         else
         {
-            xStrafe = -controls->getYStrafe();
-            yStrafe = controls->getXStrafe();
+            xStrafe = -yStrafe_;
+            yStrafe = xStrafe_;
         }
-        double turn = controls->getTurn();
+        double turn = rotation_;
 
-        bool inchUp = controls->inchingUpDown();
-        bool inchDown = controls->inchingDownDown();
-        bool inchLeft = controls->inchingLeftDown();
-        bool inchRight = controls->inchingRightDown();
+        //inching is moving the robot
 
-        if (controls->inchingLowerButton() || inchUp || inchDown || inchLeft || inchRight)
+        if (slow_ || inchUp_ || inchDown_ || inchLeft_ || inchRight_)
         {
             double ang = atan2(yStrafe, xStrafe);
             double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
@@ -521,6 +298,205 @@ void SwerveDrive::teleopPeriodic(Controls *controls, bool forward, bool panic, i
         //     drive(xStrafe, yStrafe, turn);
         // }
     }
+}
+
+/// @brief Sets the target 
+/// @param xStrafe [-1.0, 1.0]
+/// @param yStrafe [-1.0, 1.0]
+/// @param rotation [-1.0, 1.0]
+void SwerveDrive::setTarget(double xStrafe, double yStrafe, double rotation){
+    xStrafe_ = xStrafe;
+    yStrafe_ = yStrafe;
+    rotation_ = rotation;
+}
+
+void SwerveDrive::manualScore(int scoringLevel, bool panic){
+    pair<double, double> scoringPos = checkScoringPos(scoringLevel);
+    // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
+    // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
+    if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
+    {
+        double xStrafe, yStrafe;
+        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        {
+            xStrafe = yStrafe_; //Joystick relative to field coordinates is rotated
+            yStrafe = -xStrafe_;
+        }
+        else
+        {
+            xStrafe = -yStrafe_; //Joystick relative to field coordinates is rotated
+            yStrafe = xStrafe_; 
+        }
+        double turn = rotation_;
+
+        if (slow_ || inchUp_ || inchDown_ || inchLeft_ || inchRight_)
+        {
+            double ang = atan2(yStrafe, xStrafe);
+            double vel = sqrt(xStrafe * xStrafe + yStrafe * yStrafe);
+            if (vel != 0)
+            {
+                vel *= 0.60;
+                vel += 0.40;
+            }
+
+            vel *= 0.15;
+            // frc::SmartDashboard::PutNumber("VEL", vel);
+
+            xStrafe = vel * cos(ang);
+            yStrafe = vel * sin(ang);
+
+            turn *= 0.3; // 0.15
+            // frc::SmartDashboard::PutNumber("Turn", turn);
+            if (abs(turn) < 0.3 * 0.3 * 0.2)
+            {
+                turn = 0;
+            }
+            // if (turn > 0)
+            // {
+            //     turn += 0.05; // 0.05
+            // }
+            // else if (turn < 0)
+            // {
+            //     turn -= 0.05;
+            // }
+        }
+        else if (panic)
+        {
+            turn = clamp(turn, -0.075, 0.075);
+        }
+
+        drive(xStrafe, yStrafe, turn);
+        return;
+    }
+
+    holdingYaw_ = false;
+
+    double wantedX = scoringPos.first;
+    double wantedY = scoringPos.second;
+    double wantedYaw;
+    bool playerStation = false;
+    // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    // {
+    //     if (forward)
+    //     {
+    //         wantedYaw = 90.0;
+    //         if (scoringPos.first > 6.0)
+    //         {
+    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+    //             wantedYaw *= -1;
+    //             playerStation = true;
+    //         }
+    //         else
+    //         {
+    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         wantedYaw = -90.0;
+    //         if (scoringPos.first > 6.0)
+    //         {
+    //             wantedYaw *= -1;
+    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+    //             playerStation = true;
+    //         }
+    //         else
+    //         {
+    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+    //         }
+    //     }
+    // }
+    // else
+    // {
+    //     if (forward)
+    //     {
+    //         wantedYaw = -90.0;
+    //         if (scoringPos.first < 6.0)
+    //         {
+    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+    //             wantedYaw *= -1;
+    //             playerStation = true;
+    //         }
+    //         else
+    //         {
+    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+    //         }
+    //     }
+    //     else
+    //     {
+    //         wantedYaw = 90.0;
+    //         if (scoringPos.first < 6.0)
+    //         {
+    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
+    //             wantedYaw *= -1;
+    //             playerStation = true;
+    //         }
+    //         else
+    //         {
+    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
+    //         }
+    //     }
+    // }
+
+    if (yaw_ > 0)
+    {
+        wantedYaw = 90;
+    }
+    else
+    {
+        wantedYaw = -90;
+    }
+
+    if ((setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) || (setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kRed))
+    {
+        wantedYaw += 5;
+    }
+
+    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    {
+        playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
+    }
+    else
+    {
+        playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
+    }
+    wantedY += (wantedYaw > 0) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
+    trackingPlayerStation_ = playerStation;
+
+    // if (playerStation)
+    // {
+    //     if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
+    //     {
+    //         double xStrafe, yStrafe;
+    //         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    //         {
+    //             xStrafe = controls->getYStrafe();
+    //             yStrafe = -controls->getXStrafe();
+    //         }
+    //         else
+    //         {
+    //             xStrafe = -controls->getYStrafe();
+    //             yStrafe = controls->getXStrafe();
+    //         }
+    //         double turn = controls->getTurn();
+    //         if (panic)
+    //         {
+    //             turn = clamp(turn, -0.075, 0.075);
+    //         }
+    //         trackingTag_ = false;
+    //         drive(xStrafe, yStrafe, turn);
+    //         return;
+    //     }
+    // }
+
+    frc::SmartDashboard::PutNumber("WX", wantedX);
+    frc::SmartDashboard::PutNumber("WY", wantedY);
+    xTagTraj_.generateTrajectory(robotX_, wantedX, (getXYVel().first));
+    yTagTraj_.generateTrajectory(robotY_, wantedY, (getXYVel().second));
+    yawTagTraj_.generateTrajectory(yaw_, wantedYaw, 0);
+
+    trackingTag_ = true;
+
 }
 
 /*

@@ -13,7 +13,6 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include <frc/DriverStation.h>
 
-
 class SwerveDrive
 {
     public:
@@ -21,7 +20,12 @@ class SwerveDrive
         void setYaw(double yaw);
         
         void periodic(double yaw, double tilt, vector<double> data);
-        void teleopPeriodic(bool forward, bool panic, int scoringLevel);
+        void trim(double xLineupTrim, double yLineupTrim_);
+        void inch(double inchUp, double inchDown, double inchLeft, double inchRight, double isInch);
+        void teleopPeriodic(bool score, bool forward, bool panic, int scoringLevel, bool islockWheels, bool autoBalance);
+        void setTarget(double xStrafe, double yStrafe, double rotation);
+        void manualScore(int scoringLevel, bool panic);
+
         void drive(double xSpeed, double ySpeed, double turn);
         void lockWheels();
         void drivePose(SwervePose pose);
@@ -47,7 +51,11 @@ class SwerveDrive
         // double getYawTagOffset();
         
     private:
-        Controller controls_;
+        double xStrafe_;
+        double yStrafe_;
+        double rotation_;
+
+        bool inchUp_, inchDown_, inchLeft_, inchRight_, slow_;
 
         SwerveModule* topRight_ = new SwerveModule(SwerveConstants::TR_TURN_ID, SwerveConstants::TR_DRIVE_ID, SwerveConstants::TR_CANCODER_ID, SwerveConstants::TR_CANCODER_OFFSET);
         SwerveModule* topLeft_ = new SwerveModule(SwerveConstants::TL_TURN_ID, SwerveConstants::TL_DRIVE_ID, SwerveConstants::TL_CANCODER_ID, SwerveConstants::TL_CANCODER_OFFSET);

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "ControllerConstants.h"
 
 namespace Actions{
@@ -7,15 +9,13 @@ namespace Actions{
         NONE = -1,
         OUTAKE,
         INTAKE,
-        LOCK_WHEELS_LOWER,
-        INCHING_LOWER,
         AUTO_BALANCE,
         CONE_INTAKE,
         FIELD_ORIENT,
         ZERO_ARMS_1, // All 3 need to be pressed to zero
         ZERO_ARMS_2,
         ZERO_ARMS_3,
-        MANUAL_CONTROL,
+        MANUAL_CONTROL, //Enables manual control
         MANUAL_THETA,
         MANUAL_PHI,
         MANUAL_CONTROL_2, //Only controls theta arm
@@ -29,15 +29,25 @@ namespace Actions{
         FLIP_ARM_2,
         STOP_EVERYTHING,
         TOGGLE_CLAW,
+        XSTRAFE,
+        YSTRAFE,
+        ROTATION,
+        LOCK_WHEELS,
+        SLOW_MODE, //Moves robot slowly to approach 
         ACTION_COUNT //Just the number of actions, as it is at the end of a enum
     };
 
     //Different enum for POV actions because logic is different
     enum POVAction{
+        NO_POV_ACTION = -1,
         CUTOUT_INTAKE,
         CUTOUT_OUTAKE,
         STOW_POV,
         STOW_POV_2,
+        INCH_UP,
+        INCH_DOWN,
+        INCH_LEFT,
+        INCH_RIGHT,
         ACTION_COUNT_POV //Just the number of actions, as it is at the end of a enum
     };
 }
@@ -55,15 +65,17 @@ namespace ControllerMapData{
     //Maps Buttons -> Actions
     //Buttons are structs in the form of {Joystick, ButtonData}
     //There are already some named ButtonData and Buttons
-    const ControlMapElement ButtonMap[] = {
-        {{LJOY, X_AXIS},        NONE},
+    const std::vector<ControlMapElement> ButtonMap = {
+        {{LJOY, X_AXIS},     XSTRAFE},
         {{LJOY, Y_AXIS},        NONE},
         {{LJOY, TRIGGER},      SCORE},
-        {{LJOY, B_4},        OUTAKE},
+        {{LJOY, B_2},    LOCK_WHEELS},
+        {{LJOY, B_4},         OUTAKE},
 
-        {{RJOY, X_AXIS},        NONE},
+        {{RJOY, X_AXIS},    ROTATION},
         {{RJOY, Y_AXIS},        NONE},
         {{RJOY, TRIGGER},TOGGLE_CLAW},
+        {{RJOY, B_2},      SLOW_MODE},
         {{RJOY, B_3},         INTAKE},
         {{RJOY, B_4},   AUTO_BALANCE},
         
@@ -97,7 +109,7 @@ namespace ControllerMapData{
         T value;
     };
 
-    const ValueMapElement<int> SCORING_POS[] = {
+    const std::vector<ValueMapElement<int>> SCORING_POS = {
         {{BUTTONBOARD, B_1}, 1},
         {{BUTTONBOARD, B_2}, 2},
         {{BUTTONBOARD, B_3}, 3},
@@ -110,11 +122,23 @@ namespace ControllerMapData{
         {{NO_JOYSTICK, NO_BUTTON}, -1} //Default value
     };
 
-    const ValueMapElement<int> GET_LEVEL[] = {
+    const std::vector<ValueMapElement<int>> GET_LEVEL = {
         {BB_L1, 1},
         {BB_L2, 2},
         {BB_L3, 3},
         {{NO_JOYSTICK, NO_BUTTON}, -1} //Default value
+    };
+
+    const std::vector<ValueMapElement<double>> GET_TRIM_X = {
+        {BB_X_TRIM_UP, 1.0},
+        {BB_X_TRIM_DOWN, -1.0},
+        {{NO_JOYSTICK, NO_BUTTON}, 0.0} //Default value
+    };
+
+    const std::vector<ValueMapElement<double>> GET_TRIM_Y = {
+        {BB_Y_TRIM_UP, 1.0},
+        {BB_Y_TRIM_DOWN, -1.0},
+        {{NO_JOYSTICK, NO_BUTTON}, 0.0} //Default value
     };
 
     //Takes the range from min to max
@@ -135,7 +159,12 @@ namespace ControllerMapData{
         POVAction action;
     };
 
-    const POVMapElement POVMap[] = {
+    const std::vector<POVMapElement> POVMap = {
+        {{RJOY, POV}, POV_UP, INCH_UP},
+        {{RJOY, POV}, POV_DOWN, INCH_DOWN},
+        {{RJOY, POV}, POV_LEFT, INCH_LEFT},
+        {{RJOY, POV}, POV_RIGHT, INCH_RIGHT},
+
         {XBOX_POV, POV_UP, CUTOUT_INTAKE},
         {XBOX_POV, POV_DOWN, CUTOUT_OUTAKE},
         {XBOX_POV, POV_RIGHT, STOW_POV},

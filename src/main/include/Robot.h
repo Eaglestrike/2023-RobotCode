@@ -56,7 +56,7 @@ private:
     Controller controls_;
     SwerveDrive swerveDrive_;
     TwoJointArm arm_;
-    AutoPaths autoPaths_{swerveDrive_, arm_};
+    AutoPaths autoPaths_;
     PneumaticsIntake cubeIntake_{false, false};
     CubeGrabber cubeGrabber_;
     SocketClient socketClient_;

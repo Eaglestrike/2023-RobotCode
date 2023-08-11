@@ -14,6 +14,7 @@ namespace SwerveConstants
     const double POSE_HISTORY_LENGTH = 0.3;
     const double CAMERA_DELAY = 0.1;
 
+    const double TRIMMING_DIST = 0.0254;
     const double INCHING_DIST = 0.0254;
 
     // const double trPosAngle = atan2((SwerveConstants::WIDTH/2), (SwerveConstants::LENGTH/2));
