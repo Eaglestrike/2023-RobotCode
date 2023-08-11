@@ -58,11 +58,11 @@ void SwerveDrive::trim(double xTrimDirection, double yTrimDirection){
 }
 
 void SwerveDrive::inch(double inchUp, double inchDown, double inchLeft, double inchRight, double slow){
-    bool inchUp_ = inchUp;
-    bool inchDown_ = inchDown;
-    bool inchLeft_ = inchLeft;
-    bool inchRight_ = inchRight;
-    bool slow_ = slow;
+    inchUp_ = inchUp;
+    inchDown_ = inchDown;
+    inchLeft_ = inchLeft;
+    inchRight_ = inchRight;
+    slow_ = slow;
 }
 
 void SwerveDrive::teleopPeriodic(bool score, bool forward, bool panic, int scoringLevel, bool islockWheels, bool autoBalance)

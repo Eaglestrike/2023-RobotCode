@@ -66,8 +66,8 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
                                   controls_.getPressed(SLOW_MODE));
 
                 //Shift odometry
-                double lineupTrimX = controls_.getValue(ControllerMapData::GET_TRIM_X);
-                double lineupTrimY = controls_.getValue(ControllerMapData::GET_TRIM_Y);
+                double lineupTrimX = controls_.getValue(ControllerMapData::GET_TRIM_X, 0.0);
+                double lineupTrimY = controls_.getValue(ControllerMapData::GET_TRIM_Y, 0.0);
                 swerveDrive_.trim(lineupTrimX, lineupTrimY);
                 swerveDrive_.teleopPeriodic(controls_.getPressed(SCORE),
                                             arm_.isForward(),
@@ -244,8 +244,8 @@ void Robot::RobotPeriodic()
 
     frc::SmartDashboard::PutNumber("Scoring Pos", swerveDrive_.getScoringPos());
 
-    frc::SmartDashboard::PutBoolean("Cutout Intaking", cubeIntake_.getState() == CubeGrabber::INTAKING);
-    frc::SmartDashboard::PutBoolean("Cutout Outaking", cubeIntake_.getState() == CubeGrabber::OUTTAKING);
+    frc::SmartDashboard::PutBoolean("Cutout Intaking", cubeGrabber_.isIntaking());
+    frc::SmartDashboard::PutBoolean("Cutout Outaking", cubeGrabber_.isOuttaking());
 }
 
 /**
@@ -426,8 +426,8 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    swerveDrive_.setScoringPos(controls_.getValue<int>(ControllerMapData::SCORING_POS));
-    int level = controls_.getValue(ControllerMapData::GET_LEVEL);
+    swerveDrive_.setScoringPos(controls_.getValue(ControllerMapData::SCORING_POS, -1));
+    int level = controls_.getValue(ControllerMapData::GET_LEVEL, -1);
     if (level != -1)
     {
         scoringLevel_ = level;

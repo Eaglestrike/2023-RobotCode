@@ -879,7 +879,7 @@ void AutoPaths::periodic()
 
     if (!pathSet_)
     {
-        if (actionNum_ > actions_.size() - 1)
+        if (actionNum_ > static_cast<int>(actions_.size()) - 1)
         {
             swerveDrive_->drive(0, 0, 0);
             return;

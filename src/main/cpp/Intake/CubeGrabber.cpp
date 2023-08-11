@@ -12,6 +12,14 @@ CubeGrabber::State CubeGrabber::getState() {
     return grabber_status;
 }
 
+bool CubeGrabber::isIntaking(){
+    return grabber_status == State::INTAKING;
+}
+
+bool CubeGrabber::isOuttaking(){
+    return grabber_status == State::OUTTAKING;
+}
+
 /**
  * Spins the motors such that they will intake a cube
 */
@@ -37,6 +45,9 @@ void CubeGrabber::Stop() {
  * Reverses the motors so they will spit out the cube.
 */
 void CubeGrabber::Outtake() {
+    if(grabber_status == State::OUTTAKING){
+        return;
+    }
     grabber_status = OUTTAKING;
     left_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE});
     right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE});

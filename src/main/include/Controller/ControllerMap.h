@@ -103,6 +103,7 @@ namespace ControllerMapData{
 
     //Allows for maps of buttons to values, such as the index of the buttonboard
     //Only for buttons and triggers currently
+    //No need for default val because it's now in the controller method
     template <typename T>
     struct ValueMapElement{
         Button button;
@@ -119,26 +120,22 @@ namespace ControllerMapData{
         {{BUTTONBOARD, B_7}, 7},
         {{BUTTONBOARD, B_8}, 8},
         {{BUTTONBOARD, B_9}, 9},
-        {{NO_JOYSTICK, NO_BUTTON}, -1} //Default value
     };
 
     const std::vector<ValueMapElement<int>> GET_LEVEL = {
         {BB_L1, 1},
         {BB_L2, 2},
-        {BB_L3, 3},
-        {{NO_JOYSTICK, NO_BUTTON}, -1} //Default value
+        {BB_L3, 3}
     };
 
     const std::vector<ValueMapElement<double>> GET_TRIM_X = {
         {BB_X_TRIM_UP, 1.0},
-        {BB_X_TRIM_DOWN, -1.0},
-        {{NO_JOYSTICK, NO_BUTTON}, 0.0} //Default value
+        {BB_X_TRIM_DOWN, -1.0}
     };
 
     const std::vector<ValueMapElement<double>> GET_TRIM_Y = {
         {BB_Y_TRIM_UP, 1.0},
-        {BB_Y_TRIM_DOWN, -1.0},
-        {{NO_JOYSTICK, NO_BUTTON}, 0.0} //Default value
+        {BB_Y_TRIM_DOWN, -1.0}
     };
 
     //Takes the range from min to max
