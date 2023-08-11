@@ -83,7 +83,7 @@ class TwoJointArm
         void setClawWheels(double speed);
         void setEStopped(bool eStopped);
         bool isEStopped();
-        std::pair<bool, bool> intakesNeededDown();
+        bool cubeIntakeNeededDown();
         void updateIntakeStates(bool cubeIntakeDown, bool coneIntakeDown);
         void setForward(bool forward);
 

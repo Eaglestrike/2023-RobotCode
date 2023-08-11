@@ -57,6 +57,7 @@ std::pair<double, double> ArmKinematics::xyToAng(double x, double y, bool phiPos
 	return std::pair<double, double>{theta, returnPhi};
 }
 
+// Calculates endofactor coordinates given the angles of the upper arm and forearm
 std::pair<double, double> ArmKinematics::angToXY(double theta, double phi)
 {
 	double upperArmX = -TwoJointArmConstants::UPPER_ARM_LENGTH * sin((-theta) * (M_PI / 180));

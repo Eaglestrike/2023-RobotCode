@@ -280,13 +280,13 @@ void Robot::AutonomousPeriodic()
     TwoJointArmProfiles::Positions armPosition = autoPaths_.getArmPosition();
     bool forward = autoPaths_.getForward();
 
-    pair<bool, bool> intakesNeededDown = arm_.intakesNeededDown();
+    bool cubeIntakeNeededDown = arm_.cubeIntakeNeededDown();
     cubeIntaking_ = autoPaths_.cubeIntaking();
     coneIntaking_ = autoPaths_.coneIntaking();
 
     if (cubeIntaking_)
     {
-        intakesNeededDown.first = true;
+        cubeIntakeNeededDown = true;
         if (arm_.isForward()) {
             if (arm_.isArmOut())
             {
@@ -310,7 +310,7 @@ void Robot::AutonomousPeriodic()
             }
             else
             {
-                intakesNeededDown.first = true;
+                cubeIntakeNeededDown = true;
                 armPosition = TwoJointArmProfiles::CUBE_INTAKE;
                 wheelSpeed = ClawConstants::INTAKING_SPEED;
                 clawOpen = true;
@@ -319,21 +319,8 @@ void Robot::AutonomousPeriodic()
     }
     else if (forward && arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
     {
-        if (armPosition == TwoJointArmProfiles::CUBE_HIGH)
-        {
-            arm_.specialSetPosTo(TwoJointArmProfiles::CUBE_HIGH);
-        }
-        else if (armPosition == TwoJointArmProfiles::CUBE_MID)
-        {
-            arm_.specialSetPosTo(TwoJointArmProfiles::CUBE_MID);
-        }
-        else if (armPosition == TwoJointArmProfiles::MID)
-        {
-            arm_.specialSetPosTo(TwoJointArmProfiles::MID);
-        }
-        else if (armPosition == TwoJointArmProfiles::HIGH)
-        {
-            arm_.specialSetPosTo(TwoJointArmProfiles::HIGH);
+        if (arm_.isArmOut()) {
+            arm_.specialSetPosTo(arm_.getPosition());
         }
         else
         {
@@ -359,7 +346,7 @@ void Robot::AutonomousPeriodic()
     arm_.setClawWheels(wheelSpeed);
     arm_.setClaw(clawOpen);
 
-    if (intakesNeededDown.first)
+    if (cubeIntakeNeededDown)
     {
         cubeIntake_.Deploy();
         if (cubeIntaking_)
@@ -375,11 +362,6 @@ void Robot::AutonomousPeriodic()
     {
         cubeIntake_.Stow();
         cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
-    }
-
-    if (intakesNeededDown.second)
-    {
-        // TODO put down cone intake
     }
 }
 
@@ -413,7 +395,7 @@ void Robot::TeleopPeriodic()
     //     psType_ = controls_.checkPSButtons();
     // }
 
-    pair<bool, bool> intakesNeededDown = arm_.intakesNeededDown();
+    bool cubeIntakeNeededDown = arm_.cubeIntakeNeededDown();
     bool coneIntakeHalfway = false;
 
     if (controls_.getPressed(AUTO_BALANCE))
@@ -538,34 +520,23 @@ void Robot::TeleopPeriodic()
 
             double yaw = navx_->GetYaw() - yawOffset_/* + swerveDrive_.getYawTagOffset()*/;
             Helpers::normalizeAngle(yaw);
-            if ((yaw) > 0) //HERE
-            {
-                wantedYaw = 90;
-            }
-            else
-            {
-                wantedYaw = -90;
-            }
+
+            wantedYaw = yaw > 0.0 ? 90.0 : -90.0;
+
             if (swerveDrive_.getScoringPos() == 9)
             {
                 wantedYaw += 5;
             }
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-            {
-                playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0);
-            }
-            else
-            {
-                playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0);
-            }
-
+            
             bool lineupForward;
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
+                playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0);
                 lineupForward = (playerStation) ? (wantedYaw < 0) : (wantedYaw > 0);
             }
             else
             {
+                playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0);
                 lineupForward = (playerStation) ? (wantedYaw > 0) : (wantedYaw < 0);
             }
 
@@ -636,7 +607,10 @@ void Robot::TeleopPeriodic()
                     }
                 }
             }
-            else if (/*abs(swerveDrive_.getX() - scoringPos.first) < 1 && abs(swerveDrive_.getY() - scoringPos.second) < 1*/ true)
+
+            // if nearby, attempt scoring process
+            // original condition: abs(swerveDrive_.getX() - scoringPos.first) < 1 && abs(swerveDrive_.getY() - scoringPos.second) < 1
+            else
             {
                 switch (scoringLevel_)
                 {
@@ -925,7 +899,7 @@ void Robot::TeleopPeriodic()
         }
         else
         {
-            intakesNeededDown.first = true;
+            cubeIntakeNeededDown = true;
             if (arm_.isForward())
             {
                 if (arm_.isArmOut())
@@ -1171,7 +1145,7 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if (intakesNeededDown.first)
+    if (cubeIntakeNeededDown)
     {
         cubeIntake_.Deploy();
         if (cubeIntaking_)
@@ -1190,20 +1164,7 @@ void Robot::TeleopPeriodic()
         cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
     }
 
-    if (coneIntakeHalfway)
-    {
-        // PUT CONE INTAKE HALFWAY
-    }
-    else if (intakesNeededDown.second || coneIntakeDown_)
-    {
-        // coneIntake_.Deploy();
-    }
-    else
-    {
-        // STOW CONE INTAKE
-    }
-
-    frc::SmartDashboard::PutBoolean("Cube Intake Down", intakesNeededDown.first);
+    frc::SmartDashboard::PutBoolean("Cube Intake Down", cubeIntakeNeededDown);
     // frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.second || coneIntakeDown_);
     // frc::SmartDashboard::PutBoolean("Cone Intake Halfway", coneIntakeHalfway);
 }

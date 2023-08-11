@@ -13,7 +13,7 @@ namespace GeneralConstants
     const double g = 9.81;
 
     const int MAX_RPM = 6380;
-    const int TICKS_PER_ROTATION = 2048;
+    const double TICKS_PER_ROTATION = 2048.0;
 
     const double FREE_SPEED = 6380;
     const double FREE_CURRENT = 1.5;
@@ -25,6 +25,7 @@ namespace GeneralConstants
 
     const double CONE_M = 0.652;
 
+    const double ONE_INCH_TO_METER = 0.0254;
 }
 
 namespace FieldConstants

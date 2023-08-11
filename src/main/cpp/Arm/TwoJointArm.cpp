@@ -69,6 +69,10 @@ TwoJointArmProfiles::Positions TwoJointArm::getPosition()
     return position_;
 }
 
+/**
+ * The main function called, which operates a finite state-machine for the arm.
+ * 
+ */
 void TwoJointArm::periodic()
 {
     if (eStopped_)
@@ -173,7 +177,7 @@ void TwoJointArm::zeroArms()
     {
         theta *= -1;
     }
-    double elbowPos = (180 + (theta * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * 2048 / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
+    double elbowPos = (180 + (theta * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
     elbowMaster_.SetSelectedSensorPosition(elbowPos);
 
     // shoulderMaster_.setPos_(0);
@@ -186,7 +190,7 @@ void TwoJointArm::zeroArmsToAutoStow()
     double shoulderAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2];
     double elbowAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3];
 
-    double shoulderPos = shoulderAng * 2048.0 / 360.0 / TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
+    double shoulderPos = shoulderAng * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
     shoulderMaster_.SetSelectedSensorPosition(shoulderPos);
     // shoulderMaster_.setPos_(-18.5);
 
@@ -198,7 +202,7 @@ void TwoJointArm::zeroArmsToAutoStow()
     {
         theta *= -1;
     }
-    double elbowPos = (elbowAng + (theta * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * 2048 / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
+    double elbowPos = (elbowAng + (theta * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
     elbowMaster_.SetSelectedSensorPosition(elbowPos);
     // elbowMaster_.setPos_(164.5);
 
@@ -373,16 +377,7 @@ void TwoJointArm::specialSetPosTo(TwoJointArmProfiles::Positions setPosition)
         return;
     }
 
-    if (forward_)
-    {
-        return;
-    }
-
-    if (switchingDirections_)
-    {
-        return;
-    }
-    if (posUnknown_)
+    if (forward_ || switchingDirections_ || posUnknown_)
     {
         return;
     }
@@ -1699,27 +1694,27 @@ bool TwoJointArm::setShoulderVolts(double volts)
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && theta > 0 && volts > 0) // Less than 6 inches from ground is * 2
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ GeneralConstants::ONE_INCH_TO_METER * 2*/  - 0.0889 && theta > 0 && volts > 0) // Less than 6 inches from ground is * 2
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && theta < 0 && volts < 0) // Less than 6 inches from ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ GeneralConstants::ONE_INCH_TO_METER * 2*/  - 0.0889 && theta < 0 && volts < 0) // Less than 6 inches from ground
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta > 0 && volts > 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta > 0 && volts > 0) // Running into bellypan
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta < 0 && volts < 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && theta < 0 && volts < 0) // Running into bellypan
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + 0.0254 * 4 && volts > 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + GeneralConstants::ONE_INCH_TO_METER * 4 && volts > 0) // Running into side of bumper
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + 0.0254 * 4) && volts < 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + GeneralConstants::ONE_INCH_TO_METER * 4) && volts < 0) // Running into side of bumper
     {
         shoulderMaster_.SetVoltage(units::volt_t(0));
     }
@@ -1769,27 +1764,27 @@ bool TwoJointArm::setElbowVolts(double volts)
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Less than 6 inches above the ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ GeneralConstants::ONE_INCH_TO_METER * 2*/  - 0.0889 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Less than 6 inches above the ground
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ 0.0254 * 2*/  - 0.0889 && phi + theta > 180 && volts < 0) // Less than 6 inches above the ground
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT /*+ GeneralConstants::ONE_INCH_TO_METER * 2*/  - 0.0889 && phi + theta > 180 && volts < 0) // Less than 6 inches above the ground
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 0 && phi + theta < 180 && volts > 0) // Running into bellypan
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 180 && volts < 0) // Running into bellypan
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && abs(xy.first) < (SwerveConstants::WIDTH / 2.0) + 0.05 && phi + theta > 180 && volts < 0) // Running into bellypan
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + 0.0254 * 4 && volts > 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && xy.first > SwerveConstants::WIDTH / 2.0 && xy.first < (SwerveConstants::WIDTH / 2.0) + GeneralConstants::ONE_INCH_TO_METER * 4 && volts > 0) // Running into side of bumper
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
-    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + 0.0254 * 3 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + 0.0254 * 4) && volts < 0) // Running into side of bumper
+    else if (xy.second < -TwoJointArmConstants::MOUNTING_HEIGHT + GeneralConstants::ONE_INCH_TO_METER * 3 && xy.first < -SwerveConstants::WIDTH / 2.0 && xy.first > -((SwerveConstants::WIDTH / 2.0) + GeneralConstants::ONE_INCH_TO_METER * 4) && volts < 0) // Running into side of bumper
     {
         elbowMaster_.SetVoltage(units::volt_t(0));
     }
@@ -1839,23 +1834,23 @@ double TwoJointArm::getPhi()
     // return elbowMaster_.GetSelectedSensorPosition(); //HERE
     if (forward_)
     {
-        return elbowMaster_.GetSelectedSensorPosition() / 2048 * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO - (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
+        return elbowMaster_.GetSelectedSensorPosition() / GeneralConstants::TICKS_PER_ROTATION * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO - (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
     }
     else
     {
-        return (360 - elbowMaster_.GetSelectedSensorPosition() / 2048 * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO) - (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
+        return (360 - elbowMaster_.GetSelectedSensorPosition() / GeneralConstants::TICKS_PER_ROTATION * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO) - (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
     }
 }
 
 double TwoJointArm::getThetaVel()
 {
-    double vel = shoulderMaster_.GetSelectedSensorVelocity() / 2048 * 10 * 360 * TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
+    double vel = shoulderMaster_.GetSelectedSensorVelocity() / GeneralConstants::TICKS_PER_ROTATION * 10 * 360 * TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
     return (forward_) ? vel : -vel;
 }
 
 double TwoJointArm::getPhiVel()
 {
-    double vel = elbowMaster_.GetSelectedSensorVelocity() / 2048 * 10 * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO - (getThetaVel() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
+    double vel = elbowMaster_.GetSelectedSensorVelocity() / GeneralConstants::TICKS_PER_ROTATION * 10 * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO - (getThetaVel() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
     return (forward_) ? vel : -vel;
 }
 
@@ -2191,9 +2186,14 @@ bool TwoJointArm::isEStopped()
     return eStopped_;
 }
 
-std::pair<bool, bool> TwoJointArm::intakesNeededDown()
+/**
+ * @brief Returns whether the cube intake needs to be moved down so the arm can move
+ * 
+ * @return std::pair<bool, bool> 
+ */
+bool TwoJointArm::cubeIntakeNeededDown()
 {
-    return {cubeIntakeNeededDown_, coneIntakeNeededDown_};
+    return cubeIntakeNeededDown_;
 }
 
 void TwoJointArm::updateIntakeStates(bool cubeIntakeDown, bool coneIntakeDown)
