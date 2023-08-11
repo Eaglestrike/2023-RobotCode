@@ -39,9 +39,12 @@ namespace FieldConstants
     /**
      * Tag Positions in the form of
      * TAG_XY[TagID -1] = {x, y}
+     * 
+     * Long axis is the x, while short one is y
+     * Driver faces along the x axis, apriltag too
      */
     const double TAG_XY[8][2] = {
-        {15.513558, 1.071626},
+        {15.513558, 1.071626}, //
         {15.513558, 2.748026},
         {15.513558, 4.424426},
         {16.178784, 6.749796},

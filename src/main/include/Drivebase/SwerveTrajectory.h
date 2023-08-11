@@ -7,21 +7,19 @@
 #include "SwervePose.h"
 #include "SwerveConstants.h"
 
-using namespace std;
-
 class SwerveTrajectory
 {
     public:
-        SwerveTrajectory(SwervePose startPose, SwervePose endPose, double yawAccelTime, double yawCruiseTime, double yawCruiseDist, double yawCruiseVel, 
+        SwerveTrajectory(Poses::SwervePose startPose, Poses::SwervePose endPose, double yawAccelTime, double yawCruiseTime, double yawCruiseDist, double yawCruiseVel, 
         double linYawAccelTime, double linYawCruiseTime, double linYawCruiseDist, double linYawCruiseVel, 
         double linYawDeccelTime, double actualYawDist, double endVel, 
         double linAccelTime, double linCruiseTime, double linDeccelTime, double linCruiseVel, double linCruiseDist, int yawDirection, 
         double maxLA, double maxLV, double maxAA, double maxAV);
 
-        SwervePose getPose(double time);
+        Poses::SwervePose getPose(double time);
         double getTotalTime();
     private:
-        SwervePose startPose_, endPose_;
+        Poses::SwervePose startPose_, endPose_;
         double yawAccelTime_, yawCruiseTime_, yawCruiseDist_, yawCruiseVel_, 
         linYawAccelTime_, linYawCruiseTime_, linYawCruiseDist_, linYawCruiseVel_, 
         linYawDeccelTime_, actualYawDist_, endVel_, 

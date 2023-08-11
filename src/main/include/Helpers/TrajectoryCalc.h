@@ -6,11 +6,24 @@
 #include <frc/smartdashboard/SmartDashboard.h>
 #include "GeneralConstants.h"
 
+#include "Helpers/GeneralPoses.h"
+
+// Gains = Constants -> converting factors to give voltage
+
+/// @brief a feedforward-PD class using trapezoidal motion with a feedback PD loop
 class TrajectoryCalc
 {
     public:
-        TrajectoryCalc(double maxV, double maxA, double kP, double kD, double kV, double kA);
-        TrajectoryCalc(double maxV, double maxA, double kP, double kD, double kV, double kA, double kVI);
+        struct TrajCalcParam{
+            double maxV; //Max Velocity
+            double maxA; //Max Acceleration
+            double kP; //P in PD controller, controls strength of adjustment due to displacement
+            double kD; //D in PD controller, controls strength of mitigation of overshoot
+            double kV; //Multiplied to target velocity to convert velocity -> volts
+            double kA; //Multiplied to target acceleration to convert acceleration -> volts
+            double kVI = 0.0; //Offsets target velocity (subtracted), to compensate the acceleration given by kV (unsure)
+        };
+        TrajectoryCalc(TrajCalcParam param);
 
         void setKP(double kP);
         void setKD(double kD);
@@ -21,7 +34,7 @@ class TrajectoryCalc
         void generateTrajectory(double pos, double setPos, double vel);
         //void generateVelTrajectory(double setVel, double vel);
 
-        std::tuple<double, double, double> getProfile();
+        Poses::Pose1D getProfile();
         //pair<double, double> getVelProfile();
 
         double calcPower(double pos, double vel);
@@ -30,8 +43,7 @@ class TrajectoryCalc
         void setPrintError(bool printError);
 
     private:
-        const double MAX_V, MAX_A;
-        double kP_, kD_, kV_, kA_, kVI_;
+        TrajCalcParam parameters_;
 
         double /*prevAbsoluteError_,*/ setPos_, setVel_, initPos_, initVel_, startTime_;
 

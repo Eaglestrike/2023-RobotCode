@@ -16,6 +16,8 @@ public:
     CubeGrabber();
 
     State getState();
+    bool isIntaking();
+    bool isOuttaking();
 
     void Intake();
     void Stop();

@@ -25,7 +25,8 @@ class Controller{
         //Actions
         Output get(Actions::Action action);
         double getRawAxis(Actions::Action action);
-        double getDead(Actions::Action action, double deadbandVal = 0.1);
+        double getWithDeadband(Actions::Action action, double deadbandVal = ControllerConstants::DEFAULT_DEAD);
+        double getWithDeadContinuous(Actions::Action action, double deadbandVal = ControllerConstants::DEFAULT_DEAD);
         bool getPressed(Actions::Action action);
         bool getTriggerDown(Actions::Action action, double defaultDown = ControllerConstants::DEFAULT_TRIGGER_DOWN);
 
@@ -35,20 +36,19 @@ class Controller{
         //Buttons
         bool getButtonPressed(ControllerConstants::Button button);
 
-        //Returns value from a value map
-        template<typename T> T getValue(const ControllerMapData::ValueMapElement<T> map[]){
-            T* defaultVal; //Pointer cuz T might need constructor
+        /// @brief Returns value from a value map
+        /// @tparam T should auto resolve, but know the type that it returns/uses
+        /// @param map the mapping, founding in ControllerMapData
+        /// @param defaultVal default value if none of the buttons are pressed
+        /// @return the mapped button value, whichever one's first in the mapping
+        template<typename T> T getValue(const std::vector<ControllerMapData::ValueMapElement<T>> (&map), T defaultVal){
             for(ControllerMapData::ValueMapElement<T> element : map){
-                if(element.button.data.type == ControllerConstants::NO_BUTTON_TYPE){ //Get default val
-                    defaultVal = *element.value;
-                    continue;
-                }
-                if(getPressed(element.button)){
+                if(getButtonPressed(element.button)){
                     return element.value;
                 }
             }
-            return &defaultVal;
-        };
+            return defaultVal;
+        }
 
         //Calls all buttons and triggers to not buffer (disabledPeriodic)
         void stopBuffer();

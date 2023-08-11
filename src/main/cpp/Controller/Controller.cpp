@@ -42,7 +42,7 @@ Controller::Controller(){
     //Initialize the mapping from Pov Actions -> Pov Buttons
     //Skips over any non-pov map element
     for(POVMapElement mapElement : ControllerMapData::POVMap){ //Loop through all pairings, assigning the action to the button
-        if(mapElement.action == Action::NONE){
+        if(mapElement.action == POVAction::NO_POV_ACTION){
             continue;
         }
         if(mapElement.pov.data.type != POV_BUTTON){
@@ -179,7 +179,7 @@ double Controller::getRawAxis(Action action){
  * @param deadbandVal value range in which the output will be reduced to 0
  * @returns a double in the range [-1.0, 1.0] (not enforced)
 */
-double Controller::getDead(Action action, double deadbandVal){
+double Controller::getWithDeadband(Action action, double deadbandVal){
     Button button = actionMap_[action];
     double raw;
     switch(button.data.type){
@@ -188,13 +188,48 @@ double Controller::getDead(Action action, double deadbandVal){
             return Deadband(raw, deadbandVal);
         case BUTTON_BUTTON:
         case TRIGGER_BUTTON:
-            std::cout<<"Not applicable for getDeadband: ";
+            std::cout<<"Not applicable for getWithDeadband: ";
             break;
         default:
             std::cout<<"Bad Button Mapping for ";
     };
     std::cout<<"Action " << action << " call"<<std::endl;
     return 0.0;
+}
+
+/**
+ * Gets the data from an axis and applies a deadband, but also condenses the range so joystick input -> output value function is continuous
+ * Normally would be y=x {-1.0 <= x <= 1.0} but if there was a deadband this would make the function discontinuous at the deadband values
+ * For this method, at the deadband value it would be 0 but function is continueous, but this increases slope
+ * 
+ * Makes slope >1
+ * 
+ * double returns should always be in the [-1.0, 1.0] range
+ * 
+ * prints error if bad action and returns 0
+ * 
+ * @param action the action key for the axis, reference is in ControllerMap.h
+ * @param deadbandVal value range in which the output will be reduced to 0
+ * @returns a double in the range [-1.0, 1.0] (not enforced)
+*/
+double Controller::getWithDeadContinuous(Action action, double deadbandVal){
+    Button button = actionMap_[action];
+    double raw, dead;
+    switch(button.data.type){
+        case AXIS_BUTTON:
+            raw = joysticks_[button.joystick]->GetRawAxis(button.data.id);
+            dead = Deadband(raw, deadbandVal);
+            dead += (dead>0)?(-deadbandVal):(deadbandVal);//Shift ranges to meet at 0
+            return dead/(1.0-deadbandVal); //Scale to [-1,1] range
+        case BUTTON_BUTTON:
+        case TRIGGER_BUTTON:
+            std::cout<<"Not applicable for getDeadband: ";
+            break;
+        default:
+            std::cout<<"Bad Button Mapping for ";
+    };
+    std::cout<<"Action " << action << " call"<<std::endl;
+    return 0.0;   
 }
 
 /**

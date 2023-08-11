@@ -12,7 +12,7 @@
 
 using namespace Actions;
 
-Robot::Robot()
+Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
 {
     AddPeriodic(
         [&]
@@ -25,16 +25,16 @@ Robot::Robot()
             frc::SmartDashboard::PutBoolean("Camera Connection", socketClient_.HasConn());
 
             double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
-            double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
-            double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
-            double tilt = pitch * sin(ang) - roll * cos(ang);
+            double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees [-180, 180]
+            double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees [-180, 180]
+            double tilt = pitch * sin(ang) - roll * cos(ang); //Field-oriented tilt
             frc::SmartDashboard::PutNumber("Tilt", tilt);
             frc::SmartDashboard::PutNumber("Pitch", pitch);
             frc::SmartDashboard::PutNumber("Roll", roll);
             // frc::SmartDashboard::PutNumber("Pitch Raw", navx_->GetPitch());
             // frc::SmartDashboard::PutNumber("Roll Raw", navx_->GetRoll());
 
-            vector<double> data = socketClient_.GetData();
+            std::vector<double> data = socketClient_.GetData();
             swerveDrive_.periodic(yaw, tilt, data);
 
             arm_.periodic();
@@ -48,8 +48,35 @@ Robot::Robot()
             }
             else if (frc::DriverStation::IsTeleop())
             {
+                bool armMoving = (arm_.getState() != TwoJointArm::STOPPED && arm_.getState() != TwoJointArm::HOLDING_POS);
                 // bool armOut = (arm_.getPosition() != TwoJointArmProfiles::STOWED /* && arm_.getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_.getPosition() != TwoJointArmProfiles::GROUND);
-                swerveDrive_.teleopPeriodic(arm_.isForward(), (arm_.isArmMoving() || arm_.isArmOut()), scoringLevel_);
+                bool armOut = (arm_.getPosition() == TwoJointArmProfiles::MID || arm_.getPosition() == TwoJointArmProfiles::HIGH || arm_.getPosition() == TwoJointArmProfiles::CUBE_MID || arm_.getPosition() == TwoJointArmProfiles::CUBE_HIGH); // TODO make this based on xy position
+
+                //Pass controller swerve data to swerve
+                double xStrafe = controls_.getWithDeadContinuous(XSTRAFE, 0.07);
+                double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE, 0.07);
+                double rotation = controls_.getWithDeadContinuous(ROTATION, 0.07);
+                swerveDrive_.setTarget(xStrafe, yStrafe, rotation);
+
+                //Inch/slow down robot
+                swerveDrive_.inch(controls_.getPOVDown(INCH_UP),
+                                  controls_.getPOVDown(INCH_DOWN),
+                                  controls_.getPOVDown(INCH_LEFT),
+                                  controls_.getPOVDown(INCH_RIGHT),
+                                  controls_.getPressed(SLOW_MODE));
+
+                //Panic if arm is out or moving
+                swerveDrive_.setPanic((armMoving || armOut));
+
+                //Shift odometry
+                double lineupTrimX = controls_.getValue(ControllerMapData::GET_TRIM_X, 0.0);
+                double lineupTrimY = controls_.getValue(ControllerMapData::GET_TRIM_Y, 0.0);
+                swerveDrive_.trim(lineupTrimX, lineupTrimY);
+                swerveDrive_.teleopPeriodic(controls_.getPressed(SCORE),
+                                            arm_.isForward(),
+                                            scoringLevel_,
+                                            controls_.getPressed(LOCK_WHEELS),
+                                            controls_.getPressed(AUTO_BALANCE));
             }
 
             // if (frc::DriverStation::IsEnabled())
@@ -178,9 +205,9 @@ void Robot::RobotInit()
     {
         navx_ = new AHRS(frc::SerialPort::kUSB);
     }
-    catch (const exception &e)
+    catch (const std::exception &e)
     {
-        cout << e.what() << endl;
+        std::cout << e.what() << std::endl;
     }
     navx_->ZeroYaw();
 }
@@ -219,8 +246,8 @@ void Robot::RobotPeriodic()
 
     frc::SmartDashboard::PutNumber("Scoring Pos", swerveDrive_.getScoringPos());
 
-    frc::SmartDashboard::PutBoolean("Cutout Intaking", cubeIntake_.getState() == CubeGrabber::INTAKING);
-    frc::SmartDashboard::PutBoolean("Cutout Outaking", cubeIntake_.getState() == CubeGrabber::OUTTAKING);
+    frc::SmartDashboard::PutBoolean("Cutout Intaking", cubeGrabber_.isIntaking());
+    frc::SmartDashboard::PutBoolean("Cutout Outaking", cubeGrabber_.isOuttaking());
 }
 
 /**
@@ -262,7 +289,7 @@ void Robot::AutonomousInit()
     navx_->ZeroYaw();
     yawOffset_ = autoPaths_.initYaw();
 
-    pair<double, double> startXY = autoPaths_.initPos();
+    std::pair<double, double> startXY = autoPaths_.initPos();
     if (abs(swerveDrive_.getX() - startXY.first) > 1 || abs(swerveDrive_.getY() - startXY.second) > 1)
     {
         // frc::SmartDashboard::PutBoolean("F", true); 
@@ -383,8 +410,8 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
-    swerveDrive_.setScoringPos(controls_.getValue<int>(ControllerMapData::SCORING_POS));
-    int level = controls_.getValue(ControllerMapData::GET_LEVEL);
+    swerveDrive_.setScoringPos(controls_.getValue(ControllerMapData::SCORING_POS, -1));
+    int level = controls_.getValue(ControllerMapData::GET_LEVEL, -1);
     if (level != -1)
     {
         scoringLevel_ = level;
@@ -418,7 +445,7 @@ void Robot::TeleopPeriodic()
         else
         {
             double output = -SwerveConstants::AUTOKTILT * tilt;
-            swerveDrive_.drive(output, 0, 0);
+            swerveDrive_.drive({output, 0}, 0);
         }
     }
 
@@ -463,7 +490,7 @@ void Robot::TeleopPeriodic()
     }
     else if (controls_.getPressed(SCORE) && armsZeroed_)
     {
-        pair<double, double> scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
+        std::pair<double, double> scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
         if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
         {
             // Do nothing?
@@ -642,7 +669,7 @@ void Robot::TeleopPeriodic()
                         {
                             arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
                         }
-                        else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving())
+                        else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving()))
                         {
                             arm_.setPosTo(TwoJointArmProfiles::STOWED);
                         }

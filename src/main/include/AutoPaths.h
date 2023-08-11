@@ -1,13 +1,18 @@
 #pragma once
 
+#include <vector>
+
 #include <frc/Timer.h>
 
 #include "GeneralConstants.h"
+
 #include "Drivebase/SwerveDrive.h"
 #include "Drivebase/SwervePath.h"
+
 #include "Arm/TwoJointArm.h"
 #include "Arm/TwoJointArmProfiles.h"
-#include <vector>
+
+#include "Helpers/GeneralPoses.h"
 
 class AutoPaths
 {
@@ -37,9 +42,9 @@ class AutoPaths
             DRIVE_BACK_DUMB,
             WAIT_5_SECONDS
         };
-        AutoPaths(SwerveDrive& swerveDrive, TwoJointArm& arm);
+        AutoPaths(SwerveDrive* swerveDrive, TwoJointArm* arm);
         void setActions(Path a1, Path a2, Path a3, Path a4);
-        vector<Path> getActions();
+        std::vector<Path> getActions();
 
         void startTimer();
         void startAutoTimer();
@@ -49,7 +54,7 @@ class AutoPaths
         void periodic();
         void setGyros(double yaw, double pitch, double roll);
         double initYaw();
-        pair<double, double> initPos();
+        std::pair<double, double> initPos();
 
         int pointNum();
 
@@ -65,30 +70,30 @@ class AutoPaths
         void generateXTraj(double pos, double setPos, double vel);
         void generateYTraj(double pos, double setPos, double vel);
 
-        tuple<double, double, double> getXProfile();
-        tuple<double, double, double> getYProfile();
+        Poses::Pose1D getXProfile();
+        Poses::Pose1D getYProfile();
 
     private:
-        vector<Path> actions_;
+        std::vector<Path> actions_;
         Path path_;
         SwerveDrive* swerveDrive_;
         TwoJointArm* arm_;
 
-        TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
-        TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
-        TrajectoryCalc yawTraj_{SwerveConstants::MAX_AV * 0.3, SwerveConstants::MAX_AA * 0.3, 0, 0, 0, 0};
+        TrajectoryCalc xTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0}};
+        TrajectoryCalc yTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0}};
+        TrajectoryCalc yawTraj_{{SwerveConstants::MAX_AV * 0.3, SwerveConstants::MAX_AA * 0.3, 0, 0, 0, 0}};
 
-        TrajectoryCalc xSlowTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0};
-        TrajectoryCalc ySlowTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0};
+        TrajectoryCalc xSlowTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0}};
+        TrajectoryCalc ySlowTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0}};
 
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
         double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_, autoStartTime_, sendingItTime_;
         bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, slowTraj_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_, sendingIt_, firstCubeArmSafety_, hitChargeStation_;
 
-        //vector<SwervePath> swervePaths_;
+        //std::vector<SwervePath> swervePaths_;
         int actionNum_;
-        vector<SwervePose> swervePoints_;
+        std::vector<Poses::SwervePose> swervePoints_;
         SwervePath currPath_{SwerveConstants::MAX_LA, SwerveConstants::MAX_LV, SwerveConstants::MAX_AA, SwerveConstants::MAX_AV};
         int pointNum_;
 

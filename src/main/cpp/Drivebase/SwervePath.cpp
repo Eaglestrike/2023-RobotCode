@@ -1,5 +1,9 @@
 #include "Drivebase/SwervePath.h"
 
+#include "Helpers/Helpers.h"
+
+using namespace Poses;
+
 SwervePath::SwervePath(double maxLA, double maxLV, double maxAA, double maxAV) : MAX_LA(maxLA), MAX_LV(maxLV), MAX_AA(maxAA), MAX_AV(maxAV)
 {
 
@@ -65,15 +69,15 @@ void SwervePath::generateLinearTrajectory()
         SwervePose p1 = points_[i];
         SwervePose p2 = points_[i + 1];
 
-        double dx = p2.getX() - p1.getX();
-        double dy = p2.getY() - p1.getY();
+        double dx = p2.x - p1.x;
+        double dy = p2.x - p1.x;
         double totalLinearDist = sqrt(dx * dx + dy * dy);
-        double yawDist = p2.getYawDist();
+        double yawDist = p2.yawDist;
         if(yawDist > totalLinearDist)
         {
             yawDist = totalLinearDist;
         }
-        double dyaw = p2.getYaw() - p1.getYaw();
+        double dyaw = p2.yaw - p1.yaw;
         Helpers::normalizeAngle(dyaw);
         int yawDirection = (dyaw > 0) ? 1 : -1;
         dyaw = abs(dyaw);
@@ -189,7 +193,7 @@ void SwervePath::generateLinearTrajectory()
                     linYawCruiseDist = 0;
                     linYawDeccelTime = 0;
                     endVel = 0;
-                    cout << "SwervePath.cpp 160 died" << endl;
+                    std::cout << "SwervePath.cpp 160 died" << std::endl;
                 }
 
                 if(deccelNeeded && linYawCruiseVel > maxEndLinVel)
@@ -218,7 +222,7 @@ void SwervePath::generateLinearTrajectory()
                         linYawCruiseDist = 0;
                         linYawDeccelTime = 0;
                         endVel = 0;
-                        cout << "SwervePath.cpp 172 died" << endl;
+                        std::cout << "SwervePath.cpp 172 died" << std::endl;
                     }
                     
                 }
@@ -311,7 +315,7 @@ void SwervePath::generateLinearTrajectory()
 
         if(minDeccelDist >= newLinearDist)
         {
-            cout << "end vel a little sus" << endl;
+            std::cout << "end vel a little sus" << std::endl;
             linAccelTime = 0;
             linCruiseTime = 0;
             linDeccelTime = endVel / MAX_LA;
@@ -376,7 +380,7 @@ void SwervePath::reset()
     kaA_ = 0;*/
 }
 
-SwervePose* SwervePath::getPose(double time, bool& end)
+SwervePose SwervePath::getPose(double time, bool& end)
 {
     double trajectoryTime = 0;
     int trajectory = trajectories_.size() - 1;
@@ -392,5 +396,5 @@ SwervePose* SwervePath::getPose(double time, bool& end)
         }
     }
 
-    return new SwervePose(trajectories_[trajectory].getPose(time - trajectoryTime));
+    return SwervePose(trajectories_[trajectory].getPose(time - trajectoryTime));
 }

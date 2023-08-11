@@ -1,39 +1,10 @@
 #include "Helpers/TrajectoryCalc.h"
 
-TrajectoryCalc::TrajectoryCalc(double maxV, double maxA, double kP, double kD, double kV, double kA) : MAX_V(maxV), MAX_A(maxA), kP_(kP), kD_(kD), kV_(kV), kA_(kA), kVI_(0)
+using namespace Poses;
+
+TrajectoryCalc::TrajectoryCalc(TrajectoryCalc::TrajCalcParam param) :
+    parameters_(param)
 {
-    
-}
-
-TrajectoryCalc::TrajectoryCalc(double maxV, double maxA, double kP, double kD, double kV, double kA, double kVI) : MAX_V(maxV), MAX_A(maxA), kP_(kP), kD_(kD), kV_(kV), kA_(kA), kVI_(kVI)
-{
-
-}
-
-
-void TrajectoryCalc::setKP(double kP)
-{
-    kP_ = kP;
-}
-
-void TrajectoryCalc::setKD(double kD)
-{
-    kD_ = kD;
-}
-
-void TrajectoryCalc::setKV(double kV)
-{
-    kV_ = kV;
-}
-
-void TrajectoryCalc::setKA(double kA)
-{
-    kA_ = kA;
-}
-
-void TrajectoryCalc::setKVI(double kVI)
-{
-    kVI_ = kVI;
 }
 
 void TrajectoryCalc::generateTrajectory(double pos, double setPos, double vel)
@@ -76,7 +47,7 @@ void TrajectoryCalc::generateTrajectory(double pos, double setPos, double vel)
         initVelDistDirection = 0;
     }
     
-    double initVelTime = abs(vel / MAX_A);
+    double initVelTime = abs(vel / parameters_.maxA);
     double initVelDistance = (initVelTime * vel) / 2;
 
     if(error == 0 && vel == 0)
@@ -115,20 +86,20 @@ void TrajectoryCalc::generateTrajectory(double pos, double setPos, double vel)
             direction_ = -1;
         }
 
-        cruiseSpeed_ = sqrt(2 * MAX_A * abs(distanceToAccel));
+        cruiseSpeed_ = sqrt(2 * parameters_.maxA * abs(distanceToAccel));
 
-        //cruiseSpeed_ = clamp(cruiseSpeed_, 0.0, MAX_V);
-        if (cruiseSpeed_ > MAX_V)
+        //cruiseSpeed_ = clamp(cruiseSpeed_, 0.0, parameters_.maxV);
+        if (cruiseSpeed_ > parameters_.maxV)
         {
-            cruiseSpeed_ = MAX_V;
+            cruiseSpeed_ = parameters_.maxV;
         }
         cruiseSpeed_ *= direction_;
 
         accelDist_ = initVelDistance + distanceToAccel;
-        accelTime_ = (cruiseSpeed_ - vel) / MAX_A * direction_;
+        accelTime_ = (cruiseSpeed_ - vel) / parameters_.maxA * direction_;
 
         deccelDist_ = distanceToAccel;
-        deccelTime_ = cruiseSpeed_ / MAX_A * direction_;
+        deccelTime_ = cruiseSpeed_ / parameters_.maxA * direction_;
 
         cruiseDist_ = 0;
         cruiseTime_ = 0;
@@ -138,20 +109,20 @@ void TrajectoryCalc::generateTrajectory(double pos, double setPos, double vel)
         double distanceToAccel = abs(error) + abs(initVelDistance);
         distanceToAccel /= 2;
 
-        cruiseSpeed_ = sqrt(2 * MAX_A * distanceToAccel);
+        cruiseSpeed_ = sqrt(2 * parameters_.maxA * distanceToAccel);
 
-        //cruiseSpeed_ = clamp(cruiseSpeed_, 0.0, MAX_V);
-        if (cruiseSpeed_ > MAX_V)
+        //cruiseSpeed_ = clamp(cruiseSpeed_, 0.0, parameters_.maxV);
+        if (cruiseSpeed_ > parameters_.maxV)
         {
-            cruiseSpeed_ = MAX_V;
+            cruiseSpeed_ = parameters_.maxV;
         }
         cruiseSpeed_ *= direction_;
 
-        accelDist_ = ((cruiseSpeed_ * cruiseSpeed_) - (vel * vel)) / (2 * MAX_A * direction_);
-        accelTime_ = (cruiseSpeed_ - vel) / MAX_A * direction_;
+        accelDist_ = ((cruiseSpeed_ * cruiseSpeed_) - (vel * vel)) / (2 * parameters_.maxA * direction_);
+        accelTime_ = (cruiseSpeed_ - vel) / parameters_.maxA * direction_;
 
-        deccelDist_ = (cruiseSpeed_ * cruiseSpeed_) / (2 * MAX_A * direction_);
-        deccelTime_ = cruiseSpeed_ / MAX_A * direction_;
+        deccelDist_ = (cruiseSpeed_ * cruiseSpeed_) / (2 * parameters_.maxA * direction_);
+        deccelTime_ = cruiseSpeed_ / parameters_.maxA * direction_;
 
         cruiseDist_ = error - accelDist_ - deccelDist_;
         if(cruiseSpeed_ != 0)
@@ -182,7 +153,7 @@ void TrajectoryCalc::generateTrajectory(double pos, double setPos, double vel)
 //     }
 //     else
 //     {
-//         accelTime_ = abs(error / MAX_A);
+//         accelTime_ = abs(error / parameters_.maxA);
 //         if(error > 0)
 //         {
 //             direction_ = 1;
@@ -195,49 +166,50 @@ void TrajectoryCalc::generateTrajectory(double pos, double setPos, double vel)
 
 // }
 
-std::tuple<double, double, double> TrajectoryCalc::getProfile()
+/// @brief Get the current ideal pose for the motion of the trajectory at the current time
+/// @return a Pose1D struct, containing info on position, velocity, and acceleration
+Pose1D TrajectoryCalc::getProfile()
 {
     double time = timer_.GetFPGATimestamp().value() - startTime_;
-    double tP, tV, tA;
+    Pose1D pose;
+    if (time <= accelTime_ && accelTime_ >= 0.02) // first segment of trapezoidal motion: initial acceleration
+    {
+        pose.acc = parameters_.maxA * direction_; // MAX ACCELERATION, because optimal use of acceleration
+        pose.vel = pose.acc * time + initVel_; // v = at + v0, kinematics
+        pose.pos = ((pose.vel + initVel_) / 2) * time + initPos_; // x = (vf+v0)/2 * t + x0, position is average velocity x time 
+    }
+    else if (time <= accelTime_ && accelTime_ < 0.02) // 1st frame starts at initial conditions
+    {
+        pose.acc = 0;
+        pose.vel = initVel_;
+        pose.pos = initPos_;
+    }
+    else if (time > accelTime_ && time <= cruiseTime_ + accelTime_) // 2nd segment of trapezoidal motion: cruising
+    {
+        pose.acc = 0; //Idealy maintaining max velocity/cruiseSpeed
+        pose.vel = cruiseSpeed_;
+        pose.pos = cruiseSpeed_ * (time - accelTime_) + accelDist_ + initPos_; //x = vt + x0, where x0 is the sum of acceleration distance and initial position
+    }
+    else if (time > cruiseTime_ + accelTime_ && time < deccelTime_ + accelTime_ + cruiseTime_) //3rd segment of trapezoidal motion: final deacceleration
+    {
+        pose.acc = parameters_.maxA * -direction_; //Deaccelerate with max acceleration
+        pose.vel = cruiseSpeed_ + pose.acc * (time - accelTime_ - cruiseTime_); // v = at + v0, kinematics
+        pose.pos = (cruiseSpeed_ + pose.vel) / 2 * (time - accelTime_ - cruiseTime_) + accelDist_ + cruiseDist_ + initPos_; // x = (vf+v0)/2 * t + x0, position is average velocity x time 
+    }
+    else if (time > accelTime_ + deccelTime_ + cruiseTime_) //Time after reaching destination
+    {
+        pose.acc = 0;
+        pose.vel = 0;
+        pose.pos = setPos_; //Reaches final location with 0 vel
+    }
+    else //Time is negative
+    {
+        pose.acc = 0; //Die
+        pose.vel = 0; //Die
+        pose.pos = 0; //Die
+    }
 
-    if (time <= accelTime_ && accelTime_ >= 0.02)
-    {
-        tA = MAX_A * direction_;
-        tV = time * MAX_A * direction_ + initVel_;
-        tP = ((tV + initVel_) / 2) * time + initPos_;
-    }
-    else if (time <= accelTime_ && accelTime_ < 0.02)
-    {
-        tA = 0;
-        tV = initVel_;
-        tP = initPos_;
-    }
-    else if (time > accelTime_ && time <= cruiseTime_ + accelTime_)
-    {
-        tA = 0;
-        tV = cruiseSpeed_;
-        tP = accelDist_ + cruiseSpeed_ * (time - accelTime_) + initPos_;
-    }
-    else if (time > cruiseTime_ + accelTime_ && time < deccelTime_ + accelTime_ + cruiseTime_)
-    {
-        tA = MAX_A * -direction_;
-        tV = cruiseSpeed_ - (time - accelTime_ - cruiseTime_) * MAX_A * direction_;
-        tP = accelDist_ + cruiseDist_ + (time - accelTime_ - cruiseTime_) * (cruiseSpeed_ + tV) / 2 + initPos_;
-    }
-    else if (time > accelTime_ + deccelTime_ + cruiseTime_)
-    {
-        tA = 0;
-        tV = 0;
-        tP = setPos_;
-    }
-    else
-    {
-        tA = 0;
-        tV = 0;
-        tP = 0;
-    }
-
-    return std::tuple<double, double, double>(tA, tV, tP);
+    return pose;
 
 }
 
@@ -253,44 +225,49 @@ std::tuple<double, double, double> TrajectoryCalc::getProfile()
 //     }
 //     else if(time < accelTime_)
 //     {
-//         tA = MAX_A * direction_;
-//         tV = initVel_ + (MAX_A * direction_ * time);
+//         tA = parameters_.maxA * direction_;
+//         tV = initVel_ + (parameters_.maxA * direction_ * time);
 //     }
 
 //     return pair<double, double> (tA, tV);
 
 // }
 
+/// @brief returns the controller output at this time
+/// @param pos current position reading
+/// @param vel current velocity reading
+/// @return the power clamped by max voltage in GeneralConstants
 double TrajectoryCalc::calcPower(double pos, double vel)
 {
-    std::tuple<double, double, double> profile = getProfile();
+    Pose1D profile = getProfile();
 
-    double error = get<2>(profile) - pos;
+    double error = profile.pos - pos; //position error
 
     //double absoluteError = (setPos_ - pos);
     //double deltaAbsoluteError = absoluteError - prevAbsoluteError_;
     //prevAbsoluteError_ = absoluteError;
-    double velError = get<1>(profile) - vel;
+    double velError = profile.vel - vel; //velocity error
     if(printError_)
     {
         frc::SmartDashboard::PutNumber("TMError", error);
         frc::SmartDashboard::PutNumber("TMVError", velError);
     }
-    double kVVolts;
-    if(get<1>(profile) == 0)
+    double kVVolts; //Calculates kV elements of controller
+    if(profile.vel == 0)
     {
         kVVolts = 0;
     }
     else
     {
-        kVVolts = (abs(get<1>(profile)) - kVI_) * kV_;
-        if(get<1>(profile) < 0)
+        kVVolts = (abs(profile.vel) - parameters_.kVI) * parameters_.kV;
+        if(profile.vel < 0)
         {
             kVVolts *= -1;
         }
     }
 
-    double power = (kP_ * error) + (kD_ * velError) + kVVolts + (get<0>(profile) * kA_);
+    //Adds all terms in the controller
+    double power = (parameters_.kP * error) + (parameters_.kD * velError) + kVVolts + (profile.acc * parameters_.kA);
 
     if(abs(power) > GeneralConstants::MAX_VOLTAGE)
     {
@@ -312,7 +289,7 @@ double TrajectoryCalc::calcPower(double pos, double vel)
 //         frc::SmartDashboard::PutNumber("TMVError", error);
 //     }
 
-//     double kVVolts = (abs(profile.second) - kVI_) * kV_;
+//     double kVVolts = (abs(profile.second) - parameters_.kVI) * parameters_.kV;
 //     if(profile.second == 0)
 //     {
 //         kVVolts = 0;
@@ -322,7 +299,7 @@ double TrajectoryCalc::calcPower(double pos, double vel)
 //         kVVolts *= -1;
 //     }
 
-//     double power = (kD_ * error) + (profile.first * kA_) + kVVolts;
+//     double power = (parameters_.kD * error) + (profile.first * parameters_.kA) + kVVolts;
 
 //     if(abs(power) > GeneralConstants::MAX_VOLTAGE)
 //     {
@@ -336,4 +313,29 @@ double TrajectoryCalc::calcPower(double pos, double vel)
 void TrajectoryCalc::setPrintError(bool printError)
 {
     printError_ = printError;
+}
+
+void TrajectoryCalc::setKP(double kP)
+{
+    parameters_.kP = kP;
+}
+
+void TrajectoryCalc::setKD(double kD)
+{
+    parameters_.kD = kD;
+}
+
+void TrajectoryCalc::setKV(double kV)
+{
+    parameters_.kV = kV;
+}
+
+void TrajectoryCalc::setKA(double kA)
+{
+    parameters_.kA = kA;
+}
+
+void TrajectoryCalc::setKVI(double kVI)
+{
+    parameters_.kVI = kVI;
 }

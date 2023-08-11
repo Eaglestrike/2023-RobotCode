@@ -1,9 +1,13 @@
 #include "Arm/TwoJointArm.h"
 
+
+#include "Helpers/GeneralPoses.h"
+using namespace Poses;
+
 TwoJointArm::TwoJointArm() : shoulderMaster_(TwoJointArmConstants::SHOULDER_MASTER_ID), shoulderSlave_(TwoJointArmConstants::SHOULDER_SLAVE_ID),
                              elbowMaster_(TwoJointArmConstants::ELBOW_MASTER_ID), elbowSlave_(TwoJointArmConstants::ELBOW_SLAVE_ID),
                              shoulderBrake_(frc::PneumaticsModuleType::CTREPCM, TwoJointArmConstants::SHOULDER_BRAKE_ID), elbowBrake_(frc::PneumaticsModuleType::CTREPCM, TwoJointArmConstants::ELBOW_BRAKE_ID), shoulderEncoder_(TwoJointArmConstants::SHOULDER_ENCODER_ID),
-                             shoulderTraj_(TwoJointArmConstants::SHOULDER_ARM_MAX_VEL, TwoJointArmConstants::SHOULDER_ARM_MAX_ACC, 0, 0, 0, 0), elbowTraj_(TwoJointArmConstants::ELBOW_ARM_MAX_VEL, TwoJointArmConstants::ELBOW_ARM_MAX_ACC, 0, 0, 0, 0)
+                             shoulderTraj_({TwoJointArmConstants::SHOULDER_ARM_MAX_VEL, TwoJointArmConstants::SHOULDER_ARM_MAX_ACC, 0, 0, 0, 0}), elbowTraj_({TwoJointArmConstants::ELBOW_ARM_MAX_VEL, TwoJointArmConstants::ELBOW_ARM_MAX_ACC, 0, 0, 0, 0})
 {
     shoulderMaster_.SetNeutralMode(NeutralMode::Brake);
     shoulderMaster_.SetInverted(true);
@@ -663,15 +667,15 @@ void TwoJointArm::setJointPath(double theta, double phi)
 
 void TwoJointArm::followTaskSpaceProfile(double time)
 {
-    std::tuple<double, double, double> thetaProfile = movementProfiles_.getThetaProfile(key_, time);
-    std::tuple<double, double, double> phiProfile = movementProfiles_.getPhiProfile(key_, time);
+    Pose1D thetaProfile = movementProfiles_.getThetaProfile(key_, time);
+    Pose1D phiProfile = movementProfiles_.getPhiProfile(key_, time);
 
-    double wantedTheta = get<0>(thetaProfile);
-    double wantedPhi = get<0>(phiProfile);
-    double wantedThetaVel = get<1>(thetaProfile);
-    double wantedPhiVel = get<1>(phiProfile);
-    double wantedThetaAcc = get<2>(thetaProfile);
-    double wantedPhiAcc = get<2>(phiProfile);
+    double wantedTheta = thetaProfile.pos;
+    double wantedPhi = phiProfile.pos;
+    double wantedThetaVel = thetaProfile.vel;
+    double wantedPhiVel = phiProfile.vel;
+    double wantedThetaAcc = thetaProfile.acc;
+    double wantedPhiAcc = phiProfile.acc;
 
     // frc::SmartDashboard::PutNumber("WTheta", wantedTheta);
     // frc::SmartDashboard::PutNumber("WPhi", wantedPhi);
@@ -702,10 +706,10 @@ void TwoJointArm::followTaskSpaceProfile(double time)
 
     if (xy.first < 0)
     {
-        std::tuple<double, double, double> thetaAheadProfile = movementProfiles_.getThetaProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
-        std::tuple<double, double, double> phiAheadProfile = movementProfiles_.getPhiProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
-        double aheadTheta = get<0>(thetaAheadProfile);
-        double aheadPhi = get<0>(phiAheadProfile);
+        Pose1D thetaAheadProfile = movementProfiles_.getThetaProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
+        Pose1D phiAheadProfile = movementProfiles_.getPhiProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
+        double aheadTheta = thetaAheadProfile.pos;
+        double aheadPhi = phiAheadProfile.pos;
         std::pair<double, double> xyAhead = ArmKinematics::angToXY(aheadTheta, aheadPhi);
 
         if (xyAhead.first > 0)
@@ -725,10 +729,10 @@ void TwoJointArm::followTaskSpaceProfile(double time)
         }
         else
         {
-            std::tuple<double, double, double> thetaAheadProfile = movementProfiles_.getThetaProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
-            std::tuple<double, double, double> phiAheadProfile = movementProfiles_.getPhiProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
-            double aheadTheta = get<0>(thetaAheadProfile);
-            double aheadPhi = get<0>(phiAheadProfile);
+            Pose1D thetaAheadProfile = movementProfiles_.getThetaProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
+            Pose1D phiAheadProfile = movementProfiles_.getPhiProfile(key_, time + TwoJointArmConstants::COLLISION_LOOKAHEAD_TIME);
+            double aheadTheta = thetaAheadProfile.pos;
+            double aheadPhi = phiAheadProfile.pos;
             std::pair<double, double> xyAhead = ArmKinematics::angToXY(aheadTheta, aheadPhi);
 
             if (xyAhead.first < 0 && xyAhead.second < intakeLength) // probably not even needed
@@ -818,15 +822,15 @@ void TwoJointArm::followTaskSpaceProfile(double time)
 
 void TwoJointArm::followJointSpaceProfile()
 {
-    std::tuple<double, double, double> shoulderProfile = shoulderTraj_.getProfile();
-    std::tuple<double, double, double> elbowProfile = elbowTraj_.getProfile();
+    Pose1D thetaProfile = shoulderTraj_.getProfile();
+    Pose1D phiProfile = elbowTraj_.getProfile();
 
-    double wantedTheta = get<2>(shoulderProfile);
-    double wantedPhi = get<2>(elbowProfile);
-    double wantedThetaVel = get<1>(shoulderProfile);
-    double wantedPhiVel = get<1>(elbowProfile);
-    double wantedThetaAcc = get<0>(shoulderProfile);
-    double wantedPhiAcc = get<0>(elbowProfile);
+    double wantedTheta = thetaProfile.pos;
+    double wantedPhi = phiProfile.pos;
+    double wantedThetaVel = thetaProfile.vel;
+    double wantedPhiVel = phiProfile.vel;
+    double wantedThetaAcc = thetaProfile.acc;
+    double wantedPhiAcc = phiProfile.acc;
 
     double theta = getTheta();
     double phi = getPhi();
@@ -850,10 +854,10 @@ void TwoJointArm::followJointSpaceProfile()
             shoulderTraj_.generateTrajectory(theta, -TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
         }
 
-        shoulderProfile = shoulderTraj_.getProfile();
-        wantedTheta = get<2>(shoulderProfile);
-        wantedThetaVel = get<1>(shoulderProfile);
-        wantedThetaAcc = get<0>(shoulderProfile);
+        thetaProfile = shoulderTraj_.getProfile();
+        double wantedTheta = thetaProfile.pos;
+        double wantedThetaVel = thetaProfile.vel;
+        double wantedThetaAcc = thetaProfile.acc;
     }
 
     if (wantedThetaVel == 0 && wantedPhiVel == 0 && wantedThetaAcc == 0 && wantedPhiAcc == 0)
@@ -987,8 +991,8 @@ void TwoJointArm::home()
     //     return;
     // }
 
-    std::tuple<double, double, double> shoulderProfile;
-    std::tuple<double, double, double> elbowProfile;
+    Pose1D shoulderProfile;
+    Pose1D elbowProfile;
     if (!homing_.first)
     {
         shoulderTraj_.generateTrajectory(theta, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
@@ -1000,7 +1004,7 @@ void TwoJointArm::home()
     else
     {
         shoulderProfile = shoulderTraj_.getProfile();
-        // if(get<0>(shoulderProfile) == 0 && get<1>(shoulderProfile) == 0 && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]) < 5)
+        // if((shoulderProfile) == 0 && (shoulderProfile) == 0 && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]) < 5)
         // {
         //     shoulderTraj_.generateTrajectory(theta, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], shoulderVel);
         // }HOMING 0
@@ -1028,15 +1032,15 @@ void TwoJointArm::home()
     else
     {
         elbowProfile = elbowTraj_.getProfile();
-        // if(get<0>(elbowProfile) == 0 && get<1>(elbowProfile) == 0 && abs(theta) < 5 && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]) > 10)
+        // if((elbowProfile) == 0 && (elbowProfile) == 0 && abs(theta) < 5 && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]) > 10)
         // {
         //     shoulderTraj_.generateTrajectory(theta, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], shoulderVel);
         // }HOMING 0
     }
 
-    double wantedTheta = get<2>(shoulderProfile);
-    double thetaVel = get<1>(shoulderProfile);
-    double thetaAcc = get<0>(shoulderProfile);
+    double wantedTheta = shoulderProfile.pos;
+    double thetaVel = shoulderProfile.vel;
+    double thetaAcc = shoulderProfile.acc;
 
     double thetaVolts = calcShoulderVolts(thetaVel, thetaAcc, wantedTheta, theta, phi, false);
 
@@ -1052,9 +1056,9 @@ void TwoJointArm::home()
 
     if (homing_.second)
     {
-        double wantedPhi = get<2>(elbowProfile);
-        double phiVel = get<1>(elbowProfile);
-        double phiAcc = get<0>(elbowProfile);
+        double wantedPhi = elbowProfile.pos;
+        double phiVel = elbowProfile.vel;
+        double phiAcc = elbowProfile.acc;
 
         phiVel += thetaVel * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
         phiAcc += thetaAcc * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
@@ -1133,8 +1137,8 @@ void TwoJointArm::homeNew()
         coneIntakeNeededDown_ = false;
     }
 
-    std::tuple<double, double, double> shoulderProfile;
-    std::tuple<double, double, double> elbowProfile;
+    Pose1D shoulderProfile;
+    Pose1D elbowProfile;
     if (!homingFirstStage_.first) // Bring upper arm to 0
     {
         shoulderTraj_.generateTrajectory(theta, 0, 0);
@@ -1161,7 +1165,7 @@ void TwoJointArm::homeNew()
         elbowProfile = elbowTraj_.getProfile();
     }
 
-    if (get<0>(shoulderProfile) == 0 && get<1>(shoulderProfile) == 0 && !homingSecondStage_.first) // Upper arm got to 0
+    if (isStationary(shoulderProfile) && !homingSecondStage_.first) // Upper arm got to 0
     {
         if (!homingFirstStage_.second && (abs(abs(phi) - 180)) < 5) // If forearm is already in a good spot, skip intermediate steps and just home
         {
@@ -1199,14 +1203,14 @@ void TwoJointArm::homeNew()
         }
 
         elbowProfile = elbowTraj_.getProfile();
-        if (get<0>(elbowProfile) == 0 && get<1>(elbowProfile) == 0 && !homingSecondStage_.second) // Finished phi first stage but not second
+        if (isStationary(elbowProfile) && !homingSecondStage_.second) // Finished phi first stage but not second
         {
             homingSecondStage_.second = true;
             // homingSecondStage_.first = true;
             // shoulderTraj_.generateTrajectory(theta, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
             elbowTraj_.generateTrajectory(phi, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
         }
-        else if (get<0>(elbowProfile) == 0 && get<1>(elbowProfile) == 0 && homingSecondStage_.second)
+        else if (isStationary(elbowProfile) && homingSecondStage_.second)
         {
             homingSecondStage_.first = true;
             shoulderTraj_.generateTrajectory(theta, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
@@ -1214,9 +1218,9 @@ void TwoJointArm::homeNew()
     }
 
     shoulderProfile = shoulderTraj_.getProfile();
-    double wantedTheta = get<2>(shoulderProfile);
-    double thetaVel = get<1>(shoulderProfile);
-    double thetaAcc = get<0>(shoulderProfile);
+    double wantedTheta = shoulderProfile.pos;
+    double thetaVel = shoulderProfile.vel;
+    double thetaAcc = shoulderProfile.acc;
 
     double thetaVolts = calcShoulderVolts(thetaVel, thetaAcc, wantedTheta, theta, phi, false);
 
@@ -1234,9 +1238,9 @@ void TwoJointArm::homeNew()
     if (homingFirstStage_.second)
     {
         elbowProfile = elbowTraj_.getProfile();
-        double wantedPhi = get<2>(elbowProfile);
-        double phiVel = get<1>(elbowProfile);
-        double phiAcc = get<0>(elbowProfile);
+        double wantedPhi = elbowProfile.pos;
+        double phiVel = elbowProfile.vel;
+        double phiAcc = elbowProfile.acc;
 
         phiVel += thetaVel * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
         phiAcc += thetaAcc * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
@@ -2134,18 +2138,18 @@ std::string TwoJointArm::getSetPosString()
 //     double theta = getTheta();
 //     double phi = getPhi();
 
-//     std::tuple<double, double, double> shoulderProfile = shoulderTraj_.getProfile();
-//     double wantedTheta = get<2>(shoulderProfile);
-//     double wantedThetaVel = get<1>(shoulderProfile);
-//     double shoulderVolts = calcShoulderVolts(wantedThetaVel, get<0>(shoulderProfile), wantedTheta, theta, phi, false);
+//     Pose1D shoulderProfile = shoulderTraj_.getProfile();
+//     double wantedTheta = (shoulderProfile);
+//     double wantedThetaVel = (shoulderProfile);
+//     double shoulderVolts = calcShoulderVolts(wantedThetaVel, (shoulderProfile), wantedTheta, theta, phi, false);
 //     // shoulderMaster_.SetVoltage(units::volt_t{shoulderVolts});
 //     // frc::SmartDashboard::PutNumber("ShVolts", shoulderVolts);
 //     setShoulderVolts(shoulderVolts);
 
-//     std::tuple<double, double, double> elbowProfile = elbowTraj_.getProfile();
-//     double wantedPhi = get<2>(elbowProfile);
-//     double wantedPhiVel = get<1>(elbowProfile) + wantedThetaVel;
-//     double elbowVolts = calcElbowVolts(wantedPhiVel, get<0>(elbowProfile) + get<0>(shoulderProfile), wantedPhi, theta, phi, false);
+//     Pose1D elbowProfile = elbowTraj_.getProfile();
+//     double wantedPhi = (elbowProfile);
+//     double wantedPhiVel = (elbowProfile) + wantedThetaVel;
+//     double elbowVolts = calcElbowVolts(wantedPhiVel, (elbowProfile) + (shoulderProfile), wantedPhi, theta, phi, false);
 //     // elbowMaster_.SetVoltage(units::volt_t{elbowVolts});
 //     // frc::SmartDashboard::PutNumber("ElVolts", elbowVolts);
 //     setElbowVolts(elbowVolts);
