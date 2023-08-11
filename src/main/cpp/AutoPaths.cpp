@@ -5,6 +5,9 @@
 
 #include "AutoPaths.h"
 
+#include "Drivebase/SwervePose.h"
+using namespace Poses;
+
 AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(swerveDrive),
                                                                    arm_(arm)
 {
@@ -42,11 +45,11 @@ void AutoPaths::setPath(Path path)
     {
     case BIG_BOY:
     {
-        swervePoints_.push_back(SwervePose(0, 1, 0, 0));
-        swervePoints_.push_back(SwervePose(1, 1, 0, 0.1));
-        swervePoints_.push_back(SwervePose(1, 0, 90, 1));
-        swervePoints_.push_back(SwervePose(0, 1, 0, 10));
-        swervePoints_.push_back(SwervePose(0, 0, -90, 1));
+        swervePoints_.push_back(SwervePose(0, 1, 0)); //Yaw = 0
+        swervePoints_.push_back(SwervePose(1, 1, 0)); //0.1
+        swervePoints_.push_back(SwervePose(1, 0, 90)); //1
+        swervePoints_.push_back(SwervePose(0, 1, 0)); //10
+        swervePoints_.push_back(SwervePose(0, 0, -90)); //1
 
         break;
     }
@@ -913,7 +916,7 @@ void AutoPaths::periodic()
     else */
     if (path_ != DRIVE_BACK_DUMB && path_ != NOTHING && path_ != WAIT_5_SECONDS && path_ != TAXI_DOCK_DUMB)
     {
-        SwervePose *pose = nullptr;
+        SwervePose pose;
         for (size_t i = pointNum_; i < swervePoints_.size(); ++i)
         {
             // pose = swervePoints_[i].getPose(time, pointOver);
@@ -924,16 +927,16 @@ void AutoPaths::periodic()
                 {
                     if (!pathGenerated_)
                     {
-                        double setX = swervePoints_[i].getX();
-                        // xTraj_.generateTrajectory(currPose.getX(), setX, swerveDrive_->getXYVel().first);
-                        generateXTraj(currPose.getX(), setX, swerveDrive_->getXYVel().first);
+                        double setX = swervePoints_[i].x;
+                        // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().first);
+                        generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().first);
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
                         curveSecondStageGenerated_ = false;
                         pathGenerated_ = true;
 
-                        // double setYaw = swervePoints_[i].getYaw();
-                        // yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                        // double setYaw = swervePoints_[i].yaw;
+                        // yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                         // yawStageGenerated_ = true;
 
                         if (pointNum_ == 0)
@@ -963,7 +966,7 @@ void AutoPaths::periodic()
                                 }
                             }
                             // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
 
                             double setYaw;
                             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
@@ -974,24 +977,24 @@ void AutoPaths::periodic()
                             {
                                 setYaw = -90;
                             }
-                            yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                            yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                             yawStageGenerated_ = true;
                         }
                         else
                         {
-                            double setY = swervePoints_[i].getY();
+                            double setY = swervePoints_[i].y;
                             // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                             curveSecondStageGenerated_ = true;
 
-                            double setYaw = swervePoints_[i].getYaw();
-                            yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                            double setYaw = swervePoints_[i].yaw;
+                            yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                             yawStageGenerated_ = true;
                         }
                     }
 
-                    // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                    tuple<double, double, double> yProfile = getYProfile();
+                    // Pose1D yProfile = yTraj_.getProfile();
+                    Pose1D yProfile = getYProfile();
 
                     bool curveReady = false;
                     if (pointNum_ == 0)
@@ -1017,22 +1020,22 @@ void AutoPaths::periodic()
                         }
                     }
 
-                    if ((!curveSecondStageGenerated_) && (/*pointNum_ == 1 || */ (pointNum_ == 0 && curveReady && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0)))
+                    if ((!curveSecondStageGenerated_) && (/*pointNum_ == 1 || */ (pointNum_ == 0 && curveReady && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5 && isStationary(yProfile))))
                     {
-                        double setY = swervePoints_[i].getY();
+                        double setY = swervePoints_[i].y;
                         // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                         curveSecondStageGenerated_ = true;
 
-                        double setYaw = swervePoints_[i].getYaw();
-                        yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                        double setYaw = swervePoints_[i].yaw;
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                         yawStageGenerated_ = true;
                     }
-                    else if ((!curveSecondStageGenerated_) && ((pointNum_ == 1 && curveReady && get<0>(yProfile) == 0 && get<1>(yProfile) == 0)))
+                    else if ((!curveSecondStageGenerated_) && ((pointNum_ == 1 && curveReady && isStationary(yProfile))))
                     {
-                        double setY = swervePoints_[i].getY();
+                        double setY = swervePoints_[i].y;
                         // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                         curveSecondStageGenerated_ = true;
                     }
 
@@ -1041,8 +1044,8 @@ void AutoPaths::periodic()
 
                     //     if (get<0>(yProfile) == 0 && get<1>(yProfile) == 0)
                     //     {
-                    //         double setYaw = swervePoints_[i].getYaw();
-                    //         yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                    //         double setYaw = swervePoints_[i].yaw;
+                    //         yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                     //         yawStageGenerated_ = true;
                     //     }
                     // }
@@ -1051,16 +1054,16 @@ void AutoPaths::periodic()
                 {
                     if (!pathGenerated_)
                     {
-                        double setX = swervePoints_[i].getX();
-                        // xTraj_.generateTrajectory(currPose.getX(), setX, swerveDrive_->getXYVel().first);
-                        generateXTraj(currPose.getX(), setX, swerveDrive_->getXYVel().first);
+                        double setX = swervePoints_[i].x;
+                        // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().first);
+                        generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().first);
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
                         curveSecondStageGenerated_ = false;
                         pathGenerated_ = true;
 
-                        double setYaw = swervePoints_[i].getYaw();
-                        yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0);
+                        double setYaw = swervePoints_[i].yaw;
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0);
                         yawStageGenerated_ = true;
 
                         if (/*pointNum_ == 0*/ true)
@@ -1089,20 +1092,20 @@ void AutoPaths::periodic()
                                 }
                             }
                             // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                         }
                         // else
                         // {
-                        //     double setY = swervePoints_[i].getY();
+                        //     double setY = swervePoints_[i].y;
                         //     yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
                         //     curveSecondStageGenerated_ = true;
                         // }
                     }
 
-                    // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                    tuple<double, double, double> yProfile = getYProfile();
+                    // Pose1D yProfile = yTraj_.getProfile();
+                    Pose1D yProfile = getYProfile();
 
-                    if ((!curveSecondStageGenerated_ && get<0>(yProfile) == 0 && get<1>(yProfile) == 0))
+                    if ((!curveSecondStageGenerated_ && isStationary(yProfile)))
                     {
                         bool curveReady = false;
                         if (pointNum_ == 0)
@@ -1130,9 +1133,9 @@ void AutoPaths::periodic()
 
                         if (curveReady)
                         {
-                            double setY = swervePoints_[i].getY();
+                            double setY = swervePoints_[i].y;
                             // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                             curveSecondStageGenerated_ = true;
                         }
                     }
@@ -1153,14 +1156,14 @@ void AutoPaths::periodic()
                         // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
                         generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
 
-                        double setY = swervePoints_[i].getY();
-                        // yTraj_.generateTrajectory(currPose.getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                        double setY = swervePoints_[i].y;
+                        // yTraj_.generateTrajectory(currPose.y, setY, swerveDrive_->getXYVel().second);
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
                         yawStageGenerated_ = true;
 
-                        double setYaw = swervePoints_[i].getYaw();
-                        yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                        double setYaw = swervePoints_[i].yaw;
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
 
                         curveSecondStageGenerated_ = false;
                         pathGenerated_ = true;
@@ -1168,13 +1171,13 @@ void AutoPaths::periodic()
 
                     if ((!curveSecondStageGenerated_) && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.2)
                     {
-                        double setX = swervePoints_[i].getX();
+                        double setX = swervePoints_[i].x;
                         // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
                         generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
                         curveSecondStageGenerated_ = true;
 
-                        double setYaw = swervePoints_[i].getYaw();
-                        yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                        double setYaw = swervePoints_[i].yaw;
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                         yawStageGenerated_ = true;
                     }
                 }
@@ -1182,13 +1185,13 @@ void AutoPaths::periodic()
                 {
                     if (!pathGenerated_)
                     {
-                        double setY = swervePoints_[i].getY();
-                        // yTraj_.generateTrajectory(currPose.getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                        double setY = swervePoints_[i].y;
+                        // yTraj_.generateTrajectory(currPose.y, setY, swerveDrive_->getXYVel().second);
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
-                        double setYaw = swervePoints_[i].getYaw();
-                        yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                        double setYaw = swervePoints_[i].yaw;
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
 
                         curveSecondStageGenerated_ = false;
                         pathGenerated_ = true;
@@ -1196,7 +1199,7 @@ void AutoPaths::periodic()
 
                     if ((!curveSecondStageGenerated_) && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1)
                     {
-                        double setX = swervePoints_[i].getX();
+                        double setX = swervePoints_[i].x;
                         // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
                         generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
                         curveSecondStageGenerated_ = true;
@@ -1208,13 +1211,13 @@ void AutoPaths::periodic()
                     {
                         if (!pathGenerated_)
                         {
-                            double setX = swervePoints_[i].getX();
-                            // xTraj_.generateTrajectory(currPose.getX(), setX, swerveDrive_->getXYVel().first);
-                            generateXTraj(currPose.getX(), setX, swerveDrive_->getXYVel().first);
+                            double setX = swervePoints_[i].x;
+                            // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().first);
+                            generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().first);
                             curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
-                            // double setYaw = swervePoints_[i].getYaw();
-                            // yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                            // double setYaw = swervePoints_[i].yaw;
+                            // yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                             double setYaw;
                             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                             {
@@ -1224,10 +1227,10 @@ void AutoPaths::periodic()
                             {
                                 setYaw = -90;
                             }
-                            yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                            yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                             yawStageGenerated_ = true;
 
-                            // double setY = swervePoints_[i].getY();
+                            // double setY = swervePoints_[i].y;
                             double setY;
                             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                             {
@@ -1252,7 +1255,7 @@ void AutoPaths::periodic()
                                 }
                             }
                             // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
 
                             curveSecondStageGenerated_ = false;
                             pathGenerated_ = true;
@@ -1261,8 +1264,8 @@ void AutoPaths::periodic()
                         // frc::SmartDashboard::PutBoolean("GEN", curveSecondStageGenerated_);
                         // frc::SmartDashboard::PutBoolean("PATH", pathGenerated_);
                         // frc::SmartDashboard::PutNumber("TIME", timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_);
-                        // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                        tuple<double, double, double> yProfile = getYProfile();
+                        // Pose1D yProfile = yTraj_.getProfile();
+                        Pose1D yProfile = getYProfile();
 
                         bool curveReady = false;
                         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
@@ -1273,26 +1276,26 @@ void AutoPaths::periodic()
                         {
                             curveReady = (swerveDrive_->getX() < 11.688318); // 13.621893
                         }
-                        if ((!curveSecondStageGenerated_) /* && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5*/ && curveReady && get<0>(yProfile) == 0 && get<1>(yProfile) == 0)
+                        if ((!curveSecondStageGenerated_) /* && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5*/ && curveReady && isStationary(yProfile))
                         {
-                            double setY = swervePoints_[i].getY();
+                            double setY = swervePoints_[i].y;
                             // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                             curveSecondStageGenerated_ = true;
 
-                            double setYaw = swervePoints_[i].getYaw();
-                            yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                            double setYaw = swervePoints_[i].yaw;
+                            yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                         }
                     }
                     else
                     {
-                        double setY = swervePoints_[i].getY();
+                        double setY = swervePoints_[i].y;
                         // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.getY(), setY, swerveDrive_->getXYVel().second);
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
                         curveSecondStageGenerated_ = true;
 
-                        double setYaw = swervePoints_[i].getYaw();
-                        yawTraj_.generateTrajectory(currPose.getYaw(), setYaw, 0); // TODO yaw vel
+                        double setYaw = swervePoints_[i].yaw;
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                         yawStageGenerated_ = true;
 
                         pathGenerated_ = true;
@@ -1303,8 +1306,8 @@ void AutoPaths::periodic()
                     currPath_.reset();
                     currPath_.addPoint(currPose);
                     currPath_.addPoint(swervePoints_[i]);
-                    // frc::SmartDashboard::PutNumber("WANTED YAW", swervePoints_[i].getYaw());
-                    // frc::SmartDashboard::PutNumber("CURR YAW", currPose.getYaw());
+                    // frc::SmartDashboard::PutNumber("WANTED YAW", swervePoints_[i].yaw);
+                    // frc::SmartDashboard::PutNumber("CURR YAW", currPose.yaw);
 
                     currPath_.generateTrajectory(false);
 
@@ -1314,11 +1317,11 @@ void AutoPaths::periodic()
 
             if (path_ == SECOND_CONE || path_ == SECOND_CUBE_MID)
             {
-                // tuple<double, double, double> xProfile = xTraj_.getProfile();
-                tuple<double, double, double> xProfile = getXProfile();
-                // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                tuple<double, double, double> yProfile = getYProfile();
-                tuple<double, double, double> yawProfile = yawTraj_.getProfile();
+                // Pose1D xProfile = xTraj_.getProfile();
+                Pose1D xProfile = getXProfile();
+                // Pose1D yProfile = yTraj_.getProfile();
+                Pose1D yProfile = getYProfile();
+                Pose1D yawProfile = yawTraj_.getProfile();
                 // if (curveSecondStageGenerated_)
                 // {
                 //     // yProfile = yTraj_.getProfile();
@@ -1331,24 +1334,23 @@ void AutoPaths::periodic()
                 // {
                 //     yawProfile = yawTraj_.getProfile();
                 // }
-                pose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
-
-                if (get<0>(xProfile) == 0 && get<1>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yawProfile) == 0)
+                pose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
+                
+                if (isStationary(pose))
                 {
                     pointOver = true;
                 }
             }
             else if (path_ == FIRST_CUBE_HIGH)
             {
-                // tuple<double, double, double> xProfile = xTraj_.getProfile();
-                tuple<double, double, double> xProfile = getXProfile();
-                // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                tuple<double, double, double> yProfile = getYProfile();
-                tuple<double, double, double> yawProfile = yawTraj_.getProfile();
+                // Pose1D xProfile = xTraj_.getProfile();
+                Pose1D xProfile = getXProfile();
+                // Pose1D yProfile = yTraj_.getProfile();
+                Pose1D yProfile = getYProfile();
+                Pose1D yawProfile = yawTraj_.getProfile();
 
-                pose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
-
-                if (get<0>(xProfile) == 0 && get<1>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yawProfile) == 0)
+                pose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
+                if (isStationary(pose))
                 {
                     pointOver = true;
                 }
@@ -1356,11 +1358,11 @@ void AutoPaths::periodic()
             else if (path_ == AUTO_DOCK)
             {
                 // double heldX = (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) ? FieldConstants::BLUE_SCORING_X + 0.05 : FieldConstants::RED_SCORING_X - 0.05;
-                // tuple<double, double, double> xProfile = xTraj_.getProfile(); // held x was used here to prevent drift
-                tuple<double, double, double> xProfile = getXProfile();
-                // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                tuple<double, double, double> yProfile = getYProfile();
-                tuple<double, double, double> yawProfile = yawTraj_.getProfile();
+                // Pose1D xProfile = xTraj_.getProfile(); // held x was used here to prevent drift
+                Pose1D xProfile = getXProfile();
+                // Pose1D yProfile = yTraj_.getProfile();
+                Pose1D yProfile = getYProfile();
+                Pose1D yawProfile = yawTraj_.getProfile();
                 // if (curveSecondStageGenerated_)
                 // {
                 //     xProfile = xTraj_.getProfile();
@@ -1383,7 +1385,7 @@ void AutoPaths::periodic()
                     {
                         xVel = -SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
-                    pose = new SwervePose(swerveDrive_->getX(), get<2>(yProfile), get<2>(yawProfile), xVel, get<1>(yProfile), get<1>(yawProfile), 0, get<0>(yProfile), get<0>(yawProfile));
+                    pose = SwerveFromPose1D({swerveDrive_->getX(), xVel, 0}, yProfile, yawProfile);
 
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                     double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
@@ -1410,25 +1412,24 @@ void AutoPaths::periodic()
                 }
                 else
                 {
-                    pose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
+                    pose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
                 }
             }
             else if ((path_ == SECOND_CONE_DOCK || path_ == SECOND_CUBE_DOCK || path_ == SECOND_CUBE_GRAB) /* && pointNum_ == 0*/)
             {
-                // tuple<double, double, double> xProfile = xTraj_.getProfile();
-                tuple<double, double, double> xProfile = getXProfile();
-                // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                tuple<double, double, double> yProfile = getYProfile();
-                tuple<double, double, double> yawProfile = yawTraj_.getProfile();
+                // Pose1D xProfile = xTraj_.getProfile();
+                Pose1D xProfile = getXProfile();
+                // Pose1D yProfile = yTraj_.getProfile();
+                Pose1D yProfile = getYProfile();
+                Pose1D yawProfile = yawTraj_.getProfile();
                 // if (curveSecondStageGenerated_)
                 // {
                 //     yProfile = yTraj_.getProfile();
                 // }
                 if (pointNum_ == 0)
                 {
-                    pose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
-
-                    if (get<0>(xProfile) == 0 && get<1>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yawProfile) == 0)
+                    pose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
+                    if (isStationary(pose))
                     {
                         pointOver = true;
                     }
@@ -1446,8 +1447,7 @@ void AutoPaths::periodic()
                     }
                     // frc::SmartDashboard::PutNumber("Y DOCK VEL", get<1>(yProfile));
                     // frc::SmartDashboard::PutNumber("YAW DOCK VEL", get<1>(yawProfile));
-                    pose = new SwervePose(swerveDrive_->getX(), get<2>(yProfile), get<2>(yawProfile), xVel, get<1>(yProfile), get<1>(yawProfile), 0, get<0>(yProfile), get<0>(yawProfile));
-
+                    pose = SwerveFromPose1D({swerveDrive_->getX(), xVel, 0}, yProfile, yawProfile);
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                     double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
@@ -1484,18 +1484,17 @@ void AutoPaths::periodic()
             else if ((path_ == FIRST_CONE_DOCK && pointNum_ == 1) || (path_ == FIRST_CUBE_DOCK && pointNum_ == 1))
             {
                 double heldX = (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) ? FieldConstants::BLUE_PIECE_X : FieldConstants::RED_PIECE_X;
-                tuple<double, double, double> xProfile = {0, 0, heldX}; // swerveDrive_->getX();
-                // tuple<double, double, double> yProfile = yTraj_.getProfile();
-                tuple<double, double, double> yProfile = getYProfile();
-                tuple<double, double, double> yawProfile = yawTraj_.getProfile();
+                Pose1D xProfile = {0, 0, heldX}; // swerveDrive_->getX();
+                // Pose1D yProfile = yTraj_.getProfile();
+                Pose1D yProfile = getYProfile();
+                Pose1D yawProfile = yawTraj_.getProfile();
                 if (curveSecondStageGenerated_)
                 {
                     // xProfile = xTraj_.getProfile();
                     xProfile = getXProfile();
                 }
-                pose = new SwervePose(get<2>(xProfile), get<2>(yProfile), get<2>(yawProfile), get<1>(xProfile), get<1>(yProfile), get<1>(yawProfile), get<0>(xProfile), get<0>(yProfile), get<0>(yawProfile));
-
-                if (get<0>(xProfile) == 0 && get<1>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yawProfile) == 0)
+                pose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
+                if (isStationary(pose))
                 {
                     pointOver = true;
                 }
@@ -2817,7 +2816,7 @@ void AutoPaths::generateYTraj(double pos, double setPos, double vel)
     }
 }
 
-tuple<double, double, double> AutoPaths::getXProfile()
+Pose1D AutoPaths::getXProfile()
 {
     if (slowTraj_)
     {
@@ -2828,7 +2827,7 @@ tuple<double, double, double> AutoPaths::getXProfile()
         return xTraj_.getProfile();
     }
 }
-tuple<double, double, double> AutoPaths::getYProfile()
+Pose1D AutoPaths::getYProfile()
 {
     if (slowTraj_)
     {

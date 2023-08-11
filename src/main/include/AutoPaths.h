@@ -1,13 +1,18 @@
 #pragma once
 
+#include <vector>
+
 #include <frc/Timer.h>
 
 #include "GeneralConstants.h"
+
 #include "Drivebase/SwerveDrive.h"
 #include "Drivebase/SwervePath.h"
+
 #include "Arm/TwoJointArm.h"
 #include "Arm/TwoJointArmProfiles.h"
-#include <vector>
+
+#include "Helpers/GeneralPoses.h"
 
 class AutoPaths
 {
@@ -65,8 +70,8 @@ class AutoPaths
         void generateXTraj(double pos, double setPos, double vel);
         void generateYTraj(double pos, double setPos, double vel);
 
-        tuple<double, double, double> getXProfile();
-        tuple<double, double, double> getYProfile();
+        Poses::Pose1D getXProfile();
+        Poses::Pose1D getYProfile();
 
     private:
         vector<Path> actions_;
@@ -74,12 +79,12 @@ class AutoPaths
         SwerveDrive* swerveDrive_;
         TwoJointArm* arm_;
 
-        TrajectoryCalc xTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
-        TrajectoryCalc yTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0};
-        TrajectoryCalc yawTraj_{SwerveConstants::MAX_AV * 0.3, SwerveConstants::MAX_AA * 0.3, 0, 0, 0, 0};
+        TrajectoryCalc xTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0}};
+        TrajectoryCalc yTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0}};
+        TrajectoryCalc yawTraj_{{SwerveConstants::MAX_AV * 0.3, SwerveConstants::MAX_AA * 0.3, 0, 0, 0, 0}};
 
-        TrajectoryCalc xSlowTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0};
-        TrajectoryCalc ySlowTraj_{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0};
+        TrajectoryCalc xSlowTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0}};
+        TrajectoryCalc ySlowTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0}};
 
         frc::Timer timer_;
         frc::Timer failsafeTimer_;

@@ -42,8 +42,8 @@ namespace SwerveConstants
     const double BR_CANCODER_OFFSET = -31.3 + 180;  // 75.85
     const double BL_CANCODER_OFFSET = -96.3 + 180;   // 43.2
 
-    const double MAX_LA = 2.75;
-    const double MAX_LV = 4;   //(past year: 3, 4) (stable but a bit too slow: 2, 4) (2.75, 4 for three piece)
+    const double MAX_LA = 2.75;// Max Linear Acceleration
+    const double MAX_LV = 4;   // Max Linear Velocity (past year: 3, 4) (stable but a bit too slow: 2, 4) (2.75, 4 for three piece)
     const double MAX_AA = 360; // 270
     const double MAX_AV = 540; // 450
 

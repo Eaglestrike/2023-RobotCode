@@ -28,8 +28,8 @@ class SwerveDrive
 
         void drive(double xSpeed, double ySpeed, double turn);
         void lockWheels();
-        void drivePose(SwervePose pose);
-        void adjustPos(SwervePose pose);
+        void drivePose(const Poses::SwervePose pose);
+        void adjustPos(const Poses::SwervePose pose);
 
         void calcModules(double xSpeed, double ySpeed, /*double xAcc, double yAcc,*/ double turn, /*double turnAacc,*/ bool inVolts);
 
@@ -65,9 +65,9 @@ class SwerveDrive
         SwervePath tagPath_{SwerveConstants::MAX_LA, SwerveConstants::MAX_LV, SwerveConstants::MAX_AA, SwerveConstants::MAX_AV};
 
         double robotX_, robotY_, yaw_/*, yawTagOffset_*/;
-        TrajectoryCalc xTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
-        TrajectoryCalc yTagTraj_{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0};
-        TrajectoryCalc yawTagTraj_{SwerveConstants::MAX_AV * 0.7, SwerveConstants::MAX_AA * 0.7, 0, 0, 0, 0};
+        TrajectoryCalc xTagTraj_{{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0}};
+        TrajectoryCalc yTagTraj_{{SwerveConstants::MAX_LV * 0.7, SwerveConstants::MAX_LA * 0.7, 0, 0, 0, 0}};
+        TrajectoryCalc yawTagTraj_{{SwerveConstants::MAX_AV * 0.7, SwerveConstants::MAX_AA * 0.7, 0, 0, 0, 0}};
         //double aprilTagX_, aprilTagY_;
 
         double prevTime_, dT_;

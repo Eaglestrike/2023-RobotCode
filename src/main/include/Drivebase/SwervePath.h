@@ -8,8 +8,6 @@
 #include "SwerveTrajectory.h"
 #include "SwervePose.h"
 
-using namespace std;
-
 class SwervePath
 {
     public:
@@ -31,11 +29,11 @@ class SwervePath
         
         void reset();
 
-        SwervePose* getPose(double time, bool& end);
+        SwervePose getPose(double time, bool& end);
 
     private:
         double MAX_LA, MAX_LV, MAX_AA, MAX_AV, klP_, klD_, kaP_, kaD_, klV_, klA_, kaV_, kaA_;
 
-        vector<SwervePose> points_;
-        vector<SwerveTrajectory> trajectories_;
+        std::vector<SwervePose> points_;
+        std::vector<SwerveTrajectory> trajectories_;
 };
