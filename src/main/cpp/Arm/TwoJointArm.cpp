@@ -1972,44 +1972,43 @@ std::string TwoJointArm::getStateString()
     case HOLDING_POS:
     {
         return "Holding Pos";
-        break;
     }
     case FOLLOWING_TASK_SPACE_PROFILE:
     {
         return "Following Task Space";
-        break;
     }
     case FOLLOWING_JOINT_SPACE_PROFILE:
     {
         return "Following Joint Space";
-        break;
     }
     case HOMING:
     {
         return "Homing";
-        break;
     }
     case STOPPED:
     {
         return "Stopped";
-        break;
     }
     case MANUAL:
     {
         return "Manual";
-        break;
     }
     default:
     {
         return "UNKNOWN";
-        break;
     }
     }
 }
 
-std::string TwoJointArm::getPosString()
+/**
+ * @brief Converts an arm position into its string representation.
+ * 
+ * @param position any arm position 
+ * @return std::string the string representation of the arm position
+ */
+std::string TwoJointArm::getGenericPosString(TwoJointArmProfiles::Positions position)
 {
-    switch (position_)
+    switch (position)
     {
     case TwoJointArmProfiles::STOWED:
     {
@@ -2051,10 +2050,6 @@ std::string TwoJointArm::getPosString()
     {
         return "Auto Stow";
     }
-    // case TwoJointArmProfiles::CONE_INTAKE:
-    // {
-    //     return "Cone Intake";
-    // }
     default:
     {
         return "UNKNOWN";
@@ -2062,59 +2057,22 @@ std::string TwoJointArm::getPosString()
     }
 }
 
-std::string TwoJointArm::getSetPosString()
-{
-    switch (setPosition_)
-    {
-    case TwoJointArmProfiles::STOWED:
-    {
-        return "Stowed";
-    }
-    case TwoJointArmProfiles::CUBE_INTAKE:
-    {
-        return "Cube Intake";
-    }
-    case TwoJointArmProfiles::MID:
-    {
-        return "Mid";
-    }
-    case TwoJointArmProfiles::SPECIAL:
-    {
-        return "Special";
-    }
-    case TwoJointArmProfiles::HIGH:
-    {
-        return "High";
-    }
-    case TwoJointArmProfiles::CUBE_MID:
-    {
-        return "Cube Mid";
-    }
-    case TwoJointArmProfiles::CUBE_HIGH:
-    {
-        return "Cube High";
-    }
-    case TwoJointArmProfiles::GROUND:
-    {
-        return "Ground";
-    }
-    case TwoJointArmProfiles::RAMMING_PLAYER_STATION:
-    {
-        return "Player Station";
-    }
-    case TwoJointArmProfiles::AUTO_STOW:
-    {
-        return "Auto Stow";
-    }
-    // case TwoJointArmProfiles::CONE_INTAKE:
-    // {
-    //     return "Cone Intake";
-    // }
-    default:
-    {
-        return "UNKNOWN";
-    }
-    }
+/**
+ * @brief Returns string representation of the set position
+ * 
+ * @return std::string string repr of set position
+ */
+std::string TwoJointArm::getSetPosString() {
+    return getGenericPosString(setPosition_);
+}
+
+/**
+ * @brief Returns string representation of current position
+ * 
+ * @return std::string string repr of current position
+ */
+std::string TwoJointArm::getPosString() {
+    return getGenericPosString(position_);
 }
 
 // void TwoJointArm::goToPos(double thetaPos, double phiPos)

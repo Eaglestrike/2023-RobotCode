@@ -161,4 +161,5 @@ class TwoJointArm
         void swingthroughExtendedToCubeIntake();
 
         // double setPhiPos_, setThetaPos_; //HERE
+        std::string getGenericPosString(TwoJointArmProfiles::Positions position);
 };
