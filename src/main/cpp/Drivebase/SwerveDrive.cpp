@@ -2,6 +2,7 @@
 
 #include <math.h>
 
+#include "Helpers/GeometryHelper.h"
 #include "Helpers/GeneralPoses.h"
 using namespace Poses;
 
@@ -48,6 +49,11 @@ void SwerveDrive::periodic(double yaw, double tilt, std::vector<double> data)
     setYaw(yaw);
     calcOdometry();
     updateAprilTagFieldXY(tilt, data);
+
+    topRight_->periodic();
+    topLeft_->periodic();
+    bottomRight_->periodic();
+    bottomLeft_->periodic();
 }
 
 /// @brief Trims the robot's alignment in the direction give. Shifts odometry
@@ -321,11 +327,6 @@ void SwerveDrive::manualScore(int scoringLevel){
     if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
     {
         Vector fieldStrafe;
-        
-        double turn = rotation_;
-
-        
-
         drive(strafe_, rotation_);
         return;
     }
@@ -452,8 +453,8 @@ void SwerveDrive::manualScore(int scoringLevel){
 
     frc::SmartDashboard::PutNumber("WX", wantedX);
     frc::SmartDashboard::PutNumber("WY", wantedY);
-    xTagTraj_.generateTrajectory(robotX_, wantedX, (getXYVel().first));
-    yTagTraj_.generateTrajectory(robotY_, wantedY, (getXYVel().second));
+    xTagTraj_.generateTrajectory(robotX_, wantedX, (getXYVel().getX()));
+    yTagTraj_.generateTrajectory(robotY_, wantedY, (getXYVel().getY()));
     yawTagTraj_.generateTrajectory(yaw_, wantedYaw, 0);
 
     trackingTag_ = true;
@@ -507,17 +508,17 @@ void SwerveDrive::drive(Vector strafe, double turn)
 
     // if(abs(xSpeed) > 0.1 || abs(ySpeed) > 0.1 || abs(turn) > 0.1)
     // {
-    //     topRight_->periodic(volts, trAngle_, true);
-    //     topLeft_->periodic(volts, tlAngle_, true);
-    //     bottomRight_->periodic(volts, brAngle_, true);
-    //     bottomLeft_->periodic(volts, blAngle_, true);
+    //     topRight_->move({volts, trAngle_, true);
+    //     topLeft_->move({volts, tlAngle_, true);
+    //     bottomRight_->move({volts, brAngle_, true);
+    //     bottomLeft_->move({volts, blAngle_, true);
     // }
     // else
     // {
-    //     topRight_->periodic(0, trAngle_, true);
-    //     topLeft_->periodic(0, tlAngle_, true);
-    //     bottomRight_->periodic(0, brAngle_, true);
-    //     bottomLeft_->periodic(0, blAngle_, true);
+    //     topRight_->move({0, trAngle_, true);
+    //     topLeft_->move({0, tlAngle_, true);
+    //     bottomRight_->move({0, brAngle_, true);
+    //     bottomLeft_->move({0, blAngle_, true);
     // }
 
     // 0.65, 0, 0
@@ -538,16 +539,16 @@ void SwerveDrive::drive(Vector strafe, double turn)
     // 6, 9800, 178.7173
     // m = 0.0291946, b = 0.746574
 
-    topRight_->periodic(trSpeed_, trAngle_, false);
-    topLeft_->periodic(tlSpeed_, tlAngle_, false);
-    bottomRight_->periodic(brSpeed_, brAngle_, false);
-    bottomLeft_->periodic(blSpeed_, blAngle_, false);
+    topRight_->move({trSpeed_, trAngle_}, false);
+    topLeft_->move({tlSpeed_, tlAngle_}, false);
+    bottomRight_->move({brSpeed_, brAngle_}, false);
+    bottomLeft_->move({blSpeed_, blAngle_}, false);
 
     // double speed = frc::SmartDashboard::GetNumber("Swerve Volts", 0);
-    // topRight_->periodic(speed, trAngle_, true);
-    // topLeft_->periodic(speed, tlAngle_, true);
-    // bottomRight_->periodic(speed, brAngle_, true);
-    // bottomLeft_->periodic(speed, blAngle_, true);
+    // topRight_->move({speed, trAngle_, true);
+    // topLeft_->move({speed, tlAngle_, true);
+    // bottomRight_->move({speed, brAngle_, true);
+    // bottomLeft_->move({speed, blAngle_, true);
 }
 
 void SwerveDrive::lockWheels()
@@ -561,10 +562,10 @@ void SwerveDrive::lockWheels()
     brAngle_ = 45;
     blAngle_ = 135;
 
-    topRight_->periodic(trSpeed_, trAngle_, false);
-    topLeft_->periodic(tlSpeed_, tlAngle_, false);
-    bottomRight_->periodic(brSpeed_, brAngle_, false);
-    bottomLeft_->periodic(blSpeed_, blAngle_, false);
+    topRight_->move({trSpeed_, trAngle_}, false);
+    topLeft_->move({tlSpeed_, tlAngle_}, false);
+    bottomRight_->move({brSpeed_, brAngle_}, false);
+    bottomLeft_->move({blSpeed_, blAngle_}, false);
 }
 
 void SwerveDrive::drivePose(const SwervePose pose)
@@ -595,7 +596,7 @@ void SwerveDrive::drivePose(const SwervePose pose)
         else
         {
             // normal x stuff and path still going
-            xVel += (pose.x - robotX_) * SwerveConstants::klP + (pose.xVel - getXYVel().first) * SwerveConstants::klD;
+            xVel += (pose.x - robotX_) * SwerveConstants::klP + (pose.xVel - getXYVel().getX()) * SwerveConstants::klD;
         }
 
         if (pose.yVel == 0 && pose.yAcc == 0)
@@ -614,7 +615,7 @@ void SwerveDrive::drivePose(const SwervePose pose)
         else
         {
             // normal y stuff and path still going
-            yVel += (pose.y - robotY_) * SwerveConstants::klP + (pose.yVel - getXYVel().second) * SwerveConstants::klD;
+            yVel += (pose.y - robotY_) * SwerveConstants::klP + (pose.yVel - getXYVel().getY()) * SwerveConstants::klD;
         }
 
         if (pose.yawVel == 0 && pose.yawAcc == 0)
@@ -670,10 +671,10 @@ void SwerveDrive::drivePose(const SwervePose pose)
     calcModules(xVel, yVel, /*pose.getXAcc(), pose.yAcc,*/ -yawVel, /*-pose.yawAcc,*/ true);
     // calcModules(xVel, yVel, 0, 0, -yawVel, 0, true);
 
-    topRight_->periodic(trSpeed_, trAngle_, true);
-    topLeft_->periodic(tlSpeed_, tlAngle_, true);
-    bottomRight_->periodic(brSpeed_, brAngle_, true);
-    bottomLeft_->periodic(blSpeed_, blAngle_, true);
+    topRight_->move({trSpeed_, trAngle_}, true);
+    topLeft_->move({tlSpeed_, tlAngle_}, true);
+    bottomRight_->move({brSpeed_, brAngle_}, true);
+    bottomLeft_->move({blSpeed_, blAngle_}, true);
 }
 
 void SwerveDrive::adjustPos(SwervePose pose)
@@ -725,10 +726,10 @@ void SwerveDrive::adjustPos(SwervePose pose)
     // calcModules(xVel, yVel, pose.getXAcc(), pose.yAcc, -yawVel, -pose.yawAcc, true);
     calcModules(xVel, yVel, /*0, 0,*/ -yawVel, /*0,*/ true);
 
-    topRight_->periodic(trSpeed_, trAngle_, true);
-    topLeft_->periodic(tlSpeed_, tlAngle_, true);
-    bottomRight_->periodic(brSpeed_, brAngle_, true);
-    bottomLeft_->periodic(blSpeed_, blAngle_, true);
+    topRight_->move({trSpeed_, trAngle_}, true);
+    topLeft_->move({tlSpeed_, tlAngle_}, true);
+    bottomRight_->move({brSpeed_, brAngle_}, true);
+    bottomLeft_->move({blSpeed_, blAngle_}, true);
 }
 
 /*
@@ -894,7 +895,7 @@ void SwerveDrive::calcOdometry()
     //     return;
     // }
 
-    std::pair<double, double> xyVel = getXYVel();
+    Vector xyVel = getXYVel();
 
     // if(config_.isBlue)
     // {
@@ -908,19 +909,18 @@ void SwerveDrive::calcOdometry()
     // }
 
     // Euler's integration
-    robotX_ += xyVel.first * dT_;
-    robotY_ += xyVel.second * dT_;
+    robotX_ += xyVel.getX() * dT_;
+    robotY_ += xyVel.getY() * dT_;
 
     if (foundTag_)
     {
-        std::pair<double, double> xy = {robotX_, robotY_};
-        std::pair<std::pair<double, double>, std::pair<double, double>> pose{xy, xyVel};
+        Point xy = {robotX_, robotY_};
+        std::pair<Point, Vector> pose{xy, xyVel};
 
-        prevPoses_.insert(std::pair<double, std::pair<std::pair<double, double>, std::pair<double, double>>>{time, pose});
+        prevPoses_.insert(std::pair<double, std::pair<Point, Vector>>{time, pose});
 
-        std::map<double, std::pair<std::pair<double, double>, std::pair<double, double>>>::iterator it;
-        for (it = prevPoses_.begin(); it->first < (time - SwerveConstants::POSE_HISTORY_LENGTH); prevPoses_.erase(it++))
-            ;
+        std::map<double, std::pair<Point, Vector>>::iterator it;
+        for (it = prevPoses_.begin(); it->first < (time - SwerveConstants::POSE_HISTORY_LENGTH); prevPoses_.erase(it++));
 
         // frc::SmartDashboard::PutNumber("Prev Pose Count", prevPoses_.size());
     }
@@ -956,21 +956,19 @@ double SwerveDrive::getY()
 /**
  * Returns std::pair of xy velocities
  */
-std::pair<double, double> SwerveDrive::getXYVel()
+Vector SwerveDrive::getXYVel()
 {
     // Get robot oriented x,y velocities of each swerve module
-    double frX = -topRight_->getDriveVelocity() * sin(topRight_->getAngle() * M_PI / 180);
-    double frY = topRight_->getDriveVelocity() * cos(topRight_->getAngle() * M_PI / 180);
-    double flX = -topLeft_->getDriveVelocity() * sin(topLeft_->getAngle() * M_PI / 180);
-    double flY = topLeft_->getDriveVelocity() * cos(topLeft_->getAngle() * M_PI / 180);
-    double brX = -bottomRight_->getDriveVelocity() * sin(bottomRight_->getAngle() * M_PI / 180);
-    double brY = bottomRight_->getDriveVelocity() * cos(bottomRight_->getAngle() * M_PI / 180);
-    double blX = -bottomLeft_->getDriveVelocity() * sin(bottomLeft_->getAngle() * M_PI / 180);
-    double blY = bottomLeft_->getDriveVelocity() * cos(bottomLeft_->getAngle() * M_PI / 180);
+    Vector frV = topRight_->getVelocity();
+    Vector flV = topLeft_->getVelocity();
+    Vector brV = bottomRight_->getVelocity();
+    Vector blV = bottomLeft_->getVelocity();
 
     // Average robot-oriented velocties
-    double avgX = (frX + flX + brX + blX) / 4;
-    double avgY = (frY + flY + brY + blY) / 4;
+    Vector avgV = (frV + flV + brV + blV) / 4;
+
+    //Rotate to be field-oriented minus the navx
+    avgV.rotateCounterclockwise90This();
 
     // cout << timer_.GetFPGATimestamp().value() << ", " << sqrt(avgX * avgX + avgY * avgY) << endl;
 
@@ -978,10 +976,9 @@ std::pair<double, double> SwerveDrive::getXYVel()
     double angle = yaw_ * M_PI / 180;
 
     // Unrotate the velocties to field-oriented
-    double rotatedX = avgX * cos(angle) + avgY * -sin(angle);
-    double rotatedY = avgX * sin(angle) + avgY * cos(angle);
+    avgV.rotateThis(angle);
 
-    return {rotatedX, rotatedY};
+    return avgV;
 }
 
 /**
@@ -1029,24 +1026,19 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     double delay = data.at(5) / 1000.0;
 
     double navxTagZAng/*, tagAngToRobotAng*/;
-    if (tagID <= 4 && tagID > 0)
-    {
+    if (tagID <= 4 && tagID > 0){
         navxTagZAng = yaw_ + 90;
-        Helpers::normalizeAngle(navxTagZAng);
-
         // tagAngToRobotAng = (tagZAng * 180 / M_PI) - 90;
     }
-    else if (tagID >= 5 && tagID < 9)
-    {
+    else if (tagID >= 5 && tagID < 9){
         navxTagZAng = yaw_ - 90;
-        Helpers::normalizeAngle(navxTagZAng);
-
         // tagAngToRobotAng = (tagZAng * 180 / M_PI) + 90;
     }
     else
     {
         return;
     }
+    navxTagZAng = GeometryHelper::getPrincipalAng2Deg(navxTagZAng);
 
     navxTagZAng *= -(M_PI / 180.0);
 
@@ -1174,10 +1166,10 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
         {
             // frc::SmartDashboard::PutNumber("HX", historicalPose->second.first.first);
             // frc::SmartDashboard::PutNumber("HY", historicalPose->second.first.second);
-            double vel = sqrt(historicalPose->second.second.first * historicalPose->second.second.first + historicalPose->second.second.second * historicalPose->second.second.second);
-
-            double xDiff = aprilTagX - historicalPose->second.first.first;
-            double yDiff = aprilTagY - historicalPose->second.first.second;
+            double vel = historicalPose->second.second.getMagnitude();
+            
+            double xDiff = aprilTagX - historicalPose->second.first.getX();
+            double yDiff = aprilTagY - historicalPose->second.first.getY();
             // frc::SmartDashboard::PutNumber("DiffX", xDiff);
             // frc::SmartDashboard::PutNumber("DiffY", yDiff);
 
@@ -1210,15 +1202,15 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
                 numLargeDiffs_ = 0;
             }
 
-            std::map<double, std::pair<std::pair<double, double>, std::pair<double, double>>>::iterator it;
+            std::map<double, std::pair<Point, Vector>>::iterator it;
             for (it = prevPoses_.begin(); it != prevPoses_.end(); it++)
             {
-                it->second.first.first += xDiff * multiplier / (1.0 + 0.1 * vel);
-                it->second.first.second += yDiff * multiplier / (1.0 + 0.1 * vel);
+                double mult = multiplier / (1.0 + 0.1 * vel);
+                it->second.first.move({xDiff * mult, yDiff * mult});
             }
 
-            robotX_ = prevPoses_.rbegin()->second.first.first;
-            robotY_ = prevPoses_.rbegin()->second.first.second;
+            robotX_ = prevPoses_.rbegin()->second.first.getX();
+            robotY_ = prevPoses_.rbegin()->second.first.getY();
 
             // if (frc::DriverStation::IsDisabled())
             // {

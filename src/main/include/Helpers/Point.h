@@ -39,10 +39,11 @@ class Point{
             y_ += p.y_;
         }
 
-        /***
-         * Rotates counterclockwise
-        */
-        Point rotate(double ang){//Radians
+
+        /// @brief Rotates counterclockwise
+        /// @param ang Radians
+        /// @return rotated point around origin
+        Point rotate(double ang){
             //[cos(a)  -sin(a)]
             //[sin(a)  cos(-a)]
             double nx = cos(ang) * x_ - sin(ang) * y_;
@@ -80,6 +81,23 @@ class Point{
             double xtemp = x_;
             x_ = -y_;
             y_ = xtemp;
+        }
+        
+        /// @brief gets the point with the magnitude and angle from the origin
+        /// @param mag magnitude
+        /// @param ang radians
+        /// @return the point
+        static Point extend(double mag, double ang){
+            return {mag*cos(ang), mag*sin(ang)};
+        }
+
+        /// @brief gets the point with the magnitude and angle from the origin
+        /// @param mag magnitude
+        /// @param ang degrees
+        /// @return the point
+        static Point extendDeg(double mag, double ang){
+            ang *= M_PI/180.0;
+            return {mag*cos(ang), mag*sin(ang)};
         }
 
         double getX(){return x_;}

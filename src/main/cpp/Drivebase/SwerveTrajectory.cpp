@@ -1,5 +1,6 @@
 #include "Drivebase/SwerveTrajectory.h"
 
+#include "Helpers/GeometryHelper.h"
 using namespace Poses;
 
 SwerveTrajectory::SwerveTrajectory(SwervePose startPose, SwervePose endPose, double yawAccelTime, double yawCruiseTime, double yawCruiseDist, double yawCruiseVel, 
@@ -33,7 +34,6 @@ SwervePose SwerveTrajectory::getPose(double time)
             yawAcc = (onlyYaw) ? MAX_AA  * yawDirection_: MAX_AA * 0.5 * yawDirection_;
             yawVel = time * yawAcc;
             yaw = startPose_.yaw + yawVel * 0.5 * time;
-            Helpers::normalizeAngle(yaw);
         }
         else if(time < yawAccelTime_ + yawCruiseTime_)
         {
@@ -41,15 +41,14 @@ SwervePose SwerveTrajectory::getPose(double time)
             yawAcc = 0;
             yawVel = yawCruiseVel_;
             yaw = startPose_.yaw + yawAccelTime_ * yawAccelTime_ * 0.5 * prevYawAcc + yawVel * (time - yawAccelTime_);
-            Helpers::normalizeAngle(yaw);
         }
         else
         {
             yawAcc = (onlyYaw) ? -MAX_AA * yawDirection_ : -MAX_AA * 0.5 * yawDirection_;
             yawVel = yawCruiseVel_ + (time - yawAccelTime_ - yawCruiseTime_) * yawAcc;
             yaw = startPose_.yaw + yawAccelTime_ * yawAccelTime_ * 0.5 * -yawAcc + yawCruiseVel_ * yawCruiseTime_ + (time - yawAccelTime_ - yawCruiseTime_) * (yawVel + yawCruiseVel_) / 2;
-            Helpers::normalizeAngle(yaw);
         }
+        yaw = GeometryHelper::getPrincipalAng2Deg(yaw);
 
         if(!onlyYaw)
         {
@@ -89,7 +88,7 @@ SwervePose SwerveTrajectory::getPose(double time)
     else if (time < (yawTime + linAccelTime_ + linCruiseTime_ + linDeccelTime_))
     {
         yaw = endPose_.yaw;
-        Helpers::normalizeAngle(yaw);
+        yaw = GeometryHelper::getPrincipalAng2Deg(yaw);
         yawVel = 0;
         yawAcc = 0;
 

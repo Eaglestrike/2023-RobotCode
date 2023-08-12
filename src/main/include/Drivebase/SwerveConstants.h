@@ -59,6 +59,24 @@ namespace SwerveConstants
     const double kaP = 4; // 0.008
     const double kaD = 0;
 
+    namespace ModuleConstants{
+        const double maxV = 1440;
+        const double maxA = 14400 * 10;
+        const double kP = 0.05;
+        const double kD = 0;
+        const double kV = 1 / 261.864;
+        const double kVI = -131.727;
+        const double kA = 0;
+
+        const double akP_ = 0.1; //COULDO tune values 0.08, 0, 0.001 (0.1, 0, 0.001)
+        const double akI_ = 0.0;
+        const double akD_ = 0.001;
+
+        const double dkP_ = 0.0;
+        const double dkI_ = 0.0;
+        const double dkD_ = 0.0;
+    };
+
     const double CLAW_MID_OFFSET = 0.0254 * 4.5; //was 2
 
     const double AUTOKTILT = 0.01;

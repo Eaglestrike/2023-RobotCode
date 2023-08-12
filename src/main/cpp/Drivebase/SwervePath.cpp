@@ -1,6 +1,6 @@
 #include "Drivebase/SwervePath.h"
 
-#include "Helpers/Helpers.h"
+#include "Helpers/GeometryHelper.h"
 
 using namespace Poses;
 
@@ -78,7 +78,7 @@ void SwervePath::generateLinearTrajectory()
             yawDist = totalLinearDist;
         }
         double dyaw = p2.yaw - p1.yaw;
-        Helpers::normalizeAngle(dyaw);
+        dyaw = GeometryHelper::getPrincipalAng2Deg(dyaw);
         int yawDirection = (dyaw > 0) ? 1 : -1;
         dyaw = abs(dyaw);
 

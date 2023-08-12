@@ -1,5 +1,9 @@
 #include "Arm/ArmKinematics.h"
 
+#include <math.h>
+
+#include "Helpers/GeometryHelper.h"
+
 ArmKinematics::ArmKinematics()
 {
 
@@ -52,8 +56,8 @@ std::pair<double, double> ArmKinematics::xyToAng(double x, double y, bool phiPos
 	theta *= (180 / M_PI);
 	theta = 90 - theta;
 
-	Helpers::normalizeAngle(theta);
-	Helpers::normalizeAngle(returnPhi);
+	theta = GeometryHelper::getPrincipalAng2Deg(theta);
+	phi = GeometryHelper::getPrincipalAng2Deg(returnPhi);
 	return std::pair<double, double>{theta, returnPhi};
 }
 

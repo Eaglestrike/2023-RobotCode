@@ -3,7 +3,6 @@
 #include <iostream>
 #include <tuple>
 
-#include "Helpers/Helpers.h"
 #include "ArmConstants.h"
 
 class ArmKinematics

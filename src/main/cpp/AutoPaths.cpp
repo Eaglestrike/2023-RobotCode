@@ -5,6 +5,8 @@
 
 #include "AutoPaths.h"
 
+#include "Helpers/GeometryHelper.h"
+
 #include "Drivebase/SwervePose.h"
 using namespace Poses;
 
@@ -928,8 +930,8 @@ void AutoPaths::periodic()
                     if (!pathGenerated_)
                     {
                         double setX = swervePoints_[i].x;
-                        // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().first);
-                        generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().first);
+                        // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().getX());
+                        generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().getX());
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
                         curveSecondStageGenerated_ = false;
@@ -965,8 +967,8 @@ void AutoPaths::periodic()
                                     setY = FieldConstants::TOP_CONE_Y - 0.18 /* + 0.1*/;
                                 }
                             }
-                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
 
                             double setYaw;
                             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
@@ -983,8 +985,8 @@ void AutoPaths::periodic()
                         else
                         {
                             double setY = swervePoints_[i].y;
-                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                             curveSecondStageGenerated_ = true;
 
                             double setYaw = swervePoints_[i].yaw;
@@ -1023,8 +1025,8 @@ void AutoPaths::periodic()
                     if ((!curveSecondStageGenerated_) && (/*pointNum_ == 1 || */ (pointNum_ == 0 && curveReady && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5 && isStationary(yProfile))))
                     {
                         double setY = swervePoints_[i].y;
-                        // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                        // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                         curveSecondStageGenerated_ = true;
 
                         double setYaw = swervePoints_[i].yaw;
@@ -1034,8 +1036,8 @@ void AutoPaths::periodic()
                     else if ((!curveSecondStageGenerated_) && ((pointNum_ == 1 && curveReady && isStationary(yProfile))))
                     {
                         double setY = swervePoints_[i].y;
-                        // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                        // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                         curveSecondStageGenerated_ = true;
                     }
 
@@ -1055,8 +1057,8 @@ void AutoPaths::periodic()
                     if (!pathGenerated_)
                     {
                         double setX = swervePoints_[i].x;
-                        // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().first);
-                        generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().first);
+                        // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().getX());
+                        generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().getX());
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
                         curveSecondStageGenerated_ = false;
@@ -1091,13 +1093,13 @@ void AutoPaths::periodic()
                                     setY = FieldConstants::TOP_CONE_Y - 0.05 - 0.0254 * 2 /* + 0.1*/;
                                 }
                             }
-                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                         }
                         // else
                         // {
                         //     double setY = swervePoints_[i].y;
-                        //     yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
+                        //     yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
                         //     curveSecondStageGenerated_ = true;
                         // }
                     }
@@ -1134,8 +1136,8 @@ void AutoPaths::periodic()
                         if (curveReady)
                         {
                             double setY = swervePoints_[i].y;
-                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                             curveSecondStageGenerated_ = true;
                         }
                     }
@@ -1153,12 +1155,12 @@ void AutoPaths::periodic()
                         {
                             setX = FieldConstants::RED_SCORING_X - 0.3;
                         }
-                        // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
-                        generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
+                        // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().getX());
+                        generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().getX());
 
                         double setY = swervePoints_[i].y;
-                        // yTraj_.generateTrajectory(currPose.y, setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                        // yTraj_.generateTrajectory(currPose.y, setY, swerveDrive_->getXYVel().getY());
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
                         yawStageGenerated_ = true;
 
@@ -1172,8 +1174,8 @@ void AutoPaths::periodic()
                     if ((!curveSecondStageGenerated_) && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.2)
                     {
                         double setX = swervePoints_[i].x;
-                        // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
-                        generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
+                        // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().getX());
+                        generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().getX());
                         curveSecondStageGenerated_ = true;
 
                         double setYaw = swervePoints_[i].yaw;
@@ -1186,8 +1188,8 @@ void AutoPaths::periodic()
                     if (!pathGenerated_)
                     {
                         double setY = swervePoints_[i].y;
-                        // yTraj_.generateTrajectory(currPose.y, setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                        // yTraj_.generateTrajectory(currPose.y, setY, swerveDrive_->getXYVel().getY());
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                         curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
                         double setYaw = swervePoints_[i].yaw;
@@ -1200,8 +1202,8 @@ void AutoPaths::periodic()
                     if ((!curveSecondStageGenerated_) && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1)
                     {
                         double setX = swervePoints_[i].x;
-                        // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
-                        generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().first);
+                        // xTraj_.generateTrajectory(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().getX());
+                        generateXTraj(swerveDrive_->getX(), setX, swerveDrive_->getXYVel().getX());
                         curveSecondStageGenerated_ = true;
                     }
                 }
@@ -1212,8 +1214,8 @@ void AutoPaths::periodic()
                         if (!pathGenerated_)
                         {
                             double setX = swervePoints_[i].x;
-                            // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().first);
-                            generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().first);
+                            // xTraj_.generateTrajectory(currPose.x, setX, swerveDrive_->getXYVel().getX());
+                            generateXTraj(currPose.x, setX, swerveDrive_->getXYVel().getX());
                             curveSecondStageStartTime_ = timer_.GetFPGATimestamp().value();
 
                             // double setYaw = swervePoints_[i].yaw;
@@ -1254,8 +1256,8 @@ void AutoPaths::periodic()
                                     setY = FieldConstants::TOP_CONE_Y - 0.05 /* + 0.1*/;
                                 }
                             }
-                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
 
                             curveSecondStageGenerated_ = false;
                             pathGenerated_ = true;
@@ -1279,8 +1281,8 @@ void AutoPaths::periodic()
                         if ((!curveSecondStageGenerated_) /* && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5*/ && curveReady && isStationary(yProfile))
                         {
                             double setY = swervePoints_[i].y;
-                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                            // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                            generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                             curveSecondStageGenerated_ = true;
 
                             double setYaw = swervePoints_[i].yaw;
@@ -1290,8 +1292,8 @@ void AutoPaths::periodic()
                     else
                     {
                         double setY = swervePoints_[i].y;
-                        // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().second);
-                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().second);
+                        // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
+                        generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
                         curveSecondStageGenerated_ = true;
 
                         double setYaw = swervePoints_[i].yaw;
@@ -1328,7 +1330,7 @@ void AutoPaths::periodic()
                 //     //  frc::SmartDashboard::PutNumber("WY", get<2>(yProfile));
                 //     //  frc::SmartDashboard::PutNumber("WYV", get<1>(yProfile));
                 //     //  frc::SmartDashboard::PutNumber("WYA", get<0>(yProfile));
-                //     //  frc::SmartDashboard::PutNumber("YVel", swerveDrive_->getXYVel().second);
+                //     //  frc::SmartDashboard::PutNumber("YVel", swerveDrive_->getXYVel().getY());
                 // }
                 // if (yawStageGenerated_)
                 // {
@@ -1388,8 +1390,8 @@ void AutoPaths::periodic()
                     pose = SwerveFromPose1D({swerveDrive_->getX(), xVel, 0}, yProfile, yawProfile);
 
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-                    double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-                    double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+                    double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+                    double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                     {
@@ -1449,8 +1451,8 @@ void AutoPaths::periodic()
                     // frc::SmartDashboard::PutNumber("YAW DOCK VEL", get<1>(yawProfile));
                     pose = SwerveFromPose1D({swerveDrive_->getX(), xVel, 0}, yProfile, yawProfile);
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-                    double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-                    double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+                    double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+                    double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
                     frc::SmartDashboard::PutNumber("DTilt", tilt);
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
@@ -1997,8 +1999,8 @@ void AutoPaths::periodic()
             if (pointOver && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.9)
             {
                 double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-                double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-                double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+                double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+                double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                 double tilt = pitch * sin(ang) - roll * cos(ang);
                 if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
                 {
@@ -2156,8 +2158,8 @@ void AutoPaths::periodic()
                 if (time < SwerveConstants::SENDING_IT_TIME)
                 {
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-                    double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-                    double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+                    double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+                    double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                     {
@@ -2195,8 +2197,8 @@ void AutoPaths::periodic()
                     frc::SmartDashboard::PutBoolean("Sending it Fast", false);
                     frc::SmartDashboard::PutBoolean("Sending it Medium", false);
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-                    double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-                    double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+                    double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+                    double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
                     if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
                     {
@@ -2255,8 +2257,8 @@ void AutoPaths::periodic()
             if (time < SwerveConstants::SENDING_IT_TIME)
             {
                 double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-                double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-                double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+                double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+                double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                 double tilt = pitch * sin(ang) - roll * cos(ang);
                 if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
                 {
@@ -2284,8 +2286,8 @@ void AutoPaths::periodic()
             else
             {
                 double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-                double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-                double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+                double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+                double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                 double tilt = pitch * sin(ang) - roll * cos(ang);
                 if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
                 {
@@ -2308,8 +2310,8 @@ void AutoPaths::periodic()
         armPosition_ = TwoJointArmProfiles::STOWED;
 
         double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-        double pitch = Helpers::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-        double roll = Helpers::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+        double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+        double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
         double tilt = pitch * sin(ang) - roll * cos(ang);
 
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)

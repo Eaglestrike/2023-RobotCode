@@ -8,6 +8,8 @@
 
 #include <frc/smartdashboard/SmartDashboard.h>
 
+#include "Helpers/GeometryHelper.h"
+
 #include "Controller/ControllerMap.h"
 
 using namespace Actions;
@@ -18,15 +20,15 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
         [&]
         {
             double yaw = navx_->GetYaw() - yawOffset_/* + swerveDrive_.getYawTagOffset()*/;
-            Helpers::normalizeAngle(yaw);
+            yaw = GeometryHelper::getPrincipalAng2Deg(yaw);
             frc::SmartDashboard::PutNumber("yaw", yaw);
             frc::SmartDashboard::PutBoolean("navx alive", navx_->IsConnected());
             frc::SmartDashboard::PutBoolean("Data Stale", socketClient_.IsStale());
             frc::SmartDashboard::PutBoolean("Camera Connection", socketClient_.HasConn());
 
             double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
-            double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees [-180, 180]
-            double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees [-180, 180]
+            double pitch = GeometryHelper::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees [-180, 180]
+            double roll = GeometryHelper::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees [-180, 180]
             double tilt = pitch * sin(ang) - roll * cos(ang); //Field-oriented tilt
             frc::SmartDashboard::PutNumber("Tilt", tilt);
             frc::SmartDashboard::PutNumber("Pitch", pitch);
@@ -433,10 +435,10 @@ void Robot::TeleopPeriodic()
         // 180, +, 0
         // 270, 0, +
         double yaw = (navx_->GetYaw() - yawOffset_/* + swerveDrive_.getYawTagOffset()*/);
-        Helpers::normalizeAngle(yaw);
+        yaw=GeometryHelper::getPrincipalAng2Deg(yaw);
         double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
-        double pitch = Helpers::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
-        double roll = Helpers::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
+        double pitch = GeometryHelper::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees
+        double roll = GeometryHelper::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees
         double tilt = pitch * sin(ang) - roll * cos(ang);
         if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
         {
@@ -546,7 +548,7 @@ void Robot::TeleopPeriodic()
             // }
 
             double yaw = navx_->GetYaw() - yawOffset_/* + swerveDrive_.getYawTagOffset()*/;
-            Helpers::normalizeAngle(yaw);
+            yaw=GeometryHelper::getPrincipalAng2Deg(yaw);
 
             wantedYaw = yaw > 0.0 ? 90.0 : -90.0;
 
