@@ -87,7 +87,15 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
     {
         if (!trackingTag_)
         {
-            manualScore(scoringLevel);
+            std::pair<double, double> scoringPos = checkScoringPos(scoringLevel);
+            // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
+            // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
+            if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
+            {
+                drive(strafe_, rotation_);
+                return;
+            }
+            manualScore(scoringLevel, scoringPos);
         }
 
         // bool end = false;
@@ -320,17 +328,7 @@ void SwerveDrive::setPanic(bool panic){
     config_.isPanic = panic;
 }
 
-void SwerveDrive::manualScore(int scoringLevel){
-    std::pair<double, double> scoringPos = checkScoringPos(scoringLevel);
-    // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
-    // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
-    if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
-    {
-        Vector fieldStrafe;
-        drive(strafe_, rotation_);
-        return;
-    }
-
+void SwerveDrive::manualScore(int scoringLevel, std::pair<double, double> scoringPos){
     holdingYaw_ = false;
 
     double wantedX = scoringPos.first;
@@ -568,96 +566,58 @@ void SwerveDrive::lockWheels()
     bottomLeft_->move({blSpeed_, blAngle_}, false);
 }
 
+/// @brief Drives the swerve module following the pose
+/// @param pose target pose
 void SwerveDrive::drivePose(const SwervePose pose)
 {
     double xVel = pose.xVel;
     double yVel = pose.yVel;
     double yawVel = pose.yawVel;
 
+    Vector currVel = getXYVel();
+
     // HERE
     //  setPos(std::pair<double, double>{pose.x, pose.y});
     //  setYaw(pose.yaw);
 
-    if (isMoving(pose) || frc::DriverStation::IsTeleop())
-    {
-        if (pose.xVel == 0 && pose.xAcc == 0) //Not moving in x direction
-        {
-            // adjust x because x path done
-            double xError = (pose.x - robotX_);
-            if (abs(xError) < 0.0254 * 1)
-            {
-                xVel = 0;
+    //Adding PD control to feedforward
+    if (isMoving(pose) || frc::DriverStation::IsTeleop()){
+        //X fine tuning
+        double xError = pose.x - robotX_;
+        double vxError = pose.xVel - currVel.getX();
+        if(pose.xVel == 0 && pose.xAcc == 0){ //xpath done/ no target movement on x axis
+            if(abs(xError) < 0.0254 * 1)//Error less than 1 inch
+            { 
+                xError = 0.0;
             }
-            else
+            vxError = 0.0;
+        }
+        xVel += (xError) * SwerveConstants::klP + (vxError) * SwerveConstants::klD; //additional PD control correction
+        
+        //Y fine tuning
+        double yError = pose.y - robotY_;
+        double vyError = pose.yVel - currVel.getY();
+        if (pose.yVel == 0 && pose.yAcc == 0){ //ypath done/ no target movement on y axis
+            if (abs(yError) < 0.0254 * 1) //Error less than 1 inch
             {
-                xVel = (pose.x - robotX_) * SwerveConstants::klP * 1.0;
+                yError = 0.0;
             }
+            vyError = 0.0;
         }
-        else
-        {
-            // normal x stuff and path still going
-            xVel += (pose.x - robotX_) * SwerveConstants::klP + (pose.xVel - getXYVel().getX()) * SwerveConstants::klD;
-        }
+        yVel += (yError) * SwerveConstants::klP + (vyError) * SwerveConstants::klD; //additional PD control correction
 
-        if (pose.yVel == 0 && pose.yAcc == 0)
-        {
-            // adjust y because y path done
-            double yError = (pose.y - robotY_);
-            if (abs(yError) < 0.0254 * 1)
-            {
-                yVel = 0;
-            }
-            else
-            {
-                yVel = (pose.y - robotY_) * SwerveConstants::klP * 1.0;
-            }
-        }
-        else
-        {
-            // normal y stuff and path still going
-            yVel += (pose.y - robotY_) * SwerveConstants::klP + (pose.yVel - getXYVel().getY()) * SwerveConstants::klD;
-        }
-
-        if (pose.yawVel == 0 && pose.yawAcc == 0)
-        {
-            // adjust yaw because yaw path done
-            double yawError = (pose.yaw - yaw_);
-            if (abs(yawError) > 180)
-            {
-                if (yawError > 0)
-                {
-                    yawError -= 360;
-                }
-                else
-                {
-                    yawError += 360;
-                }
-            }
-            if (abs(yawError) < 0.5)
+        //yaw fine tuning
+        double yawError = GeometryHelper::getAngDiffDeg(yaw_, pose.yaw);
+        if (pose.yawVel == 0 && pose.yawAcc == 0){ // yaw path done/ no target movement on rotation axis
+            if (abs(yawError) < 0.5) //Error less than 0.5 degrees
             {
                 yawVel = 0;
             }
-            else
-            {
-                yawVel = (yawError)*SwerveConstants::kaP * 1.8; // 1.5
+            else{
+                yawError *= 1.8;
             }
         }
-        else
-        {
-            double yawError = (pose.yaw - yaw_);
-            if (abs(yawError) > 180)
-            {
-                if (yawError > 0)
-                {
-                    yawError -= 360;
-                }
-                else
-                {
-                    yawError += 360;
-                }
-            }
-            yawVel += (yawError)*SwerveConstants::kaP;
-        }
+        yawVel += (yawError)*SwerveConstants::kaP; // Just P control correction (wheels can easily stop rotation)
     }
 
     // frc::SmartDashboard::PutNumber("XE", pose.x - robotX_);
@@ -954,7 +914,7 @@ double SwerveDrive::getY()
 }
 
 /**
- * Returns std::pair of xy velocities
+ * Returns xy velocities
  */
 Vector SwerveDrive::getXYVel()
 {
@@ -967,7 +927,7 @@ Vector SwerveDrive::getXYVel()
     // Average robot-oriented velocties
     Vector avgV = (frV + flV + brV + blV) / 4;
 
-    //Rotate to be field-oriented minus the navx
+    //Rotate to be oriented to front of robot minus the navx
     avgV.rotateCounterclockwise90This();
 
     // cout << timer_.GetFPGATimestamp().value() << ", " << sqrt(avgX * avgX + avgY * avgY) << endl;
@@ -1010,20 +970,28 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     // Get data from SmartDashboard/Networktables
     // std::vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
 
-    if (data.at(0) == -1) // No april tag data
+    //If robot tilted (on charge station)
+    if (abs(tilt) > 5)
+    {
+        return;
+    }
+    
+    // No april tag data
+    if (data.at(0) == -1)
     {
         // foundTag_ = false;
         return;
     }
     // Format of
-    //[ apriltag or nah , id , x , y , _ , _ , _ , zang]
+    //[         0            1    2   3   4     5        6       7 ]
+    //[ apriltag or nah , tagid , x , y , _ , delay , dataid , zang]
     double tagX = data.at(2);
     double tagY = data.at(3);
     double tagZAng = -data.at(4);
     // frc::SmartDashboard::PutNumber("Tag Ang", tagZAng * 180 / M_PI);
     int tagID = data.at(1);
     int uniqueVal = data.at(6);
-    double delay = data.at(5) / 1000.0;
+    double delay = data.at(5) / 1000.0; //Seconds
 
     double navxTagZAng/*, tagAngToRobotAng*/;
     if (tagID <= 4 && tagID > 0){
@@ -1071,11 +1039,6 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     //     return;
     // }
     // prevTag_ = tagID; // Set the past known tag to be this tag
-
-    if (abs(tilt) > 5)
-    {
-        return;
-    }
 
     // Rotate the tag by the seen angle to orient displacement to field orient
     double orientedTagX, orientedTagY;
@@ -1160,6 +1123,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
         // robotX_ += (-robotX_ + aprilTagX) * (0.1 / (1 + 1 * vel));
         // robotY_ += (-robotY_ + aprilTagY) * (0.1 / (1 + 1 * vel));
 
+        //Find most recent pose
         double time = timer_.GetFPGATimestamp().value();
         auto historicalPose = prevPoses_.lower_bound(time - SwerveConstants::CAMERA_DELAY - delay);
         if (historicalPose != prevPoses_.end() && abs(historicalPose->first - (time - SwerveConstants::CAMERA_DELAY) < 0.007))
@@ -1246,11 +1210,12 @@ std::pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO
     //     return {0, 0};
     // }
 
-    // If robot is out of bounds
+    // If robot is out of bounds, odometry says out of field lmao
     if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH)
     {
         return {0, 0};
     }
+
 
     double wantedX, wantedY;
     if (config_.isBlue)

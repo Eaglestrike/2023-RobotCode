@@ -2,6 +2,7 @@
 
 #include "Helpers/GeometryHelper.h"
 #include "Drivebase/SwerveConstants.h"
+
 using namespace SwerveConstants::ModuleConstants;
 using namespace Poses;
 
@@ -242,11 +243,10 @@ double SwerveModule::calcDrivePID(double driveSpeed)
 double SwerveModule::findError(double setAngle, double angle)
 {
     double rawError = GeometryHelper::getAngDiffDeg(angle, setAngle);
-
-    if(abs(rawError) > 90.0)
+    if(abs(rawError) > 90.0) //Invert wheel
     {
         direction_ = -1.0;
-        if(rawError > 0){
+        if(rawError > 0){ 
             return rawError - 180.0;
         }
         else{

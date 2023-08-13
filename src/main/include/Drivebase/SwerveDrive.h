@@ -36,7 +36,7 @@ class SwerveDrive
         void setTarget(double xStrafe, double yStrafe, double rotation);
         void setPanic(bool panic);
 
-        void manualScore(int scoringLevel);
+        void manualScore(int scoringLevel, std::pair<double, double> scoringPos);
 
         void drive(Vector strafe, double turn);
         void lockWheels();

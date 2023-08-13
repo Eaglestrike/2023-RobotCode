@@ -31,7 +31,7 @@ namespace GeometryHelper{
      * @param ang Input radians
      * @returns output in range [-pi, pi]
     */
-    static double getPrincipalAng2(double ang){
+    static inline double getPrincipalAng2(double ang){
         //https://www.desmos.com/calculator/yctu2qoevr
         double div = floor(((ang - M_PI) / (2.0*M_PI)) + 1);
         double multiple = div * 2.0*M_PI;
@@ -39,8 +39,11 @@ namespace GeometryHelper{
         return mod;
     }
 
-
-    static double getPrincipalAng2Deg(double ang){
+    /**
+     * @param ang Input degrees
+     * @returns output in range [-180, 180]
+    */
+    static inline double getPrincipalAng2Deg(double ang){
         double div = floor(((ang - 180.0)/ (360.0)) + 1);
         double multiple = div * 360.0;
         double mod = ang - multiple; 
@@ -51,7 +54,7 @@ namespace GeometryHelper{
     /// @param ang1 radians
     /// @param ang2 radians
     /// @return radians
-    static double getAngDiff(double ang1, double ang2){
+    static inline double getAngDiff(double ang1, double ang2){
         return getPrincipalAng2(ang2 - ang1);
     }
 
@@ -59,7 +62,7 @@ namespace GeometryHelper{
     /// @param ang1 degrees
     /// @param ang2 degrees
     /// @return degrees
-    static double getAngDiffDeg(double ang1, double ang2){
+    static inline double getAngDiffDeg(double ang1, double ang2){
         return getPrincipalAng2Deg(ang2 - ang1);
     }
 
