@@ -639,48 +639,22 @@ void SwerveDrive::drivePose(const SwervePose pose)
 
 void SwerveDrive::adjustPos(SwervePose pose)
 {
-    double xVel;
-    double xError = (pose.x - robotX_);
-    if (abs(xError) < 0.03)
-    {
-        xVel = 0;
-    }
-    else
-    {
+    double xVel = 0.0;
+    double xError = pose.x - robotX_;
+    if (abs(xError) > 0.03){
         xVel = (pose.x - robotX_) * SwerveConstants::klP * 6;
     }
 
-    double yVel;
-    double yError = (pose.y - robotY_);
-    if (abs(yError) < 0.03)
-    {
-        yVel = 0;
-    }
-    else
-    {
+    double yVel = 0.0;
+    double yError = pose.y - robotY_;
+    if (abs(yError) > 0.03){
         yVel = (pose.y - robotY_) * SwerveConstants::klP * 6;
     }
 
-    double yawVel;
-    double yawError = (pose.yaw - yaw_);
-    if (abs(yawError) > 180)
-    {
-        if (yawError > 0)
-        {
-            yawError -= 360;
-        }
-        else
-        {
-            yawError += 360;
-        }
-    }
-    if (abs(yawError) < 1)
-    {
-        yawVel = 0;
-    }
-    else
-    {
-        yawVel = (pose.yaw - (yaw_)) * SwerveConstants::kaP * 8;
+    double yawVel = 0.0;
+    double yawError = GeometryHelper::getAngDiffDeg(yaw_, pose.yaw);
+    if (abs(yawError) > 1){
+        yawVel = (yawError) * SwerveConstants::kaP * 8;
     }
 
     // calcModules(xVel, yVel, pose.getXAcc(), pose.yAcc, -yawVel, -pose.yawAcc, true);
@@ -692,9 +666,12 @@ void SwerveDrive::adjustPos(SwervePose pose)
     bottomLeft_->move({blSpeed_, blAngle_}, true);
 }
 
-/*
- * Calculates the module's orientation and power output
- */
+
+/// @brief Calculates the module's orientation and power output
+/// @param xSpeed x speed field-oriented
+/// @param ySpeed y speed field-oriented
+/// @param turn target turn velocity (deg/s if inVolts, rad/s if not inVolts)
+/// @param inVolts if the speed should be voltage or [-1, 1]
 void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, double yAcc,*/ double turn, /*double turnAcc,*/ bool inVolts)
 {
     // https://www.first1684.com/uploads/2/0/1/6/20161347/chimiswerve_whitepaper__2_.pdf
@@ -702,7 +679,7 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     // Robot's angle in radians
     double angle = yaw_ * (M_PI / 180);
 
-    // Rotate the velocities by the robot's rotation (Robot-Orient the velocity) i.e. decompose vectors
+    // Rotate the velocities by the robot's rotation (Robot-Orient the velocity)
     double newX = xSpeed * cos(angle) + ySpeed * sin(angle);
     double newY = ySpeed * cos(angle) + xSpeed * -sin(angle);
 
@@ -714,17 +691,13 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     if (inVolts)
     {
         // Convert to radians, then multiply by the radius to get tangential speed & accelerations
-        turn = (turn * M_PI / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
+        turn = (turn * M_PI / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2); //(m/s) v = r * w
         // turnAcc = (turnAcc * M_PI / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
     }
 
     // Scale the velocity and acceleration
-    double turnComponent = sqrt(turn * turn / 2);
+    double turnComponent = sqrt(2.0) * turn;
     // double turnAccComponent = sqrt(turnAcc * turnAcc / 2);
-    if (turn < 0)
-    {
-        turnComponent *= -1;
-    }
     // if (turnAcc < 0)
     // {
     //     turnAccComponent *= -1;
