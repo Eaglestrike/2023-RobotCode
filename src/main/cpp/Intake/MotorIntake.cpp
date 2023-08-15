@@ -91,8 +91,8 @@ void MotorIntake::Periodic() {
       break;
     case DEPLOYING:
     {
-      double pidVal = m_pid.Calculate(m_getEncoderRadians(), 
-        Helpers::convertStepsToRadians(MotorIntakeConstants::ENCODER_DEPLOYED_TARGET, 2048)); 
+      double pidVal = m_pid.Calculate(m_getEncoderRadians(),
+                                      units::radian_t{MotorIntakeConstants::ENCODER_DEPLOYED_TARGET * 2 * M_PI / 2048.0}); 
       double voltage = std::clamp(pidVal, -MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE, MotorIntakeConstants::DEPLOYER_MAX_VOLTAGE);
 
       m_deployer.SetVoltage(units::volt_t{voltage});
@@ -121,5 +121,5 @@ void MotorIntake::Periodic() {
 
 units::radian_t MotorIntake::m_getEncoderRadians() {
   double pos = m_deployer.GetSelectedSensorPosition();
-  return Helpers::convertStepsToRadians(pos, 2048);
+  return units::radian_t{pos * 2 * M_PI / 2048.0};
 }

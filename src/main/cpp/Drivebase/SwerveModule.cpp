@@ -1,6 +1,16 @@
 #include "Drivebase/SwerveModule.h"
 
-SwerveModule::SwerveModule(int turnID, int driveID, int cancoderID, double offset) : turnMotor_(turnID, "drivebase"), driveMotor_(driveID, "drivebase"), cancoder_(cancoderID, "drivebase"), trajectoryCalc_({maxV, maxA, kP, kD, kV, kA, kVI}), offset_(offset)
+#include "Helpers/GeometryHelper.h"
+#include "Drivebase/SwerveConstants.h"
+
+using namespace SwerveConstants::ModuleConstants;
+using namespace Poses;
+
+SwerveModule::SwerveModule(int turnID, int driveID, int cancoderID, double offset) :
+    turnMotor_(turnID, "drivebase"),
+    driveMotor_(driveID, "drivebase"),
+    cancoder_(cancoderID, "drivebase"),
+    trajectoryCalc_({maxV, maxA, kP, kD, kV, kA, kVI}), offset_(offset)
 {
     turnMotor_.SetInverted(TalonFXInvertType::CounterClockwise);
     driveMotor_.SetInverted(TalonFXInvertType::Clockwise);
@@ -14,7 +24,20 @@ SwerveModule::SwerveModule(int turnID, int driveID, int cancoderID, double offse
     cancoder_.ClearStickyFaults(); 
 }
 
-void SwerveModule::periodic(double driveSpeed, double angle, bool inVolts)
+/// @brief Collects module data
+void SwerveModule::periodic(){
+    double angle = cancoder_.GetAbsolutePosition() + offset_; // Degrees
+    angle = GeometryHelper::getPrincipalAng2Deg(angle);
+    double speed = (driveMotor_.GetSelectedSensorVelocity() / 2048.0) * 10.0 * SwerveConstants::DRIVE_GEAR_RATIO * 2.0 * M_PI * SwerveConstants::TREAD_RADIUS;
+
+    currPose_.ang = angle;
+    currPose_.mag = speed;
+}
+
+/// @brief Moves
+/// @param target target pose
+/// @param inVolts direct volts or target velocity
+void SwerveModule::move(ModulePose target, bool inVolts)
 {
     double time = timer_.GetFPGATimestamp().value();
     // frc::SmartDashboard::PutNumber(id_ + " time", time);
@@ -22,12 +45,7 @@ void SwerveModule::periodic(double driveSpeed, double angle, bool inVolts)
     // frc::SmartDashboard::PutNumber(id_ + " ang", angle);
     dT_ = time - prevTime_;
     prevTime_ = time;
-    
-    move(driveSpeed, angle, inVolts);
-}
 
-void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
-{
     //frc::SmartDashboard::PutNumber(id_ + " Wanted speed", driveSpeed);
     //frc::SmartDashboard::PutNumber(id_ + " Wanted angle", angle);
 
@@ -118,7 +136,7 @@ void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
     //6, 
     //6.5, 
 
-    units::volt_t turnVolts{calcAngPID(angle)};
+    units::volt_t turnVolts{calcAngPID(target.ang)};
     turnMotor_.SetVoltage(turnVolts);
 
     // if(abs(driveSpeed) < 0.1)
@@ -133,11 +151,11 @@ void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
     
     if(inVolts)
     {
-        driveMotor_.SetVoltage(units::volt_t(direction_ * driveSpeed));
+        driveMotor_.SetVoltage(units::volt_t(direction_ * target.mag));
     }
     else
     {
-        units::volt_t driveVolts{direction_ * calcDrivePID(driveSpeed)};
+        units::volt_t driveVolts{direction_ * calcDrivePID(target.mag)};
         driveMotor_.SetVoltage(driveVolts);
     }
 
@@ -164,10 +182,13 @@ void SwerveModule::move(double driveSpeed, double angle, bool inVolts)
 //11, 2730
 //12, 2855
 
+/// @brief PID controller
+/// @param setAngle target angle
+/// @return volts
 double SwerveModule::calcAngPID(double setAngle)
 {
 
-    double error = findError(setAngle, getAngle());
+    double error = findError(setAngle, currPose_.ang);
     //frc::SmartDashboard::PutNumber(id_ + "Error", error);
 
     aIntegralError_ += error * dT_;
@@ -221,42 +242,27 @@ double SwerveModule::calcDrivePID(double driveSpeed)
 
 double SwerveModule::findError(double setAngle, double angle)
 {
-    double rawError = setAngle - angle;
-
-    Helpers::normalizeAngle(rawError);
-
-    if(abs(rawError) > 90)
+    double rawError = GeometryHelper::getAngDiffDeg(angle, setAngle);
+    if(abs(rawError) > 90.0) //Invert wheel
     {
-        direction_ = -1;
+        direction_ = -1.0;
+        if(rawError > 0){ 
+            return rawError - 180.0;
+        }
+        else{
+            return rawError + 180.0;
+        }
     }
     else
     {
-        direction_ = 1;
+        direction_ = 1.0;
+        return rawError;
     }
-    
-    return (abs(rawError) <= 90) ? rawError : (rawError > 0) ? rawError - 180 : rawError + 180;
 }
 
 /**
- * Returns driving/forward velocity of the wheels
+ * Returns velocity of the wheels
 */
-double SwerveModule::getDriveVelocity()
-{
-    // frc::SmartDashboard::PutNumber(id_ + " vel", (driveMotor_.GetSelectedSensorVelocity() / 2048.0) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * M_PI * SwerveConstants::TREAD_RADIUS);
-    //Heavy ratio to degrees
-    return (driveMotor_.GetSelectedSensorVelocity() / 2048) * 10 * SwerveConstants::DRIVE_GEAR_RATIO * 2 * M_PI * SwerveConstants::TREAD_RADIUS;
-
-}
-
-/**
- * Return angle of swerve module, robot-oriented, in degrees
-*/
-double SwerveModule::getAngle()
-{
-    double angle = cancoder_.GetAbsolutePosition() + offset_;
-    Helpers::normalizeAngle(angle);
-
-    // frc::SmartDashboard::PutNumber(id_ + " apos", cancoder_.GetAbsolutePosition());
-    // frc::SmartDashboard::PutNumber(id_ + " pos", angle);
-    return angle;
-}
+Vector SwerveModule::getVelocity(){
+    return Vector::extendDeg(currPose_.mag, currPose_.ang);
+};

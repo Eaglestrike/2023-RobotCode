@@ -36,7 +36,7 @@ class SwerveDrive
         void setTarget(double xStrafe, double yStrafe, double rotation);
         void setPanic(bool panic);
 
-        void manualScore(int scoringLevel);
+        void manualScore(int scoringLevel, std::pair<double, double> scoringPos);
 
         void drive(Vector strafe, double turn);
         void lockWheels();
@@ -50,7 +50,7 @@ class SwerveDrive
 
         double getX();
         double getY();
-        std::pair<double, double> getXYVel();
+        Vector getXYVel();
         double getYaw();
         void setPos(std::pair<double, double> xy);
 
@@ -92,6 +92,6 @@ class SwerveDrive
         int setTagPos_, prevTag_, prevUniqueVal_, numLargeDiffs_;
         double xLineupTrim_, yLineupTrim_;
 
-        std::map<double, std::pair<std::pair<double, double>, std::pair<double, double>>> prevPoses_;
+        std::map<double, std::pair<Point, Vector>> prevPoses_;
 
 };

@@ -50,7 +50,7 @@ namespace SwerveConstants
     const double klV = 0.502636; // If you increase pd, check auto lineup
     const double klVI = -0.359672;
     const double klA = 4.11;
-    const double klP = 2.5; //1.5
+    const double klP = 2.5; //linear kp :1.5
     const double klD = 0.05;
 
     const double kaV = 34.2064;
@@ -58,6 +58,24 @@ namespace SwerveConstants
     const double kaA = 0;
     const double kaP = 4; // 0.008
     const double kaD = 0;
+
+    namespace ModuleConstants{
+        const double maxV = 1440;
+        const double maxA = 14400 * 10;
+        const double kP = 0.05;
+        const double kD = 0;
+        const double kV = 1 / 261.864;
+        const double kVI = -131.727;
+        const double kA = 0;
+
+        const double akP_ = 0.1; //COULDO tune values 0.08, 0, 0.001 (0.1, 0, 0.001)
+        const double akI_ = 0.0;
+        const double akD_ = 0.001;
+
+        const double dkP_ = 0.0;
+        const double dkI_ = 0.0;
+        const double dkD_ = 0.0;
+    };
 
     const double CLAW_MID_OFFSET = 0.0254 * 4.5; //was 2
 

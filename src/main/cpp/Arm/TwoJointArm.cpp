@@ -1,5 +1,6 @@
 #include "Arm/TwoJointArm.h"
 
+#include "Helpers/GeometryHelper.h"
 
 #include "Helpers/GeneralPoses.h"
 using namespace Poses;
@@ -1829,7 +1830,7 @@ double TwoJointArm::getTheta()
     // frc::SmartDashboard::PutNumber("Get", shoulderEncoder_.Get().value());
     // frc::SmartDashboard::PutNumber("GetDist", shoulderEncoder_.GetDistance());
     // frc::SmartDashboard::PutBoolean("Alive", shoulderEncoder_.IsConnected());
-    Helpers::normalizeAngle(theta);
+    theta = GeometryHelper::getPrincipalAng2Deg(theta);
     return (forward_) ? theta : -theta;
 }
 

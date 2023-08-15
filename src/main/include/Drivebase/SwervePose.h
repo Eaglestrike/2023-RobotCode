@@ -18,6 +18,11 @@ namespace Poses{
         double yawDist = 0.0;
     };
 
+    struct ModulePose{
+        double ang;
+        double mag;
+    };
+
     /// @brief Linear distance from start to finish
     /// @param startPose start pose
     /// @param endPose end pose

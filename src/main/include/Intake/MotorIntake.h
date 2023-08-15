@@ -20,7 +20,6 @@
 #include <units/angular_velocity.h>
 #include <units/time.h>
 
-#include "Helpers/Helpers.h"
 #include "IntakeConstants.h"
 
 /**
@@ -52,6 +51,7 @@ public:
   void ResetEncoderPosition();
   void ResetPID();
   void ResetAcceleration();
+  
 private:
   State m_state{STOWED};
 
