@@ -417,7 +417,7 @@ void SwerveDrive::autoLineup(Point scoringPos){
 
     // if (playerStation)
     // {
-    //     if ((config_.isBlue && getX() > FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
+    //     if ((config_.isBlue && getX() > FieldConstants::PLAYER_STATION_X.blue - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::PLAYER_STATION_X.red + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
     //     {
     //         double xStrafe, yStrafe;
     //         if (config_.isBlue)
@@ -907,24 +907,18 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     // double defaultVal[] = {-1};
     // Get data from SmartDashboard/Networktables
     // std::vector<double> data = frc::SmartDashboard::GetNumberArray("data", defaultVal);
-
-    //If robot tilted (on charge station)
-    if (abs(tilt) > 5)
-    {
-        return;
-    }
     
     // No april tag data
-    if (data.at(0) == -1)
-    {
+    if (data.at(0) == -1){
         // foundTag_ = false;
         return;
     }
     // Format of
     //[         0            1    2   3   4     5        6       7 ]
     //[ apriltag or nah , tagid , x , y , _ , delay , dataid , zang]
-    double tagX = data.at(2);
-    double tagY = data.at(3);
+
+    Point tagPos{data.at(2), data.at(3)}; //Robot position relative to tag
+
     double tagZAng = -data.at(4);
     // frc::SmartDashboard::PutNumber("Tag Ang", tagZAng * 180 / M_PI);
     int tagID = data.at(1);
@@ -952,22 +946,26 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     // frc::SmartDashboard::PutNumber("Tag y", tagY);
     // frc::SmartDashboard::PutNumber("Tag ZAng", tagZAng);
 
-    if (uniqueVal == prevUniqueVal_)
-    {
-        frc::SmartDashboard::PutBoolean("Different Tag", false);
+    //check new tag
+    bool sameTag = (uniqueVal == prevUniqueVal_);
+    frc::SmartDashboard::PutBoolean("Different Tag", !sameTag);
+    if(sameTag){
         if (robotX_ > 3.919857 + 2 && robotX_ < 12.621893 - 2) // If robot is not near community nor loading station
         {
             // foundTag_ = false;
         }
         return;
     }
-    else
-    {
-        frc::SmartDashboard::PutBoolean("Different Tag", true);
-        prevUniqueVal_ = uniqueVal;
-    }
+    prevUniqueVal_ = uniqueVal; 
+
+    //Tag id wonky
     if (tagID < 1 || tagID > 8) // Ignore for now
     {
+        return;
+    }
+
+    //If robot tilted (on charge station)
+    if (abs(tilt) > 5){
         return;
     }
 
@@ -978,22 +976,20 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     // }
     // prevTag_ = tagID; // Set the past known tag to be this tag
 
-    // Rotate the tag by the seen angle to orient displacement to field orient
-    double orientedTagX, orientedTagY;
-    if (!frc::DriverStation::IsDisabled())
-    {
-        orientedTagX = tagX * cos(navxTagZAng) + tagY * sin(navxTagZAng);
-        orientedTagY = tagX * -sin(navxTagZAng) + tagY * cos(navxTagZAng);
+    // Rotate the tag by the seen angle to orient displacement (since the cameras rotate with the robot <- undo that)
+    // Now is oriented to a robot facing the tag directly
+    Point orientedTagPos;
+    if (!frc::DriverStation::IsDisabled()){
+        //Using navx to orient tag displacement
+        orientedTagPos = tagPos.rotateClockwise(navxTagZAng);
     }
-    else
-    {
-        orientedTagX = tagX * cos(tagZAng) + tagY * sin(tagZAng);
-        orientedTagY = tagX * -sin(tagZAng) + tagY * cos(tagZAng);
+    else{
+        //Using tag data to orient tag displacement
+        orientedTagPos = tagPos.rotateClockwise(tagZAng);
     }
 
     // Get xy of field tag position
-    double fieldTagX = FieldConstants::TAG_XY[tagID - 1][0];
-    double fieldTagY = FieldConstants::TAG_XY[tagID - 1][1];
+    Point fieldTagPos = FieldConstants::TAG_XY[tagID - 1];
 
     // frc::SmartDashboard::PutNumber("GX", fieldTagX);
     // frc::SmartDashboard::PutNumber("GY", fieldTagY);
@@ -1001,38 +997,39 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     // frc::SmartDashboard::PutNumber("TOX", orientedTagX);
     // frc::SmartDashboard::PutNumber("TOY", orientedTagY);
 
-    double aprilTagX, aprilTagY;
-    // Really just field-oriented coordinates (idk why called apriltagY) - call SeenPositionX or smthg
+    //World coordinate from tag reading
+    Point robotTagPos;
+    // Really just field-oriented coordinates (idk why called yPos) - call SeenPositionX or smthg
     // Adding the displacement from tag to robot + apriltag position
-    if (tagID == 1 || tagID == 2 || tagID == 3 || tagID == 4) // Left side of field
-    {
-        aprilTagX = fieldTagX - orientedTagY;
-        aprilTagY = fieldTagY + orientedTagX;
+    if (tagID <= 4) {// Left side of field
+        robotTagPos = fieldTagPos + orientedTagPos.rotateCounterclockwise90();
     }
-    else // Right side of field
-    {
-        aprilTagX = fieldTagX + orientedTagY;
-        aprilTagY = fieldTagY - orientedTagX;
+    else{ // Right side of field
+        robotTagPos = fieldTagPos + orientedTagPos.rotateClockwise90();
     }
 
-    frc::SmartDashboard::PutNumber("AT X", aprilTagX);
-    frc::SmartDashboard::PutNumber("AT Y", aprilTagY);
+    double xPos = robotTagPos.getX();
+    double yPos = robotTagPos.getY();
+    //April tag reading
+    frc::SmartDashboard::PutNumber("AT X", xPos);
+    frc::SmartDashboard::PutNumber("AT Y", yPos);
 
-    if (aprilTagX < 0 || aprilTagY < 0 || aprilTagX > FieldConstants::FIELD_LENGTH || aprilTagY > FieldConstants::FIELD_WIDTH) // If rbot is out of bounds
+    if (xPos < 0 || yPos < 0 || xPos > FieldConstants::FIELD_LENGTH || yPos > FieldConstants::FIELD_WIDTH) // If rbot is out of bounds
     {
         return;
     }
 
+    //Tag on the opposite side of the field
     if (tagID <= 4)
     {
-        if (aprilTagX < FieldConstants::FIELD_LENGTH / 2)
+        if (xPos < FieldConstants::FIELD_LENGTH / 2)
         {
             return;
         }
     }
     else
     {
-        if (aprilTagX > FieldConstants::FIELD_LENGTH / 2)
+        if (xPos > FieldConstants::FIELD_LENGTH / 2)
         {
             return;
         }
@@ -1041,25 +1038,25 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     // 1st check = set it regardless
     if (!foundTag_)
     {
-        robotX_ = aprilTagX;
-        robotY_ = aprilTagY;
+        robotX_ = xPos;
+        robotY_ = yPos;
         foundTag_ = true;
     }
     else
     {
         // Update by moving the position to the calculated position if the position is close
         // Increment it proportionally by the error
-        //  if (abs(robotX_ - aprilTagX) < 1 && abs(robotY_ - aprilTagY) < 1) // TODO watch out here
+        //  if (abs(robotX_ - xPos) < 1 && abs(robotY_ - yPos) < 1) // TODO watch out here
         //  {
-        //      robotX_ += (-robotX_ + aprilTagX) * 0.01;
-        //      robotY_ += (-robotY_ + aprilTagY) * 0.01;
+        //      robotX_ += (-robotX_ + xPos) * 0.01;
+        //      robotY_ += (-robotY_ + yPos) * 0.01;
         //  }
 
         // Point xyVel = getXYVel();
         // double vel = sqrt(xyVel.first * xyVel.first + xyVel.second * xyVel.second);
 
-        // robotX_ += (-robotX_ + aprilTagX) * (0.1 / (1 + 1 * vel));
-        // robotY_ += (-robotY_ + aprilTagY) * (0.1 / (1 + 1 * vel));
+        // robotX_ += (-robotX_ + xPos) * (0.1 / (1 + 1 * vel));
+        // robotY_ += (-robotY_ + yPos) * (0.1 / (1 + 1 * vel));
 
         //Find most recent pose
         double time = timer_.GetFPGATimestamp().value();
@@ -1070,19 +1067,19 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
             // frc::SmartDashboard::PutNumber("HY", historicalPose->second.first.second);
             double vel = historicalPose->second.second.getMagnitude();
             
-            double xDiff = aprilTagX - historicalPose->second.first.getX();
-            double yDiff = aprilTagY - historicalPose->second.first.getY();
+            double xDiff = xPos - historicalPose->second.first.getX();
+            double yDiff = yPos - historicalPose->second.first.getY();
             // frc::SmartDashboard::PutNumber("DiffX", xDiff);
             // frc::SmartDashboard::PutNumber("DiffY", yDiff);
 
             double dist;
-            if (aprilTagX > FieldConstants::FIELD_LENGTH / 2)
+            if (xPos > FieldConstants::FIELD_LENGTH / 2)
             {
-                dist = FieldConstants::FIELD_LENGTH - aprilTagX;
+                dist = FieldConstants::FIELD_LENGTH - xPos;
             }
             else
             {
-                dist = aprilTagX;
+                dist = xPos;
             }
             double multiplier;
             if (dist > FieldConstants::FIELD_LENGTH / 2)
@@ -1160,20 +1157,20 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
     {
         if (robotX_ > FieldConstants::FIELD_LENGTH / 2)
         {
-            wantedX = FieldConstants::BLUE_PS_X;
-            if (robotY_ > FieldConstants::TAG_XY[4][1])
+            wantedX = FieldConstants::PLAYER_STATION_X.blue;
+            if (robotY_ > FieldConstants::TAG_XY[4].getY())
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.838 - 0.127; // 0.6, then 0.838
+                wantedY = FieldConstants::TAG_XY[4].getY() + 0.838 - 0.127; // 0.6, then 0.838
             }
             else
             {
-                wantedY = FieldConstants::TAG_XY[4][1] - 0.838;
+                wantedY = FieldConstants::TAG_XY[4].getY() - 0.838;
             }
             // wantedY = FieldConstants::TAG_XY[4][1];
         }
         else
         {
-            wantedX = FieldConstants::BLUE_SCORING_X;
+            wantedX = FieldConstants::SCORING_X.blue;
             if (scoringLevel == 1)
             {
                 wantedX += 0.1; // scoot up by 10 cm, 0.5
@@ -1191,19 +1188,19 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
     {
         if (robotX_ < FieldConstants::FIELD_LENGTH / 2)
         {
-            wantedX = FieldConstants::RED_PS_X;
-            if (robotY_ > FieldConstants::TAG_XY[4][1])
+            wantedX = FieldConstants::PLAYER_STATION_X.red;
+            if (robotY_ > FieldConstants::TAG_XY[4].getY())
             {
-                wantedY = FieldConstants::TAG_XY[4][1] + 0.838;
+                wantedY = FieldConstants::TAG_XY[4].getY() + 0.838;
             }
             else
             {
-                wantedY = FieldConstants::TAG_XY[4][1] - 0.838 + 0.127;
+                wantedY = FieldConstants::TAG_XY[4].getY() - 0.838 + 0.127;
             }
         }
         else
         {
-            wantedX = FieldConstants::RED_SCORING_X;
+            wantedX = FieldConstants::SCORING_X.red;
             if (scoringLevel == 1)
             {
                 wantedX -= 0.1; // 0.5
@@ -1212,8 +1209,8 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
 
             if (setTagPos_ == 9)
             {
-                wantedY -= (0.0254 * 4);
-                wantedX += (0.0254 * 2);
+                wantedY -= (0.0254 * 4); //Add 4 inches Y
+                wantedX += (0.0254 * 2); //Add 2 inches X
             }
         }
     }

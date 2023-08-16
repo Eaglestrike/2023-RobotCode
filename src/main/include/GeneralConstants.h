@@ -64,8 +64,8 @@ namespace FieldConstants
     };
 
     struct ObjectCoordinateX{
-        double red;
         double blue;
+        double red;
     };
 
     // const double LEFT_TAG_X = 1.05283; //41.45 in
@@ -79,15 +79,16 @@ namespace FieldConstants
      * Long axis is the x, while short one is y
      * Driver faces along the x axis, apriltags too
      */
-    const double TAG_XY[8][2] = {
-        {15.513558, 1.071626}, // Player station for blue
-        {15.513558, 2.748026}, //Blue tags
-        {15.513558, 4.424426},
-        {16.178784, 6.749796},
-        {0.36195, 6.749796}, // Player station for red
-        {1.02743, 4.424426}, // Red tags
-        {1.02743, 2.748026},
-        {1.02743, 1.071626}};
+    const Point TAG_XY[8] = {
+            {15.513558, 1.071626}, // Player station for red
+            {15.513558, 2.748026}, //Blue tags
+            {15.513558, 4.424426},
+            {16.178784, 6.749796},
+            {0.36195, 6.749796}, // Player station for blue
+            {1.02743, 4.424426}, // Red tags
+            {1.02743, 2.748026},
+            {1.02743, 1.071626}
+        };
 
     const double BOTTOM_CONE_Y = 0.5128;
     const double TOP_CONE_Y = 4.983;
@@ -98,10 +99,16 @@ namespace FieldConstants
     const double TOP_MIDDLE_CONE_Y = 3.306826;
     const double BOTTOM_MIDDLE_CONE_Y = 2.1844;
 
-    const double BLUE_SCORING_X = 1.8+0.068 + (0.0254 * 3);
-    const double RED_SCORING_X = 14.74-0.068 - (0.0254 * 3);
-    const double BLUE_PS_X = TAG_XY[3][0] - 0.7;
-    const double RED_PS_X = TAG_XY[4][0] + 0.7;
+    //Position to score on grid
+    const ObjectCoordinateX SCORING_X{
+        .blue = 1.8+0.068 + (0.0254 * 3),
+        .red = 14.74-0.068 - (0.0254 * 3)
+    };
+
+    const ObjectCoordinateX PLAYER_STATION_X{
+        .blue = TAG_XY[3].getX() - 0.7,
+        .red = TAG_XY[4].getX() + 0.7
+    };
 
     const double AUTO_DOCK_Y = 2.748;
     const double BLUE_AUTO_DOCK_X = 3.825875; // 2.412
@@ -112,8 +119,9 @@ namespace FieldConstants
     const double TOP_MID_PIECE_Y = 3.358;
     const double TOP_PIECE_Y = 4.577;
 
+    //Position of pieces during auto
     const ObjectCoordinateX PIECE_X{
-        .red = 9.474,
-        .blue = 7.068
+        .blue = 7.068,
+        .red = 9.474
     };
 }

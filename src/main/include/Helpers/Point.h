@@ -51,6 +51,17 @@ class Point{
             return Point(nx, ny);
         }
 
+        /// @brief Rotates clockwise
+        /// @param ang Radians
+        /// @return rotated point around origin
+        Point rotateClockwise(double ang){
+            //[cos(a)  -sin(a)]
+            //[sin(a)  cos(-a)]
+            double nx = cos(ang) * x_ + sin(ang) * y_;
+            double ny = -sin(ang) * x_ + cos(ang) * y_;
+            return Point(nx, ny);
+        }
+
         /***
          * Rotates counterclockwise
         */
@@ -106,8 +117,8 @@ class Point{
             return {mag*cos(ang), mag*sin(ang)};
         }
 
-        double getX(){return x_;}
-        double getY(){return y_;}
+        double getX() const {return x_;}
+        double getY() const {return y_;}
         void setX(double x){x_ = x;}
         void setY(double y){y_ = y;}
 

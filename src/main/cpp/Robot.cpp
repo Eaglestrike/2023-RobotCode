@@ -588,7 +588,13 @@ void Robot::TeleopPeriodic()
             else if (playerStation)
             {
                 arm_.setClawWheels(ClawConstants::INTAKING_SPEED);
-                if ((frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && swerveDrive_.getX() < FieldConstants::BLUE_PS_X - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] + 0.6) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && swerveDrive_.getX() > FieldConstants::RED_PS_X + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] - 0.6))
+                if (
+                    (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue &&
+                    swerveDrive_.getX() < FieldConstants::PLAYER_STATION_X.blue - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] + 0.6)
+                    ||
+                    (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed &&
+                    swerveDrive_.getX() > FieldConstants::PLAYER_STATION_X.red + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] - 0.6)
+                    )
                 {
                     // arm_.setPosTo(TwoJointArmProfiles::MID); //FORWARD BASED LINEUP
 
