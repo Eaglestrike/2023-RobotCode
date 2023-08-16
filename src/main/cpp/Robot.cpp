@@ -291,8 +291,8 @@ void Robot::AutonomousInit()
     navx_->ZeroYaw();
     yawOffset_ = autoPaths_.initYaw();
 
-    std::pair<double, double> startXY = autoPaths_.initPos();
-    if (abs(swerveDrive_.getX() - startXY.first) > 1 || abs(swerveDrive_.getY() - startXY.second) > 1)
+    Point startXY = autoPaths_.initPos();
+    if (abs(swerveDrive_.getX() - startXY.getX()) > 1 || abs(swerveDrive_.getY() - startXY.getY()) > 1)
     {
         // frc::SmartDashboard::PutBoolean("F", true); 
         swerveDrive_.setPos(startXY);
@@ -492,8 +492,8 @@ void Robot::TeleopPeriodic()
     }
     else if (controls_.getPressed(SCORE) && armsZeroed_)
     {
-        std::pair<double, double> scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
-        if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
+        Point scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
+        if (scoringPos.getX() == 0 && scoringPos.getY() == 0) // COULDO get a better flag thing
         {
             // Do nothing?
         }
@@ -509,7 +509,7 @@ void Robot::TeleopPeriodic()
             //     if (arm_.isForward())
             //     {
             //         wantedYaw = 90.0;
-            //         if (scoringPos.first > 6.0)
+            //         if (scoringPos.getX() > 6.0)
             //         {
             //             playerStation = true;
             //             wantedYaw *= -1;
@@ -518,7 +518,7 @@ void Robot::TeleopPeriodic()
             //     else
             //     {
             //         wantedYaw = -90.0;
-            //         if (scoringPos.first > 6.0)
+            //         if (scoringPos.getX() > 6.0)
             //         {
             //             playerStation = true;
             //             wantedYaw *= -1;
@@ -530,7 +530,7 @@ void Robot::TeleopPeriodic()
             //     if (arm_.isForward())
             //     {
             //         wantedYaw = -90.0;
-            //         if (scoringPos.first < 6.0)
+            //         if (scoringPos.getX() < 6.0)
             //         {
             //             playerStation = true;
             //             wantedYaw *= -1;
@@ -539,7 +539,7 @@ void Robot::TeleopPeriodic()
             //     else
             //     {
             //         wantedYaw = 90.0;
-            //         if (scoringPos.first < 6.0)
+            //         if (scoringPos.getX() < 6.0)
             //         {
             //             playerStation = true;
             //             wantedYaw *= -1;
@@ -560,12 +560,12 @@ void Robot::TeleopPeriodic()
             bool lineupForward;
             if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
             {
-                playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0);
+                playerStation = (scoringPos.getX() > FieldConstants::FIELD_LENGTH / 2.0);
                 lineupForward = (playerStation) ? (wantedYaw < 0) : (wantedYaw > 0);
             }
             else
             {
-                playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0);
+                playerStation = (scoringPos.getX() < FieldConstants::FIELD_LENGTH / 2.0);
                 lineupForward = (playerStation) ? (wantedYaw > 0) : (wantedYaw < 0);
             }
 
@@ -581,7 +581,7 @@ void Robot::TeleopPeriodic()
                     yawError += 360;
                 }
             }
-            if (abs(yawError) > 15 || (!playerStation && (abs(swerveDrive_.getX() - scoringPos.first) > 1.5 || abs(swerveDrive_.getY() - scoringPos.second) > 2)))
+            if (abs(yawError) > 15 || (!playerStation && (abs(swerveDrive_.getX() - scoringPos.getX()) > 1.5 || abs(swerveDrive_.getY() - scoringPos.getY()) > 2)))
             {
                 // Do nothing
             }
@@ -638,7 +638,7 @@ void Robot::TeleopPeriodic()
             }
 
             // if nearby, attempt scoring process
-            // original condition: abs(swerveDrive_.getX() - scoringPos.first) < 1 && abs(swerveDrive_.getY() - scoringPos.second) < 1
+            // original condition: abs(swerveDrive_.getX() - scoringPos.getX()) < 1 && abs(swerveDrive_.getY() - scoringPos.getY()) < 1
             else
             {
                 switch (scoringLevel_)
@@ -987,14 +987,14 @@ void Robot::TeleopPeriodic()
     //         }
     //         else if (!grabbedCone_)
     //         {
-    //             intakesNeededDown.second = true;
+    //             intakesNeededDown.getY() = true;
     //             coneIntakeDown_ = false;
     //             if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
     //             {
     //                 // coneIntakeHalfway = true;
     //                 // arm_.setPosTo(TwoJointArmProfiles::CONE_INTAKE);
 
-    //                 intakesNeededDown.second = true;
+    //                 intakesNeededDown.getY() = true;
     //                 coneIntakeDown_ = false;
     //                 arm_.setJointPath(arm_.getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
     //                 arm_.setClaw(true);
@@ -1020,14 +1020,14 @@ void Robot::TeleopPeriodic()
     //                 if (time > 0.25)
     //                 {
     //                     arm_.setClaw(false);
-    //                     // intakesNeededDown.second = false;
+    //                     // intakesNeededDown.getY() = false;
     //                     // coneIntakeHalfway = false;
     //                     // OUTAKE CONE
     //                 }
 
     //                 if(time > 0.45)
     //                 {
-    //                     intakesNeededDown.second = false;
+    //                     intakesNeededDown.getY() = false;
     //                     coneIntakeHalfway = false;
     //                     coneIntakeDown_ = false;
     //                 }
@@ -1066,13 +1066,13 @@ void Robot::TeleopPeriodic()
     //             {
     //                 coneIntakeHalfway = false;
     //                 coneIntaking_ = false;
-    //                 intakesNeededDown.second = false;
+    //                 intakesNeededDown.getY() = false;
     //                 coneIntakeDown_ = false;
     //             }
 
     //             if(abs(arm_.getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
     //             {
-    //                 intakesNeededDown.second = true;
+    //                 intakesNeededDown.getY() = true;
     //             }
     //         }
     //     }
@@ -1194,7 +1194,7 @@ void Robot::TeleopPeriodic()
     }
 
     frc::SmartDashboard::PutBoolean("Cube Intake Down", cubeIntakeNeededDown);
-    // frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.second || coneIntakeDown_);
+    // frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.getY() || coneIntakeDown_);
     // frc::SmartDashboard::PutBoolean("Cone Intake Halfway", coneIntakeHalfway);
 }
 

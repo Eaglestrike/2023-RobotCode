@@ -33,20 +33,15 @@ SwerveDrive::SwerveDrive()
     // yawTagOffset_ = 0;
 }
 
-/*
- * Setter for yaw, i.e. the angle of the robot
- *
- * @param yaw yaw to set
- */
-void SwerveDrive::setYaw(double yaw)
-{
-    yaw_ = yaw;
-}
 
+/// @brief Updates swerve drive with data collected or given (should be called in normal periodic)
+/// @param yaw rotation around vertical axis
+/// @param tilt rotation around world x axis
+/// @param data camera data
 void SwerveDrive::periodic(double yaw, double tilt, std::vector<double> data)
 {
     config_.isBlue = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
-    setYaw(yaw);
+    yaw_ = yaw;
     calcOdometry();
     updateAprilTagFieldXY(tilt, data);
 
@@ -87,15 +82,16 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
     {
         if (!trackingTag_)
         {
-            std::pair<double, double> scoringPos = checkScoringPos(scoringLevel);
+            holdingYaw_ = false;
+            Point scoringPos = checkScoringPos(scoringLevel);
             // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
             // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
-            if (scoringPos.first == 0 && scoringPos.second == 0) // COULDO get a better flag thing
+            if (scoringPos.isZero()) // Did not find scoring pos: COULDO get a better flag thing
             {
                 drive(strafe_, rotation_);
                 return;
             }
-            manualScore(scoringLevel, scoringPos);
+            autoLineup(scoringPos);
         }
 
         // bool end = false;
@@ -197,7 +193,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
         //         if (inchUp)
         //         {
         //             inching_ = true;
-        //             std::pair<double, double> vel = getXYVel();
+        //             Point vel = getXYVel();
         //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
@@ -212,7 +208,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
         //         else if (inchDown)
         //         {
         //             inching_ = true;
-        //             std::pair<double, double> vel = getXYVel();
+        //             Point vel = getXYVel();
         //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
@@ -227,7 +223,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
         //         else if (inchLeft)
         //         {
         //             inching_ = true;
-        //             std::pair<double, double> vel = getXYVel();
+        //             Point vel = getXYVel();
         //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
@@ -242,7 +238,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
         //         else if (inchRight)
         //         {
         //             inching_ = true;
-        //             std::pair<double, double> vel = getXYVel();
+        //             Point vel = getXYVel();
         //             if (config_.isBlue)
         //             {
         //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
@@ -328,13 +324,15 @@ void SwerveDrive::setPanic(bool panic){
     config_.isPanic = panic;
 }
 
-void SwerveDrive::manualScore(int scoringLevel, std::pair<double, double> scoringPos){
-    holdingYaw_ = false;
-
-    double wantedX = scoringPos.first;
-    double wantedY = scoringPos.second;
+/// @brief Sets up the target
+/// @param scoringPos position on xy world coordinates
+void SwerveDrive::autoLineup(Point scoringPos){
+    double wantedX = scoringPos.getX();
+    double wantedY = scoringPos.getY();
     double wantedYaw;
-    bool playerStation = false;
+    bool playerStation; //At the playerstation
+
+    // Code to flip robot if arm is the wrong way
     // if (config_.isBlue)
     // {
     //     if (forward)
@@ -412,14 +410,8 @@ void SwerveDrive::manualScore(int scoringLevel, std::pair<double, double> scorin
         wantedYaw += 5;
     }
 
-    if (config_.isBlue)
-    {
-        playerStation = (scoringPos.first > FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
-    }
-    else
-    {
-        playerStation = (scoringPos.first < FieldConstants::FIELD_LENGTH / 2.0); //change to getX? comp
-    }
+    playerStation = FieldConstants::onPlayerStationHalf(config_.isBlue, scoringPos.getX());
+
     wantedY += (wantedYaw > 0) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
     trackingPlayerStation_ = playerStation;
 
@@ -456,7 +448,6 @@ void SwerveDrive::manualScore(int scoringLevel, std::pair<double, double> scorin
     yawTagTraj_.generateTrajectory(yaw_, wantedYaw, 0);
 
     trackingTag_ = true;
-
 }
 
 /*
@@ -466,29 +457,18 @@ void SwerveDrive::drive(Vector strafe, double turn)
 {
     double xSpeed = strafe_.getX();
     double ySpeed = strafe_.getY();
-    if (turn == 0)
+    if (turn == 0) //Yaw adjustment to prevent drift over time
     {
+        
+        double yawError = GeometryHelper::getAngDiffDeg(yaw_, holdingYaw_);
         if (!isHoldingYaw_)
         {
             holdingYaw_ = yaw_;
             isHoldingYaw_ = true;
         }
-        else if (abs(holdingYaw_ - yaw_) > 5)
+        else if (abs(yawError) > 5) //Greater than 5 degrees
         {
             holdingYaw_ = yaw_;
-        }
-
-        double yawError = (holdingYaw_ - yaw_);
-        if (abs(yawError) > 180)
-        {
-            if (yawError > 0)
-            {
-                yawError -= 360;
-            }
-            else
-            {
-                yawError += 360;
-            }
         }
         if (abs(yawError) > 0.5 && (abs(xSpeed) > 0.1 || abs(ySpeed) > 0.1))
         {
@@ -567,7 +547,7 @@ void SwerveDrive::lockWheels()
 }
 
 /// @brief Drives the swerve module following the pose
-/// @param pose target pose
+/// @param pose target pose, feedforward velocities
 void SwerveDrive::drivePose(const SwervePose pose)
 {
     double xVel = pose.xVel;
@@ -577,7 +557,7 @@ void SwerveDrive::drivePose(const SwervePose pose)
     Vector currVel = getXYVel();
 
     // HERE
-    //  setPos(std::pair<double, double>{pose.x, pose.y});
+    //  setPos(Point{pose.x, pose.y});
     //  setYaw(pose.yaw);
 
     //Adding PD control to feedforward
@@ -696,14 +676,11 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     }
 
     // Scale the velocity and acceleration
-    double turnComponent = sqrt(2.0) * turn;
-    // double turnAccComponent = sqrt(turnAcc * turnAcc / 2);
-    // if (turnAcc < 0)
-    // {
-    //     turnAccComponent *= -1;
-    // }
+    double turnComponent = sqrt(0.5) * turn;
 
     // https://www.first1684.com/uploads/2/0/1/6/20161347/chimiswerve_whitepaper__2_.pdf
+    // https://www.chiefdelphi.com/uploads/default/original/3X/8/c/8c0451987d09519712780ce18ce6755c21a0acc0.pdf
+    //Math is just simplified from normal implementation (utilizing symmetry of drivebase)
     double A = newX - (turnComponent);
     double B = newX + (turnComponent);
     double C = newY - (turnComponent);
@@ -724,8 +701,10 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     // double brAcc = sqrt(AA * AA + CA * CA);
     // double blAcc = sqrt(AA * AA + DA * DA);
 
+    //Prevent swerve modules from returning to 0 when stationary
     if (xSpeed != 0 || ySpeed != 0 || turn != 0)
     {
+        //Set target module angles
         trAngle_ = -atan2(B, C) * 180 / M_PI;
         tlAngle_ = -atan2(B, D) * 180 / M_PI;
         brAngle_ = -atan2(A, C) * 180 / M_PI;
@@ -742,42 +721,28 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     double maxSpeed;
     if (inVolts)
     {
-        if (trVel != 0)
-        {
+        trSpeed_ = 0;
+        if (trVel != 0){
             trSpeed_ = /*(trAcc / SwerveConstants::klA) + */ (trVel - SwerveConstants::klVI) / SwerveConstants::klV;
         }
-        else
-        {
-            trSpeed_ = 0;
-        }
 
+        tlSpeed_ = 0;
         if (tlVel != 0)
         {
             tlSpeed_ = /*(tlAcc / SwerveConstants::klA) + */ (tlVel - SwerveConstants::klVI) / SwerveConstants::klV;
         }
-        else
-        {
-            tlSpeed_ = 0;
-        }
 
+        brSpeed_ = 0;
         if (brVel != 0)
         {
             brSpeed_ = /*(brAcc / SwerveConstants::klA) + */ (brVel - SwerveConstants::klVI) / SwerveConstants::klV;
         }
-        else
-        {
-            brSpeed_ = 0;
-        }
 
+        blSpeed_ = 0;
         if (blVel != 0)
         {
             blSpeed_ = /*(blAcc / SwerveConstants::klA) + */ (blVel - SwerveConstants::klVI) / SwerveConstants::klV;
         }
-        else
-        {
-            blSpeed_ = 0;
-        }
-
         maxSpeed = GeneralConstants::MAX_VOLTAGE;
     }
     else
@@ -927,10 +892,10 @@ double SwerveDrive::getYaw()
  * Setter for position
  * @param xy
  */
-void SwerveDrive::setPos(std::pair<double, double> xy)
+void SwerveDrive::setPos(Point xy)
 {
-    robotX_ = xy.first;
-    robotY_ = xy.second;
+    robotX_ = xy.getX();
+    robotY_ = xy.getY();
 }
 
 /**
@@ -1090,7 +1055,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
         //      robotY_ += (-robotY_ + aprilTagY) * 0.01;
         //  }
 
-        // std::pair<double, double> xyVel = getXYVel();
+        // Point xyVel = getXYVel();
         // double vel = sqrt(xyVel.first * xyVel.first + xyVel.second * xyVel.second);
 
         // robotX_ += (-robotX_ + aprilTagX) * (0.1 / (1 + 1 * vel));
@@ -1170,7 +1135,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
 /// @brief gets the target scoring position
 /// @param scoringLevel target scoring level [1, 9]
 /// @return {wantedtX, wantedtY} or {0,0} if invalid data
-std::pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
+Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
 {
     // If tag not found
     if (!foundTag_)
@@ -1211,7 +1176,7 @@ std::pair<double, double> SwerveDrive::checkScoringPos(int scoringLevel) // TODO
             wantedX = FieldConstants::BLUE_SCORING_X;
             if (scoringLevel == 1)
             {
-                wantedX += 0.1; // 0.5
+                wantedX += 0.1; // scoot up by 10 cm, 0.5
             }
             wantedY = (9 - setTagPos_) * 0.5588 + 0.512826;
 

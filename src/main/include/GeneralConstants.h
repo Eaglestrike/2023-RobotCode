@@ -4,6 +4,8 @@
 #include <math.h>
 #include "string"
 
+#include "Helpers/Point.h"
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846264338327950288419716939937510582097494459230
 #endif
@@ -32,6 +34,40 @@ namespace FieldConstants
 {
     const double FIELD_WIDTH = 8.2296;
     const double FIELD_LENGTH = 16.4592;
+    const double HALF_LENGTH = FIELD_LENGTH/2.0;
+
+    /// @brief if the robot is on the side towards the driver (scoring zone)
+    /// @param blue if the current team is blue
+    /// @param positionX current world X coordinate
+    /// @return if the robot is on the side towards the driver (scoring zone)
+    inline bool onDriverHalf(bool blue, double positionX){
+        if(blue){
+            return positionX < HALF_LENGTH;
+        }
+        else{
+            return positionX > HALF_LENGTH;
+        }
+    };
+
+    /// @brief if the robot is on the side towards the player station (getting pieces)
+    /// @param blue if the current team is blue
+    /// @param positionX current world X coordinate
+    /// @return if the robot is on the side towards the player station (getting pieces)
+    inline bool onPlayerStationHalf(bool blue, double positionX){
+        return !onDriverHalf(blue, positionX);
+    };
+
+    //Some field elements have copies on the opposite side of the field
+    struct ObjectCoordinates{
+        Point red;
+        Point blue;
+    };
+
+    struct ObjectCoordinateX{
+        double red;
+        double blue;
+    };
+
     // const double LEFT_TAG_X = 1.05283; //41.45 in
     // const double MIDDLE_TAG_X = 2.72923; //107.45 in
     // const double RIGHT_TAG_X = 4.40563; //173.45;
@@ -41,15 +77,15 @@ namespace FieldConstants
      * TAG_XY[TagID -1] = {x, y}
      * 
      * Long axis is the x, while short one is y
-     * Driver faces along the x axis, apriltag too
+     * Driver faces along the x axis, apriltags too
      */
     const double TAG_XY[8][2] = {
-        {15.513558, 1.071626}, //
-        {15.513558, 2.748026},
+        {15.513558, 1.071626}, // Player station for blue
+        {15.513558, 2.748026}, //Blue tags
         {15.513558, 4.424426},
         {16.178784, 6.749796},
-        {0.36195, 6.749796},
-        {1.02743, 4.424426},
+        {0.36195, 6.749796}, // Player station for red
+        {1.02743, 4.424426}, // Red tags
         {1.02743, 2.748026},
         {1.02743, 1.071626}};
 
@@ -76,6 +112,8 @@ namespace FieldConstants
     const double TOP_MID_PIECE_Y = 3.358;
     const double TOP_PIECE_Y = 4.577;
 
-    const double BLUE_PIECE_X = 7.068;
-    const double RED_PIECE_X = 9.474;
+    const ObjectCoordinateX PIECE_X{
+        .red = 9.474,
+        .blue = 7.068
+    };
 }

@@ -266,7 +266,7 @@ void AutoPaths::setPath(Path path)
         double x1, x2, y1, y2, yaw1, yaw2;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_SCORING_X;
             yaw1 = -90;
             yaw2 = -90;
@@ -283,7 +283,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_SCORING_X;
             yaw1 = 90;
             yaw2 = 90;
@@ -308,7 +308,7 @@ void AutoPaths::setPath(Path path)
         double x1, x2, y1, y2, yaw1, yaw2;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_SCORING_X;
             yaw1 = 90;
             yaw2 = 90;
@@ -326,7 +326,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_SCORING_X;
             yaw1 = -90;
             yaw2 = -90;
@@ -353,7 +353,7 @@ void AutoPaths::setPath(Path path)
         y2 = FieldConstants::AUTO_DOCK_Y;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_AUTO_DOCK_X;
             yaw1 = -90;
             yaw2 = -90;
@@ -368,7 +368,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_AUTO_DOCK_X;
             yaw1 = 90;
             yaw2 = 90;
@@ -392,7 +392,7 @@ void AutoPaths::setPath(Path path)
         y2 = FieldConstants::AUTO_DOCK_Y;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::RED_AUTO_DOCK_X;
             yaw1 = 90;
             yaw2 = 90;
@@ -407,7 +407,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_SCORING_X;
             yaw1 = -90;
             yaw2 = -90;
@@ -430,7 +430,7 @@ void AutoPaths::setPath(Path path)
         double x1, x2, y1, y2, yaw1, yaw2;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_SCORING_X;
             yaw2 = -90;
             if (mirrored_)
@@ -448,7 +448,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_SCORING_X;
             yaw2 = 90;
             if (!mirrored_)
@@ -475,7 +475,7 @@ void AutoPaths::setPath(Path path)
         double x1, x2, y1, y2, yaw1, yaw2;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_SCORING_X;
             yaw2 = 90;
             if (mirrored_)
@@ -494,7 +494,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_SCORING_X;
             yaw2 = -90;
             if (!mirrored_)
@@ -522,7 +522,7 @@ void AutoPaths::setPath(Path path)
         double x1, x2, y1, y2, yaw1, yaw2;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_SCORING_X;
             yaw2 = 90;
             if (mirrored_)
@@ -540,7 +540,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_SCORING_X;
             yaw2 = -90;
             if (!mirrored_)
@@ -568,7 +568,7 @@ void AutoPaths::setPath(Path path)
         y2 = FieldConstants::AUTO_DOCK_Y;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_AUTO_DOCK_X;
             yaw2 = -90;
             if (mirrored_)
@@ -584,7 +584,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_AUTO_DOCK_X;
             yaw2 = 90;
             if (!mirrored_)
@@ -610,7 +610,7 @@ void AutoPaths::setPath(Path path)
         y2 = FieldConstants::AUTO_DOCK_Y;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x1 = FieldConstants::BLUE_PIECE_X;
+            x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.33 - 0.33 - 0.8;
             if (mirrored_)
             {
@@ -627,7 +627,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::RED_PIECE_X;
+            x1 = FieldConstants::PIECE_X.red;
             x2 = FieldConstants::RED_AUTO_DOCK_X + 0.33 + 0.33 + 0.8;
             if (!mirrored_)
             {
@@ -653,7 +653,7 @@ void AutoPaths::setPath(Path path)
         double x, y, yaw;
         if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
         {
-            x = FieldConstants::BLUE_PIECE_X;
+            x = FieldConstants::PIECE_X.blue;
             if (mirrored_)
             {
                 yaw = 45;
@@ -667,7 +667,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x = FieldConstants::RED_PIECE_X;
+            x = FieldConstants::PIECE_X.red;
             if (!mirrored_)
             {
                 yaw = -45;
@@ -1485,7 +1485,7 @@ void AutoPaths::periodic()
             }
             else if ((path_ == FIRST_CONE_DOCK && pointNum_ == 1) || (path_ == FIRST_CUBE_DOCK && pointNum_ == 1))
             {
-                double heldX = (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) ? FieldConstants::BLUE_PIECE_X : FieldConstants::RED_PIECE_X;
+                double heldX = (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) ? FieldConstants::PIECE_X.blue : FieldConstants::PIECE_X.red;
                 Pose1D xProfile = {0, 0, heldX}; // swerveDrive_->getX();
                 // Pose1D yProfile = yTraj_.getProfile();
                 Pose1D yProfile = getYProfile();
@@ -2478,7 +2478,7 @@ double AutoPaths::initYaw()
     }
 }
 
-std::pair<double, double> AutoPaths::initPos()
+Point AutoPaths::initPos()
 {
     switch (actions_[0])
     {

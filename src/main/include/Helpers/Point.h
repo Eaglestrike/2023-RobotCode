@@ -82,6 +82,12 @@ class Point{
             x_ = -y_;
             y_ = xtemp;
         }
+
+        /// @brief returns if the x and y coordinates are 0
+        /// @returns boolean
+        inline bool isZero(){
+            return (x_ == 0) && (y_ == 0);
+        }
         
         /// @brief gets the point with the magnitude and angle from the origin
         /// @param mag magnitude

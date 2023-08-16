@@ -48,7 +48,7 @@ namespace SwerveConstants
     const double MAX_AV = 540; // 450
 
     const double klV = 0.502636; // If you increase pd, check auto lineup
-    const double klVI = -0.359672;
+    const double klVI = -0.359672; //Vel offset
     const double klA = 4.11;
     const double klP = 2.5; //linear kp :1.5
     const double klD = 0.05;

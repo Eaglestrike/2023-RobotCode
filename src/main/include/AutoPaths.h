@@ -54,7 +54,7 @@ class AutoPaths
         void periodic();
         void setGyros(double yaw, double pitch, double roll);
         double initYaw();
-        std::pair<double, double> initPos();
+        Point initPos();
 
         int pointNum();
 
