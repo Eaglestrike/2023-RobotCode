@@ -68,6 +68,19 @@ namespace FieldConstants
         double red;
     };
 
+    /// @brief returns colored coordinate of the object
+    /// @param obj object (in constants)
+    /// @param isBlue blue or nah
+    /// @return position X
+    inline double getPos(ObjectCoordinateX obj, bool isBlue){
+        if(isBlue){
+            return obj.blue;
+        }
+        else{
+            return obj.red;
+        }
+    };
+
     // const double LEFT_TAG_X = 1.05283; //41.45 in
     // const double MIDDLE_TAG_X = 2.72923; //107.45 in
     // const double RIGHT_TAG_X = 4.40563; //173.45;
@@ -80,12 +93,12 @@ namespace FieldConstants
      * Driver faces along the x axis, apriltags too
      */
     const Point TAG_XY[8] = {
-            {15.513558, 1.071626}, // Player station for red
-            {15.513558, 2.748026}, //Blue tags
+            {15.513558, 1.071626}, // Player station for Blue
+            {15.513558, 2.748026}, //Red tags
             {15.513558, 4.424426},
             {16.178784, 6.749796},
-            {0.36195, 6.749796}, // Player station for blue
-            {1.02743, 4.424426}, // Red tags
+            {0.36195, 6.749796}, // Player station for Red
+            {1.02743, 4.424426}, // Blue tags
             {1.02743, 2.748026},
             {1.02743, 1.071626}
         };

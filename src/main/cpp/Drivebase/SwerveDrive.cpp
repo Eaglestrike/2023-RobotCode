@@ -22,8 +22,7 @@ SwerveDrive::SwerveDrive()
     prevUniqueVal_ = -1;
     holdingYaw_ = 0;
     isHoldingYaw_ = false;
-    xLineupTrim_ = 0;
-    yLineupTrim_ = 0;
+    LineupTrim_ = {0,0};
     numLargeDiffs_ = 0;
     // inching_ = false;
 
@@ -55,11 +54,20 @@ void SwerveDrive::periodic(double yaw, double tilt, std::vector<double> data)
 /// @param xTrimDirection the trim x in inches
 /// @param yTrimDirection the trim y in inches
 void SwerveDrive::trim(double xTrimDirection, double yTrimDirection){
-    xLineupTrim_ += xTrimDirection*SwerveConstants::TRIMMING_DIST;
-    yLineupTrim_ += yTrimDirection*SwerveConstants::TRIMMING_DIST;
+    Vector addTrim = {
+        xTrimDirection*SwerveConstants::TRIMMING_DIST,
+        yTrimDirection*SwerveConstants::TRIMMING_DIST
+    };
 
-    frc::SmartDashboard::PutNumber("X Trim", xLineupTrim_ / 0.0254);
-    frc::SmartDashboard::PutNumber("Y Trim", yLineupTrim_ / 0.0254);
+    if(config_.isBlue){
+        LineupTrim_ += addTrim.rotateClockwise90();
+    }
+    else{
+        LineupTrim_ += addTrim.rotateCounterclockwise90();
+    }
+
+    frc::SmartDashboard::PutNumber("X Trim", LineupTrim_.getX() / 0.0254);
+    frc::SmartDashboard::PutNumber("Y Trim", LineupTrim_.getY() / 0.0254);
 }
 
 /// @brief Basically if the POV is pressed of the slow button is pressed, either will just engage in a slow control
@@ -835,8 +843,7 @@ void SwerveDrive::reset()
     // prevPoses_.clear();
     isHoldingYaw_ = false;
     // inching_ = false;
-    xLineupTrim_ = 0;
-    yLineupTrim_ = 0;
+    LineupTrim_ = {0,0};
     numLargeDiffs_ = 0;
     // resetYawTagOffset();
 }
@@ -999,7 +1006,6 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
 
     //World coordinate from tag reading
     Point robotTagPos;
-    // Really just field-oriented coordinates (idk why called yPos) - call SeenPositionX or smthg
     // Adding the displacement from tag to robot + apriltag position
     if (tagID <= 4) {// Left side of field
         robotTagPos = fieldTagPos + orientedTagPos.rotateCounterclockwise90();
@@ -1019,20 +1025,11 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
         return;
     }
 
-    //Tag on the opposite side of the field
-    if (tagID <= 4)
-    {
-        if (xPos < FieldConstants::FIELD_LENGTH / 2)
-        {
-            return;
-        }
-    }
-    else
-    {
-        if (xPos > FieldConstants::FIELD_LENGTH / 2)
-        {
-            return;
-        }
+    //Reject tag on the opposite side of the field
+    //TagID 1-4 are on red side
+    //TagID 5-8 are on blue side
+    if(FieldConstants::onPlayerStationHalf(tagID >= 5, xPos)){
+        return;
     }
 
     // 1st check = set it regardless
@@ -1151,82 +1148,36 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
         return {0, 0};
     }
 
-
+    //Target scoring position
     double wantedX, wantedY;
-    if (config_.isBlue)
-    {
-        if (robotX_ > FieldConstants::FIELD_LENGTH / 2)
-        {
-            wantedX = FieldConstants::PLAYER_STATION_X.blue;
-            if (robotY_ > FieldConstants::TAG_XY[4].getY())
-            {
-                wantedY = FieldConstants::TAG_XY[4].getY() + 0.838 - 0.127; // 0.6, then 0.838
-            }
-            else
-            {
-                wantedY = FieldConstants::TAG_XY[4].getY() - 0.838;
-            }
-            // wantedY = FieldConstants::TAG_XY[4][1];
-        }
-        else
-        {
-            wantedX = FieldConstants::SCORING_X.blue;
-            if (scoringLevel == 1)
-            {
-                wantedX += 0.1; // scoot up by 10 cm, 0.5
-            }
-            wantedY = (9 - setTagPos_) * 0.5588 + 0.512826;
+    if(FieldConstants::onPlayerStationHalf(config_.isBlue, robotX_)){//Robot going to playerstation
+        wantedX = FieldConstants::getPos(FieldConstants::PLAYER_STATION_X, config_.isBlue);
 
-            if (setTagPos_ == 9)
-            {
-                wantedY += (0.0254 * 4);
-                wantedX -= (0.0254 * 2);
-            }
+        wantedY = FieldConstants::TAG_XY[4].getY(); //Tag position
+        // Check left or right player station, offset wantedY, plus a bit depending 
+        if (robotY_ > FieldConstants::TAG_XY[4].getY()){
+            wantedY += 0.838 + (config_.isBlue?-0.127:0.0);
+        }
+        else{
+            wantedY += -0.838 + (config_.isBlue?0.0:0.127);
         }
     }
-    else
-    {
-        if (robotX_ < FieldConstants::FIELD_LENGTH / 2)
-        {
-            wantedX = FieldConstants::PLAYER_STATION_X.red;
-            if (robotY_ > FieldConstants::TAG_XY[4].getY())
-            {
-                wantedY = FieldConstants::TAG_XY[4].getY() + 0.838;
-            }
-            else
-            {
-                wantedY = FieldConstants::TAG_XY[4].getY() - 0.838 + 0.127;
-            }
+    else{//Going to score
+        wantedX = FieldConstants::getPos(FieldConstants::SCORING_X, config_.isBlue);
+        if (scoringLevel == 1){
+            wantedX += config_.isBlue?0.1:-0.1; // scoot towards driverstation by 10 cm, 0.5
         }
-        else
-        {
-            wantedX = FieldConstants::SCORING_X.red;
-            if (scoringLevel == 1)
-            {
-                wantedX -= 0.1; // 0.5
-            }
-            wantedY = (setTagPos_ - 1) * 0.5588 + 0.512826;
 
-            if (setTagPos_ == 9)
-            {
-                wantedY -= (0.0254 * 4); //Add 4 inches Y
-                wantedX += (0.0254 * 2); //Add 2 inches X
-            }
+        double yIndex = config_.isBlue? (9 - setTagPos_) : (setTagPos_ - 1);//Tag ordering is reversed on opposite side
+        wantedY = yIndex * 0.5588 + 0.512826;
+
+        if (setTagPos_ == 9){
+            wantedY += (config_.isBlue?1.0:-1.0) * (0.0254 * 4); //Add 4 inches Y
+            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2); //Move away from driverstation 2 inches
         }
-    }
-    double xTrim, yTrim;
-    if (config_.isBlue)
-    {
-        xTrim = yLineupTrim_;
-        yTrim = -xLineupTrim_;
-    }
-    else
-    {
-        xTrim = -yLineupTrim_;
-        yTrim = xLineupTrim_;
     }
 
-    return {wantedX + xTrim, wantedY + yTrim};
+    return Point{wantedX , wantedY} + LineupTrim_;
 
     // Below is which ever is in front of the robot, above is choosing
 
@@ -1320,16 +1271,13 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
 
 void SwerveDrive::setScoringPos(int scoringPos)
 {
-    if (scoringPos != -1)
-    {
+    if (scoringPos != -1){
         setTagPos_ = scoringPos;
     }
-
     // frc::SmartDashboard::PutNumber("s", setTagPos_);
 }
 
-int SwerveDrive::getScoringPos()
-{
+int SwerveDrive::getScoringPos(){
     return setTagPos_;
 }
 

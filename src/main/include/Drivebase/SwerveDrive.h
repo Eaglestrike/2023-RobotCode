@@ -90,7 +90,8 @@ class SwerveDrive
 
         bool trackingTag_, trackingPlayerStation_, foundTag_, isHoldingYaw_/*, inching_*/;
         int setTagPos_, prevTag_, prevUniqueVal_, numLargeDiffs_;
-        double xLineupTrim_, yLineupTrim_;
+
+        Vector LineupTrim_;
 
         std::map<double, std::pair<Point, Vector>> prevPoses_;
 
