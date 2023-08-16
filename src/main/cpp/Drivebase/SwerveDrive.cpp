@@ -9,21 +9,21 @@ using namespace Poses;
 /*
  * Constructor
  */
-SwerveDrive::SwerveDrive()
+SwerveDrive::SwerveDrive():
+    trackingTag_(false),
+    trackingPlayerStation_(false),
+    foundTag_(false),
+    setTagPos_(1),
+    tagFollowingStartTime_(0),
+    prevTag_(-1),
+    prevUniqueVal_(-1),
+    holdingYaw_(0),
+    isHoldingYaw_(false),
+    LineupTrim_(0,0),
+    numLargeDiffs_(0)
 {
     // autoX_ = 0;
     // autoY_ = 0;
-    trackingTag_ = false;
-    trackingPlayerStation_ = false;
-    foundTag_ = false;
-    setTagPos_ = 1;
-    tagFollowingStartTime_ = 0;
-    prevTag_ = -1;
-    prevUniqueVal_ = -1;
-    holdingYaw_ = 0;
-    isHoldingYaw_ = false;
-    LineupTrim_ = {0,0};
-    numLargeDiffs_ = 0;
     // inching_ = false;
 
     // aprilTagX_ = 0;
@@ -54,7 +54,7 @@ void SwerveDrive::periodic(double yaw, double tilt, std::vector<double> data)
 /// @param xTrimDirection the trim x in inches
 /// @param yTrimDirection the trim y in inches
 void SwerveDrive::trim(double xTrimDirection, double yTrimDirection){
-    Vector addTrim = {
+    Vector addTrim{
         xTrimDirection*SwerveConstants::TRIMMING_DIST,
         yTrimDirection*SwerveConstants::TRIMMING_DIST
     };
