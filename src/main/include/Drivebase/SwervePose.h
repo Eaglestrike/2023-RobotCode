@@ -19,8 +19,8 @@ namespace Poses{
     };
 
     struct ModulePose{
-        double ang;
         double mag;
+        double ang;
     };
 
     /// @brief Linear distance from start to finish

@@ -57,6 +57,13 @@ namespace FieldConstants
         return !onDriverHalf(blue, positionX);
     };
 
+    /// @brief Return forward yaw
+    /// @param blue alliance is blue
+    /// @return yaw
+    inline double getForward(bool blue){
+        return blue?90.0 : -90.0;
+    }
+
     //Some field elements have copies on the opposite side of the field
     struct ObjectCoordinates{
         Point red;

@@ -32,6 +32,7 @@ AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(
     sendingIt_ = false;
     hitChargeStation_ = false;
     firstCubeArmSafety_ = false;
+    isBlue_ = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
 }
 
 void AutoPaths::setPath(Path path)
@@ -58,10 +59,10 @@ void AutoPaths::setPath(Path path)
     case PRELOADED_CONE_MID:
     {
         double x, y, yaw;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+        yaw = FieldConstants::getForward(isBlue_);
+        if (isBlue_)
         {
-            x = FieldConstants::SCORING_X.blue;
-            yaw = 90;
             if (mirrored_)
             {
                 y = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
@@ -73,8 +74,6 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x = FieldConstants::SCORING_X.red;
-            yaw = -90;
             if (!mirrored_)
             {
                 y = FieldConstants::TOP_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
@@ -91,7 +90,7 @@ void AutoPaths::setPath(Path path)
     case PRELOADED_CUBE_MID:
     {
         double x, y, yaw;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
             yaw = 90;
@@ -124,7 +123,7 @@ void AutoPaths::setPath(Path path)
     case PRELOADED_CONE_HIGH:
     {
         double x, y, yaw;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
             if (mirrored_)
@@ -165,7 +164,7 @@ void AutoPaths::setPath(Path path)
     case PRELOADED_CUBE_HIGH:
     {
         double x, y, yaw;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
             yaw = 90;
@@ -198,7 +197,7 @@ void AutoPaths::setPath(Path path)
     case PRELOADED_CONE_HIGH_MIDDLE:
     {
         double x, y, yaw;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
             yaw = 90;
@@ -231,7 +230,7 @@ void AutoPaths::setPath(Path path)
     case PRELOADED_CONE_MID_MIDDLE:
     {
         double x, y, yaw;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
             yaw = 90;
@@ -264,7 +263,7 @@ void AutoPaths::setPath(Path path)
     case FIRST_CONE_MID:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::SCORING_X.blue;
@@ -306,7 +305,7 @@ void AutoPaths::setPath(Path path)
     case FIRST_CUBE_HIGH:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::SCORING_X.blue;
@@ -351,7 +350,7 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_AUTO_DOCK_X;
@@ -390,7 +389,7 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::RED_AUTO_DOCK_X;
@@ -428,7 +427,7 @@ void AutoPaths::setPath(Path path)
     case SECOND_CONE:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::SCORING_X.blue;
@@ -473,7 +472,7 @@ void AutoPaths::setPath(Path path)
     case SECOND_CUBE_MID:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::SCORING_X.blue;
@@ -520,7 +519,7 @@ void AutoPaths::setPath(Path path)
     case SECOND_CUBE_HIGH:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::SCORING_X.blue;
@@ -566,7 +565,7 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_AUTO_DOCK_X;
@@ -608,7 +607,7 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x1 = FieldConstants::PIECE_X.blue;
             x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.33 - 0.33 - 0.8;
@@ -651,7 +650,7 @@ void AutoPaths::setPath(Path path)
     case SECOND_CUBE_GRAB:
     {
         double x, y, yaw;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::PIECE_X.blue;
             if (mirrored_)
@@ -689,7 +688,7 @@ void AutoPaths::setPath(Path path)
         double x, y, yaw;
         y = FieldConstants::AUTO_DOCK_Y;
         // yaw = 0;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::BLUE_AUTO_DOCK_X + 1;
             yaw = 0; // was 90
@@ -740,7 +739,7 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
     actions_.push_back(a4);
 
     bool overCableBump;
-    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    if (isBlue_)
     {
         overCableBump = !mirrored_;
     }
@@ -944,7 +943,7 @@ void AutoPaths::periodic()
                         if (pointNum_ == 0)
                         {
                             double setY;
-                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            if (isBlue_)
                             {
                                 if (mirrored_)
                                 {
@@ -971,7 +970,7 @@ void AutoPaths::periodic()
                             generateYTraj(currPose.y, setY, swerveDrive_->getXYVel().getY());
 
                             double setYaw;
-                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            if (isBlue_)
                             {
                                 setYaw = 90;
                             }
@@ -1001,7 +1000,7 @@ void AutoPaths::periodic()
                     bool curveReady = false;
                     if (pointNum_ == 0)
                     {
-                        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                        if (isBlue_)
                         {
                             curveReady = (swerveDrive_->getX() > 4.8514); // 2.921
                         }
@@ -1012,7 +1011,7 @@ void AutoPaths::periodic()
                     }
                     else
                     {
-                        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                        if (isBlue_)
                         {
                             curveReady = (swerveDrive_->getX() < 4.8514);
                         }
@@ -1071,7 +1070,7 @@ void AutoPaths::periodic()
                         if (/*pointNum_ == 0*/ true)
                         {
                             double setY;
-                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            if (isBlue_)
                             {
                                 if (mirrored_)
                                 {
@@ -1112,7 +1111,7 @@ void AutoPaths::periodic()
                         bool curveReady = false;
                         if (pointNum_ == 0)
                         {
-                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            if (isBlue_)
                             {
                                 curveReady = (swerveDrive_->getX() > 2.921);
                             }
@@ -1123,7 +1122,7 @@ void AutoPaths::periodic()
                         }
                         else
                         {
-                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            if (isBlue_)
                             {
                                 curveReady = (swerveDrive_->getX() < 4.8514 + 0.5);
                             }
@@ -1147,7 +1146,7 @@ void AutoPaths::periodic()
                     if (!pathGenerated_)
                     {
                         double setX;
-                        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                        if (isBlue_)
                         {
                             setX = FieldConstants::SCORING_X.blue + 0.3;
                         }
@@ -1221,7 +1220,7 @@ void AutoPaths::periodic()
                             // double setYaw = swervePoints_[i].yaw;
                             // yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // TODO yaw vel
                             double setYaw;
-                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            if (isBlue_)
                             {
                                 setYaw = 90;
                             }
@@ -1234,7 +1233,7 @@ void AutoPaths::periodic()
 
                             // double setY = swervePoints_[i].y;
                             double setY;
-                            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                            if (isBlue_)
                             {
                                 if (mirrored_)
                                 {
@@ -1270,7 +1269,7 @@ void AutoPaths::periodic()
                         Pose1D yProfile = getYProfile();
 
                         bool curveReady = false;
-                        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                        if (isBlue_)
                         {
                             curveReady = (swerveDrive_->getX() > 4.8514); // 2.921
                         }
@@ -1359,7 +1358,7 @@ void AutoPaths::periodic()
             }
             else if (path_ == AUTO_DOCK)
             {
-                // double heldX = (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) ? FieldConstants::SCORING_X.blue + 0.05 : FieldConstants::SCORING_X.red - 0.05;
+                // double heldX = (isBlue_) ? FieldConstants::SCORING_X.blue + 0.05 : FieldConstants::SCORING_X.red - 0.05;
                 // Pose1D xProfile = xTraj_.getProfile(); // held x was used here to prevent drift
                 Pose1D xProfile = getXProfile();
                 // Pose1D yProfile = yTraj_.getProfile();
@@ -1379,7 +1378,7 @@ void AutoPaths::periodic()
                 if (curveSecondStageGenerated_ && !hitChargeStation_)
                 {
                     double xVel;
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    if (isBlue_)
                     {
                         xVel = SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
@@ -1393,7 +1392,7 @@ void AutoPaths::periodic()
                     double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    if (isBlue_)
                     {
                         if (tilt < -5)
                         {
@@ -1439,7 +1438,7 @@ void AutoPaths::periodic()
                 else if (!hitChargeStation_)
                 {
                     double xVel;
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    if (isBlue_)
                     {
                         xVel = -SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
@@ -1455,7 +1454,7 @@ void AutoPaths::periodic()
                     double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
                     frc::SmartDashboard::PutNumber("DTilt", tilt);
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    if (isBlue_)
                     {
                         if (tilt > 5)
                         {
@@ -1485,7 +1484,7 @@ void AutoPaths::periodic()
             }
             else if ((path_ == FIRST_CONE_DOCK && pointNum_ == 1) || (path_ == FIRST_CUBE_DOCK && pointNum_ == 1))
             {
-                double heldX = (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) ? FieldConstants::PIECE_X.blue : FieldConstants::PIECE_X.red;
+                double heldX = (isBlue_) ? FieldConstants::PIECE_X.blue : FieldConstants::PIECE_X.red;
                 Pose1D xProfile = {0, 0, heldX}; // swerveDrive_->getX();
                 // Pose1D yProfile = yTraj_.getProfile();
                 Pose1D yProfile = getYProfile();
@@ -1901,7 +1900,7 @@ void AutoPaths::periodic()
             if (firstCubeArmSafety_)
             {
                 bool armReady;
-                if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                if (isBlue_)
                 {
                     armReady = (swerveDrive_->getX() < 2.921 - 0.2);
                 }
@@ -2048,7 +2047,7 @@ void AutoPaths::periodic()
             wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             bool armReady;
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            if (isBlue_)
             {
                 armReady = (swerveDrive_->getX() < 2.921 - 0.2);
             }
@@ -2161,7 +2160,7 @@ void AutoPaths::periodic()
                     double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    if (isBlue_)
                     {
                         if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION)
                         {
@@ -2260,7 +2259,7 @@ void AutoPaths::periodic()
                 double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                 double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                 double tilt = pitch * sin(ang) - roll * cos(ang);
-                if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                if (isBlue_)
                 {
                     if (abs(tilt) < 12)
                     {
@@ -2314,7 +2313,7 @@ void AutoPaths::periodic()
         double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
         double tilt = pitch * sin(ang) - roll * cos(ang);
 
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             if (tilt > 5)
             {
@@ -2331,7 +2330,7 @@ void AutoPaths::periodic()
 
         if (!comingDownChargingStation_)
         {
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            if (isBlue_)
             {
                 swerveDrive_->drive({0.5, 0}, 0);
             }
@@ -2342,7 +2341,7 @@ void AutoPaths::periodic()
         }
         else if (comingDownChargingStation_ && !taxied_)
         {
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            if (isBlue_)
             {
                 swerveDrive_->drive({0.35, 0}, 0);
             }
@@ -2363,7 +2362,7 @@ void AutoPaths::periodic()
                 }
                 else
                 {
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+                    if (isBlue_)
                     {
                         swerveDrive_->drive({-0.35, 0}, 0);
                     }
@@ -2415,7 +2414,7 @@ void AutoPaths::periodic()
 
         if (timer_.Get().value() < 2)
         {
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+            if (isBlue_)
             {
                 swerveDrive_->drive({0.2, 0}, 0);
             }
@@ -2468,7 +2467,7 @@ double AutoPaths::initYaw()
     // }
     // }
 
-    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+    if (isBlue_)
     {
         return -90;
     }
@@ -2485,7 +2484,7 @@ Point AutoPaths::initPos()
     case PRELOADED_CONE_MID:
     {
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
         }
@@ -2495,7 +2494,7 @@ Point AutoPaths::initPos()
         }
 
         double y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             if (mirrored_)
             {
@@ -2523,7 +2522,7 @@ Point AutoPaths::initPos()
     case PRELOADED_CUBE_MID:
     {
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
         }
@@ -2533,7 +2532,7 @@ Point AutoPaths::initPos()
         }
 
         double y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             if (mirrored_)
             {
@@ -2561,7 +2560,7 @@ Point AutoPaths::initPos()
     case PRELOADED_CONE_HIGH:
     {
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
         }
@@ -2571,7 +2570,7 @@ Point AutoPaths::initPos()
         }
 
         double y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             if (mirrored_)
             {
@@ -2599,7 +2598,7 @@ Point AutoPaths::initPos()
     case PRELOADED_CUBE_HIGH:
     {
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
         }
@@ -2609,7 +2608,7 @@ Point AutoPaths::initPos()
         }
 
         double y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             if (mirrored_)
             {
@@ -2637,7 +2636,7 @@ Point AutoPaths::initPos()
     case PRELOADED_CONE_HIGH_MIDDLE:
     {
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
         }
@@ -2647,7 +2646,7 @@ Point AutoPaths::initPos()
         }
 
         double y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             if (mirrored_)
             {
@@ -2675,7 +2674,7 @@ Point AutoPaths::initPos()
     case PRELOADED_CONE_MID_MIDDLE:
     {
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             x = FieldConstants::SCORING_X.blue;
         }
@@ -2685,7 +2684,7 @@ Point AutoPaths::initPos()
         }
 
         double y;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             if (mirrored_)
             {
@@ -2714,7 +2713,7 @@ Point AutoPaths::initPos()
     {
         double y = FieldConstants::AUTO_DOCK_Y;
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             // x = FieldConstants::BLUE_AUTO_DOCK_X;
             x = FieldConstants::SCORING_X.blue;
@@ -2730,7 +2729,7 @@ Point AutoPaths::initPos()
     {
         double y = FieldConstants::AUTO_DOCK_Y;
         double x;
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
+        if (isBlue_)
         {
             // x = FieldConstants::BLUE_AUTO_DOCK_X;
             x = FieldConstants::SCORING_X.blue;

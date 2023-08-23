@@ -67,7 +67,7 @@ namespace ControllerMapData{
     //There are already some named ButtonData and Buttons
     const std::vector<ControlMapElement> ButtonMap = {
         {{LJOY, X_AXIS},     XSTRAFE},
-        {{LJOY, Y_AXIS},        NONE},
+        {{LJOY, Y_AXIS},     YSTRAFE},
         {{LJOY, TRIGGER},      SCORE},
         {{LJOY, B_2},    LOCK_WHEELS},
         {{LJOY, B_4},         OUTAKE},

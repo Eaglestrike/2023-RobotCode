@@ -43,8 +43,10 @@ void SwerveModule::move(ModulePose target, bool inVolts)
     // frc::SmartDashboard::PutNumber(id_ + " time", time);
     // frc::SmartDashboard::PutNumber(id_ + " sp", driveSpeed);
     // frc::SmartDashboard::PutNumber(id_ + " ang", angle);
-    dT_ = time - prevTime_;
-    prevTime_ = time;
+    if(prevTime_ != time){
+        dT_ = time - prevTime_;
+        prevTime_ = time;
+    }
 
     //frc::SmartDashboard::PutNumber(id_ + " Wanted speed", driveSpeed);
     //frc::SmartDashboard::PutNumber(id_ + " Wanted angle", angle);
@@ -152,11 +154,13 @@ void SwerveModule::move(ModulePose target, bool inVolts)
     if(inVolts)
     {
         driveMotor_.SetVoltage(units::volt_t(direction_ * target.mag));
+        //std::cout<<"inVolts"<<direction_ * target.mag<<std::endl;
     }
     else
     {
         units::volt_t driveVolts{direction_ * calcDrivePID(target.mag)};
         driveMotor_.SetVoltage(driveVolts);
+        //std::cout<<"not inVolts"<<driveVolts.value()<<std::endl;
     }
 
     //Turn with arm
@@ -236,8 +240,7 @@ double SwerveModule::calcDrivePID(double driveSpeed)
     //double power = (dkP_*error) + (dkI_*aIntegralError_) + (dkD_*deltaError) + feedForward;
     double power = feedForward;
 
-    return std::clamp(power, -(double)GeneralConstants::MAX_VOLTAGE, (double)GeneralConstants::MAX_VOLTAGE);
-
+    return std::clamp(power, -GeneralConstants::MAX_VOLTAGE, GeneralConstants::MAX_VOLTAGE);
 }
 
 double SwerveModule::findError(double setAngle, double angle)

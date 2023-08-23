@@ -58,6 +58,7 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
                 double xStrafe = controls_.getWithDeadContinuous(XSTRAFE, 0.07);
                 double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE, 0.07);
                 double rotation = controls_.getWithDeadContinuous(ROTATION, 0.07);
+                
                 swerveDrive_.setTarget(xStrafe, yStrafe, rotation);
 
                 //Inch/slow down robot
