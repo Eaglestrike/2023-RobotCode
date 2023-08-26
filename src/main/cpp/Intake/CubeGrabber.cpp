@@ -52,3 +52,16 @@ void CubeGrabber::Outtake() {
     left_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE});
     right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE});
 }
+
+/**
+ * Reverses the motors so they will spit out the cube slowly.
+*/
+void CubeGrabber::OuttakeSlow() {
+    if(grabber_status == State::OUTTAKING_SLOW){
+        return;
+    }
+    grabber_status = OUTTAKING_SLOW;
+    //left_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE_SLOW});
+    left_motor.SetVoltage(units::volt_t{0.0}); //Weaker or more resistance - just turn off
+    right_motor.SetVoltage(units::volt_t{CubeGrabberConstants::COUNTERCLOCKWISE_VOLTAGE_SLOW});
+}

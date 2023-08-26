@@ -54,22 +54,22 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
                 // bool armOut = (arm_.getPosition() != TwoJointArmProfiles::STOWED /* && arm_.getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_.getPosition() != TwoJointArmProfiles::GROUND);
                 bool armOut = (arm_.getPosition() == TwoJointArmProfiles::MID || arm_.getPosition() == TwoJointArmProfiles::HIGH || arm_.getPosition() == TwoJointArmProfiles::CUBE_MID || arm_.getPosition() == TwoJointArmProfiles::CUBE_HIGH); // TODO make this based on xy position
 
-                //Pass controller swerve data to swerve
-                double xStrafe = controls_.getWithDeadContinuous(XSTRAFE, 0.07);
-                double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE, 0.07);
-                double rotation = controls_.getWithDeadContinuous(ROTATION, 0.07);
+                //Panic if arm is out or moving
+                swerveDrive_.setPanic((armMoving || armOut));
                 
-                swerveDrive_.setTarget(xStrafe, yStrafe, rotation);
-
                 //Inch/slow down robot
                 swerveDrive_.inch(controls_.getPOVDown(INCH_UP),
                                   controls_.getPOVDown(INCH_DOWN),
                                   controls_.getPOVDown(INCH_LEFT),
                                   controls_.getPOVDown(INCH_RIGHT),
                                   controls_.getPressed(SLOW_MODE));
-
-                //Panic if arm is out or moving
-                swerveDrive_.setPanic((armMoving || armOut));
+        
+                //Pass controller swerve data to swerve
+                double xStrafe = controls_.getWithDeadContinuous(XSTRAFE, 0.07);
+                double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE, 0.07);
+                double rotation = controls_.getWithDeadContinuous(ROTATION, 0.07);
+                
+                swerveDrive_.setTarget(xStrafe, yStrafe, rotation);
 
                 //Shift odometry
                 double lineupTrimX = controls_.getValue(ControllerMapData::GET_TRIM_X, 0.0);
@@ -409,6 +409,8 @@ void Robot::TeleopInit()
     arm_.checkPos();
     arm_.stop();
     // arm_.resetIntaking();
+
+    cubeGrabber_.OuttakeSlow();
 }
 
 void Robot::TeleopPeriodic()
@@ -1164,7 +1166,7 @@ void Robot::TeleopPeriodic()
     }
 
     bool cutoutIntakePressed = controls_.getPOVDown(CUTOUT_INTAKE);
-    bool cutoutOutakePressed = controls_.getPOVDown(CUTOUT_OUTAKE);
+    bool cutoutOutakePressed = controls_.getPOVDownOnce(CUTOUT_OUTAKE);
     if(cutoutIntakePressed)
     {
         cubeGrabber_.Intake();
@@ -1173,7 +1175,7 @@ void Robot::TeleopPeriodic()
     {
         if(cubeGrabber_.getState() == CubeGrabber::OUTTAKING)
         {
-            cubeGrabber_.Stop();
+            cubeGrabber_.OuttakeSlow();
         }
         else
         {

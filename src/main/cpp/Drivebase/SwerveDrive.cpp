@@ -75,9 +75,12 @@ void SwerveDrive::trim(double xTrimDirection, double yTrimDirection){
 /// @param inchDown bool
 /// @param inchLeft bool
 /// @param inchRight bool
-/// @param slow bool
+/// @param slow bool - toggle
 void SwerveDrive::inch(double inchUp, double inchDown, double inchLeft, double inchRight, double slow){
-    config_.isSlow = slow || inchUp || inchDown || inchLeft || inchRight;
+    config_.isSlow = slow;
+    if(inchUp || inchDown || inchLeft || inchRight){
+        config_.isSlow = true;
+    }
 }
 
 void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, bool islockWheels, bool autoBalance)
@@ -289,7 +292,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
 /// @param yStrafe [-1.0, 1.0]
 /// @param rotation [-1.0, 1.0]
 void SwerveDrive::setTarget(double xStrafe, double yStrafe, double rotation){
-    rotation_ = rotation;
+    rotation_ = rotation / 4.0;
     strafe_ = {xStrafe, yStrafe};
     if (config_.isBlue){
         strafe_.rotateClockwise90This();
@@ -467,7 +470,6 @@ void SwerveDrive::drive(Vector strafe, double turn)
     double ySpeed = strafe_.getY();
     if (turn == 0) //Yaw adjustment to prevent drift over time
     {
-        
         double yawError = GeometryHelper::getAngDiffDeg(yaw_, holdingYaw_);
         if (!isHoldingYaw_)
         {
@@ -683,7 +685,7 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
         // turnAcc = (turnAcc * M_PI / 180) * (SwerveConstants::WHEEL_DIAGONAL / 2);
     }
 
-    // Scale the velocity and acceleration
+    // Scale the velocity and acceleration 
     double turnComponent = sqrt(0.5) * turn;
 
     // https://www.first1684.com/uploads/2/0/1/6/20161347/chimiswerve_whitepaper__2_.pdf

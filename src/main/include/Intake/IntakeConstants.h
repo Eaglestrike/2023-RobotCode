@@ -40,4 +40,5 @@ namespace CubeGrabberConstants {
 
     const double CLOCKWISE_VOLTAGE = 3;
     const double COUNTERCLOCKWISE_VOLTAGE = -3; 
+    const double COUNTERCLOCKWISE_VOLTAGE_SLOW = -1.5; 
 }

@@ -28,10 +28,12 @@ class Controller{
         double getWithDeadband(Actions::Action action, double deadbandVal = ControllerConstants::DEFAULT_DEAD);
         double getWithDeadContinuous(Actions::Action action, double deadbandVal = ControllerConstants::DEFAULT_DEAD);
         bool getPressed(Actions::Action action);
+        bool getPressedOnce(Actions::Action action);
         bool getTriggerDown(Actions::Action action, double defaultDown = ControllerConstants::DEFAULT_TRIGGER_DOWN);
 
         int getPOV(Actions::Action action);
         bool getPOVDown(Actions::POVAction action);
+        bool getPOVDownOnce(Actions::POVAction action);
 
         //Buttons
         bool getButtonPressed(ControllerConstants::Button button);
@@ -56,8 +58,11 @@ class Controller{
     private:
         //Maps Actions -> Buttons
         ControllerConstants::Button actionMap_[ControllerMapData::ACTION_COUNT];
+        bool wasPressed[ControllerMapData::ACTION_COUNT];
+
         //Maps PovActions -> POV range on a POV
         std::pair<ControllerConstants::Button, ControllerMapData::POVRange> actionMapPOV_[ControllerMapData::ACTION_COUNT_POV];
+        bool wasPressedPOV[ControllerMapData::ACTION_COUNT_POV];
 
         //Array of all the Joysticks
         //Names of controllers are in ControllerConstants.h

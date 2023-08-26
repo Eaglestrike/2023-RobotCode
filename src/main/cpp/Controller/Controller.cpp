@@ -282,13 +282,52 @@ bool Controller::getPOVDown(POVAction action){
             return false;
     }
     POVRange range = actionMapPOV_[action].second;
+    bool isPressed;
     if(range.min > range.max){ //If it wraps around 0
-        return ((value < range.min && value >= 0) || (value <= 360 && value > range.max));
+        isPressed = ((value < range.max && value >= 0) || (value <= 360 && value > range.min));
     }
     else{
-        return (value > range.min) && (value < range.max);
+        isPressed = (value > range.min) && (value < range.max);
     }
-    
+    wasPressedPOV[action] = isPressed;
+    return isPressed;
+}
+
+/**
+ * Just returns raw POV value, in [0, 360] range
+ * 
+ * if it's not a pov, just returns false
+ * 
+ * @param action the action key for the pov, reference is in ControllerMap.h
+ * @returns if the pov values is in the range
+*/
+bool Controller::getPOVDownOnce(POVAction action){
+    Button pov = actionMapPOV_[action].first;
+    int value;
+    switch(pov.data.type){
+        case POV_BUTTON:
+            value = joysticks_[pov.joystick]->GetPOV();
+            break;
+        default:
+            std::cout<<"Bad Button Mapping for ";
+            return false;
+    }
+    POVRange range = actionMapPOV_[action].second;
+    bool isPressed;
+    if(range.min > range.max){ //If it wraps around 0
+        isPressed = ((value < range.max && value >= 0) || (value <= 360 && value > range.min));
+    }
+    else{
+        isPressed = (value > range.min) && (value < range.max);
+    }
+    if(!wasPressedPOV[action] && isPressed){
+        wasPressedPOV[action] = true;
+        return true;
+    }
+    else{
+        wasPressedPOV[action] = isPressed;
+        return false;
+    }
 }
 
 /**
@@ -301,23 +340,63 @@ bool Controller::getPOVDown(POVAction action){
 */
 bool Controller::getPressed(Action action){
     Button button = actionMap_[action];
+    bool isPressed;
     switch(button.data.type){
+        case BUTTON_BUTTON:
+            isPressed = joysticks_[button.joystick]->GetRawButton(button.data.id);
+            break;
+        case TRIGGER_BUTTON:
+            isPressed = joysticks_[button.joystick]->GetTriggerPressed();
+            break;
         case AXIS_BUTTON:
             std::cout<<"Not applicable for getPressed:";
-            break;
-        case BUTTON_BUTTON:
-            return joysticks_[button.joystick]->GetRawButtonPressed(button.data.id);
-        case TRIGGER_BUTTON:
-            return joysticks_[button.joystick]->GetTriggerPressed();
         default:
-            std::cout<<"Bad Button Mapping for ";
+            std::cout<<"Action"<< action << " bad mapping" << std::endl;
+            return false;
     };
-    std::cout<<"Action"<< action << std::endl;
-    return false;
+    wasPressed[action] = isPressed;
+    return isPressed;
+}
+
+/**
+ * Gets if the action's button is pressed once
+ * 
+ * prints error if bad action and returns false
+ * 
+ * @param action the action key for the button, reference is in ControllerMap.h
+ * @returns if the button is pressed
+*/
+bool Controller::getPressedOnce(Action action){
+    Button button = actionMap_[action];
+    bool isPressed;
+    switch(button.data.type){
+        case BUTTON_BUTTON:
+            isPressed = joysticks_[button.joystick]->GetRawButton(button.data.id);
+            break;
+        case TRIGGER_BUTTON:
+            isPressed = joysticks_[button.joystick]->GetTriggerPressed();
+            break;
+        case AXIS_BUTTON:
+            std::cout<<"Not applicable for getPressedOnce:";
+        default:
+            std::cout<<"Action"<< action << " bad mapping" << std::endl;
+            return false;
+    };
+    if(!wasPressed[action] && isPressed){
+        wasPressed[action] = true;
+        return true;
+    }
+    else{
+        wasPressed[action] = isPressed;
+        return false;
+    }
+    
 }
 
 /**
  * Gets if the button is pressed
+ * DIFFERENT BECAUSE OF USING BUTTON VS ACTION
+ * USED FOR VALUE MAPS
  * 
  * prints error if bad button, returns false
  * 

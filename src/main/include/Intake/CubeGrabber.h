@@ -10,6 +10,7 @@ public:
     enum State {
         INTAKING,
         OUTTAKING,
+        OUTTAKING_SLOW, //Default during teleop - to not catch rogue cubes
         STOPPED,
     };
 
@@ -22,6 +23,7 @@ public:
     void Intake();
     void Stop();
     void Outtake(); 
+    void OuttakeSlow(); 
 
 private:
     State grabber_status{STOPPED};
