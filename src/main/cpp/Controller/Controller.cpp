@@ -346,7 +346,7 @@ bool Controller::getPressed(Action action){
             isPressed = joysticks_[button.joystick]->GetRawButton(button.data.id);
             break;
         case TRIGGER_BUTTON:
-            isPressed = joysticks_[button.joystick]->GetTriggerPressed();
+            isPressed = joysticks_[button.joystick]->GetTrigger();
             break;
         case AXIS_BUTTON:
             std::cout<<"Not applicable for getPressed:";
@@ -374,7 +374,7 @@ bool Controller::getPressedOnce(Action action){
             isPressed = joysticks_[button.joystick]->GetRawButton(button.data.id);
             break;
         case TRIGGER_BUTTON:
-            isPressed = joysticks_[button.joystick]->GetTriggerPressed();
+            isPressed = joysticks_[button.joystick]->GetTrigger();
             break;
         case AXIS_BUTTON:
             std::cout<<"Not applicable for getPressedOnce:";
@@ -409,6 +409,32 @@ bool Controller::getButtonPressed(Button button){
             std::cout<<"Not applicable for getPressed: ";
             break;
         case BUTTON_BUTTON:
+            return joysticks_[button.joystick]->GetRawButton(button.data.id);
+        case TRIGGER_BUTTON:
+            return joysticks_[button.joystick]->GetTrigger();
+        default:
+            std::cout<<"Bad Button Mapping for ";
+    };
+    std::cout<<"Button "<<button.data.id<<" from joystick "<<button.joystick<<"; type: "<<button.data.type<<std::endl;
+    return false;
+}
+
+/**
+ * Gets if the button is pressed
+ * DIFFERENT BECAUSE OF USING BUTTON VS ACTION
+ * USED FOR VALUE MAPS
+ * 
+ * prints error if bad button, returns false
+ * 
+ * @param button button to be pressed
+ * @returns if the button is pressed
+*/
+bool Controller::getButtonPressed(Button button){
+    switch(button.data.type){
+        case AXIS_BUTTON:
+            std::cout<<"Not applicable for getPressed: ";
+            break;
+        case BUTTON_BUTTON:
             return joysticks_[button.joystick]->GetRawButtonPressed(button.data.id);
         case TRIGGER_BUTTON:
             return joysticks_[button.joystick]->GetTriggerPressed();
@@ -422,6 +448,7 @@ bool Controller::getButtonPressed(Button button){
 /**
  * If the actions a trigger, it returns the get value
  * Gets if the action's axis's value is greater than the defaultDown
+ * Some "triggers" on xbox are axis
  * 
  * prints error if bad action and returns false
  * 
@@ -437,11 +464,11 @@ bool Controller::getTriggerDown(Action action, double defaultDown){
         case AXIS_BUTTON:
             value = joysticks_[button.joystick]->GetRawAxis(button.data.id);
             return value > defaultDown;
+        case TRIGGER_BUTTON:
+            return joysticks_[button.joystick]->GetTrigger();
         case BUTTON_BUTTON:
             std::cout<<"Not applicable for getTriggerDown: Action " << action << std::endl;
             break;
-        case TRIGGER_BUTTON:
-            return joysticks_[button.joystick]->GetTriggerPressed();
         default:
             std::cout<<"Bad Button Mapping for Action" << action << std::endl;
     };

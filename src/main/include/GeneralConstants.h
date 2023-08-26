@@ -100,10 +100,10 @@ namespace FieldConstants
      * Driver faces along the x axis, apriltags too
      */
     const Point TAG_XY[8] = {
-            {15.513558, 1.071626}, // Player station for Blue
-            {15.513558, 2.748026}, //Red tags
+            {15.513558, 1.071626}, //Red tags
+            {15.513558, 2.748026}, 
             {15.513558, 4.424426},
-            {16.178784, 6.749796},
+            {16.178784, 6.749796},  // Player station for Blue
             {0.36195, 6.749796}, // Player station for Red
             {1.02743, 4.424426}, // Blue tags
             {1.02743, 2.748026},

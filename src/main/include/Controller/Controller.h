@@ -35,9 +35,6 @@ class Controller{
         bool getPOVDown(Actions::POVAction action);
         bool getPOVDownOnce(Actions::POVAction action);
 
-        //Buttons
-        bool getButtonPressed(ControllerConstants::Button button);
-
         /// @brief Returns value from a value map
         /// @tparam T should auto resolve, but know the type that it returns/uses
         /// @param map the mapping, founding in ControllerMapData
@@ -51,6 +48,24 @@ class Controller{
             }
             return defaultVal;
         }
+
+        /// @brief Returns value from a value map
+        /// @tparam T should auto resolve, but know the type that it returns/uses
+        /// @param map the mapping, founding in ControllerMapData
+        /// @param defaultVal default value if none of the buttons are pressed
+        /// @return the mapped button value, whichever one's first in the mapping
+        template<typename T> T getValueOnce(const std::vector<ControllerMapData::ValueMapElement<T>> (&map), T defaultVal){
+            for(ControllerMapData::ValueMapElement<T> element : map){
+                if(getButtonPressedOnce(element.button)){
+                    return element.value;
+                }
+            }
+            return defaultVal;
+        }
+
+        //Buttons
+        bool getButtonPressed(ControllerConstants::Button button);
+        bool getButtonPressedOnce(ControllerConstants::Button button);
 
         //Calls all buttons and triggers to not buffer (disabledPeriodic)
         void stopBuffer();

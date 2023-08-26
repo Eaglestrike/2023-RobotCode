@@ -68,12 +68,11 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
                 double xStrafe = controls_.getWithDeadContinuous(XSTRAFE, 0.07);
                 double yStrafe = -controls_.getWithDeadContinuous(YSTRAFE, 0.07);
                 double rotation = controls_.getWithDeadContinuous(ROTATION, 0.07);
-                
                 swerveDrive_.setTarget(xStrafe, yStrafe, rotation);
 
                 //Shift odometry
-                double lineupTrimX = controls_.getValue(ControllerMapData::GET_TRIM_X, 0.0);
-                double lineupTrimY = controls_.getValue(ControllerMapData::GET_TRIM_Y, 0.0);
+                double lineupTrimX = controls_.getValueOnce(ControllerMapData::GET_TRIM_X, 0.0);
+                double lineupTrimY = controls_.getValueOnce(ControllerMapData::GET_TRIM_Y, 0.0);
                 swerveDrive_.trim(lineupTrimX, lineupTrimY);
                 swerveDrive_.teleopPeriodic(controls_.getPressed(SCORE),
                                             arm_.isForward(),
@@ -487,7 +486,7 @@ void Robot::TeleopPeriodic()
         coneIntaking_ = false;
         coneIntakeDown_ = false;
     }
-    else if (controls_.getPressed(MANUAL_CONTROL_2))
+    else if (controls_.getPressed(GRAVITY))
     {
         double thetaVel = controls_.getRawAxis(MANUAL_THETA_2);
         thetaVel *= abs(thetaVel); //Squared control thing
@@ -838,7 +837,7 @@ void Robot::TeleopPeriodic()
                 }
             }
         }
-        else if (controls_.getPressed(FLIP_ARM))
+        else if (controls_.getPressed(GO_GROUND))
         {
             // if (arm_.isForward() && arm_.getPosition() == TwoJointArmProfiles::STOWED) // TODO check if wanted w/ operator
             // {
@@ -892,7 +891,7 @@ void Robot::TeleopPeriodic()
         //         coneIntaking_ = true;
         //     }
         // }
-        else if (controls_.getPressed(FLIP_ARM_2))
+        else if (controls_.getPressed(FLIP_ARM))
         {
             // if (cubeIntaking_ && arm_.getState() == TwoJointArm::HOLDING_POS)//NEUTRAL STOW
             // {
@@ -1096,7 +1095,7 @@ void Robot::TeleopPeriodic()
     //     arm_.setPosTo(TwoJointArmProfiles::STOWED);
     // }
 
-    if (controls_.getPressed(TOGGLE_CLAW))
+    if (controls_.getPressedOnce(TOGGLE_CLAW))
     {
         if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
         {
@@ -1136,7 +1135,7 @@ void Robot::TeleopPeriodic()
         // }
     }
     
-    if (controls_.getPressed(INTAKE))
+    if (controls_.getPressedOnce(INTAKE))
     {
         if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
         {
@@ -1150,7 +1149,7 @@ void Robot::TeleopPeriodic()
             }
         }
     }
-    else if (controls_.getPressed(OUTAKE))
+    else if (controls_.getPressedOnce(OUTAKE))
     {
         if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
         {

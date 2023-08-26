@@ -88,7 +88,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
     // frc::SmartDashboard::PutBoolean("Found Tag", foundTag_);
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
 
-    // frc::SmartDashboard::PutBoolean("LJT", controls->lJoyTriggerDown());
+    frc::SmartDashboard::PutBoolean("Scoring", score);
     if (score)
     {
         if (!trackingTag_)
@@ -102,7 +102,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
                 drive(strafe_, rotation_);
                 return;
             }
-            autoLineup(scoringPos);
+            autoLineup(scoringPos); //Generates trajectory
         }
 
         // bool end = false;
@@ -163,16 +163,16 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
             {
                 if (abs(robotX_ - xProfile.pos) > 0.08 || abs(robotY_ - yProfile.pos) > 0.08) // At profile when finished
                 {
-                    trackingTag_ = false; //Odometry is really accurate rn
+                    trackingTag_ = false; //Reset scoring
                     trackingPlayerStation_ = false;
                     return;
                 }
             }
 
             SwervePose wantedPose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
-            // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
-            // frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
-            // frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
+            // frc::SmartDashboard::PutNumber("WX", wantedPose.x);
+            // frc::SmartDashboard::PutNumber("WY", wantedPose.y);
+            // frc::SmartDashboard::PutNumber("WYAW", wantedPose.yaw);
             drivePose(wantedPose);
         }
     }
@@ -335,7 +335,7 @@ void SwerveDrive::setPanic(bool panic){
     config_.isPanic = panic;
 }
 
-/// @brief Sets up the target
+/// @brief Sets up the target and trajectory
 /// @param scoringPos position on xy world coordinates
 void SwerveDrive::autoLineup(Point scoringPos){
     double wantedX = scoringPos.getX();
@@ -416,7 +416,8 @@ void SwerveDrive::autoLineup(Point scoringPos){
         wantedYaw = -90;
     }
 
-    if ((setTagPos_ == 9 && config_.isBlue) || (setTagPos_ == 9 && frc::DriverStation::GetAlliance() == frc::DriverStation::kRed))
+    //TODO: test if this is needed
+    if (setTagPos_ == 9)
     {
         wantedYaw += 5;
     }
@@ -1178,7 +1179,6 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
             wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2); //Move away from driverstation 2 inches
         }
     }
-
     return Point{wantedX , wantedY} + LineupTrim_;
 
     // Below is which ever is in front of the robot, above is choosing

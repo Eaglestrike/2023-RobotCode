@@ -18,15 +18,15 @@ namespace Actions{
         MANUAL_CONTROL, //Enables manual control
         MANUAL_THETA,
         MANUAL_PHI,
-        MANUAL_CONTROL_2, //Only controls theta arm
+        GRAVITY, //Only controls theta arm
         MANUAL_THETA_2,
         SCORE,
         RAM_PLAYER_STATION,
         GO_MID,
         GO_HIGH,
         STOW,
+        GO_GROUND,
         FLIP_ARM,
-        FLIP_ARM_2,
         STOP_EVERYTHING,
         TOGGLE_CLAW,
         XSTRAFE,
@@ -92,12 +92,12 @@ namespace ControllerMapData{
         {XBOX_X_BUTTON ,  RAM_PLAYER_STATION},
         {XBOX_Y_BUTTON ,     GO_HIGH},
         {XBOX_L_BUMPER ,  STOP_EVERYTHING},
-        {XBOX_R_BUMPER ,    FLIP_ARM},
+        {XBOX_R_BUMPER ,   GO_GROUND},
         {{XBOX, B_7},    CONE_INTAKE},
         {{XBOX, B_8},   FIELD_ORIENT},
 
-        {BB_UP,     MANUAL_CONTROL_2},
-        {BB_LEFT,         FLIP_ARM_2},
+        {BB_UP,              GRAVITY},
+        {BB_LEFT,         FLIP_ARM},
         {BB_RIGHT,       ZERO_ARMS_1}
     };
 
