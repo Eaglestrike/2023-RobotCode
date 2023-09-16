@@ -429,7 +429,7 @@ bool Controller::getButtonPressed(Button button){
  * @param button button to be pressed
  * @returns if the button is pressed
 */
-bool Controller::getButtonPressed(Button button){
+bool Controller::getButtonPressedOnce(Button button){
     switch(button.data.type){
         case AXIS_BUTTON:
             std::cout<<"Not applicable for getPressed: ";

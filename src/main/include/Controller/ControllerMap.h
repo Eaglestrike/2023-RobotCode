@@ -42,8 +42,8 @@ namespace Actions{
         NO_POV_ACTION = -1,
         CUTOUT_INTAKE,
         CUTOUT_OUTAKE,
-        STOW_POV,
-        STOW_POV_2,
+        CUBE_INTAKE,
+        EXIT_INTAKE,
         INCH_UP,
         INCH_DOWN,
         INCH_LEFT,
@@ -164,7 +164,7 @@ namespace ControllerMapData{
 
         {XBOX_POV, POV_UP, CUTOUT_INTAKE},
         {XBOX_POV, POV_DOWN, CUTOUT_OUTAKE},
-        {XBOX_POV, POV_RIGHT, STOW_POV},
-        {XBOX_POV, POV_LEFT, STOW_POV_2}
+        {XBOX_POV, POV_RIGHT, CUBE_INTAKE},
+        {XBOX_POV, POV_LEFT, EXIT_INTAKE}
     };
 };

@@ -246,6 +246,7 @@ void TwoJointArm::reset()
 
 void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
 {
+
     if (switchingDirections_)
     {
         return;
@@ -254,8 +255,7 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     {
         return;
     }
-    if (posUnknown_)
-    {
+    if (posUnknown_){
         checkPos();
     }
     // if(setPosition == TwoJointArmProfiles::SPECIAL)
