@@ -496,7 +496,7 @@ void Robot::TeleopPeriodic()
             coneIntaking_ = false;
 
             double wantedYaw;
-            bool playerStation = false;
+            bool playerStation;
             // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) FORWARD BASED LINEUP
             // {
             //     if (arm_.isForward())
@@ -550,27 +550,10 @@ void Robot::TeleopPeriodic()
                 wantedYaw += 5;
             }
             
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-            {
-                playerStation = (scoringPos.getX() > FieldConstants::FIELD_LENGTH / 2.0);
-            }
-            else
-            {
-                playerStation = (scoringPos.getX() < FieldConstants::FIELD_LENGTH / 2.0);
-            }
+            playerStation = FieldConstants::onPlayerStationHalf(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue, scoringPos.getX());
 
-            double yawError = yaw - wantedYaw;
-            if (abs(yawError) > 180)
-            {
-                if (yawError > 0)
-                {
-                    yawError -= 360;
-                }
-                else
-                {
-                    yawError += 360;
-                }
-            }
+            double yawError = GeometryHelper::getAngDiffDeg(wantedYaw, yaw);
+            
             if (abs(yawError) > 15 || (!playerStation && (abs(swerveDrive_.getX() - scoringPos.getX()) > 1.5 || abs(swerveDrive_.getY() - scoringPos.getY()) > 2)))
             {
                 // Do nothing

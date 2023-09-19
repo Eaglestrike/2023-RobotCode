@@ -156,7 +156,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
             // SwervePose wantedPose = SwerveFromPose1D({getX(), xStrafe, 0}, yProfile, yawProfile);
             // drivePose(wantedPose);
 
-            drive(strafe_, rotation_)
+            drive(strafe_, rotation_);
         }
         else
         {
