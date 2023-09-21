@@ -936,6 +936,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     double tagZAng = -data.at(4);
     // frc::SmartDashboard::PutNumber("Tag Ang", tagZAng * 180 / M_PI);
     int tagID = data.at(1);
+    frc::SmartDashboard::PutNumber("Last Tag ID", tagID);
     int uniqueVal = data.at(6);
     double delay = data.at(5) / 1000.0; //Seconds
 

@@ -553,7 +553,8 @@ void Robot::TeleopPeriodic()
             playerStation = FieldConstants::onPlayerStationHalf(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue, scoringPos.getX());
 
             double yawError = GeometryHelper::getAngDiffDeg(wantedYaw, yaw);
-            
+
+            //If too far away or not lined up enough
             if (abs(yawError) > 15 || (!playerStation && (abs(swerveDrive_.getX() - scoringPos.getX()) > 1.5 || abs(swerveDrive_.getY() - scoringPos.getY()) > 2)))
             {
                 // Do nothing
@@ -654,7 +655,7 @@ void Robot::TeleopPeriodic()
                     }
                     break;
                 }
-                case 2:
+                case 2: //Mid
                 {
                     int scoringPos = swerveDrive_.getScoringPos();
                     TwoJointArmProfiles::Positions position;
@@ -692,7 +693,7 @@ void Robot::TeleopPeriodic()
                     }
                     break;
                 }
-                case 3:
+                case 3: //High
                 {
                     int scoringPos = swerveDrive_.getScoringPos();
                     TwoJointArmProfiles::Positions position;
