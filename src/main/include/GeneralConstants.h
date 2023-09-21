@@ -131,8 +131,10 @@ namespace FieldConstants
     };
 
     const double AUTO_DOCK_Y = 2.748;
-    const double BLUE_AUTO_DOCK_X = 3.825875; // 2.412
-    const double RED_AUTO_DOCK_X = 12.09675;  // 14.130
+    const ObjectCoordinateX AUTO_DOCK_X{
+        .blue = 3.825875, // 2.412
+        .red = 12.09675   // 14.130
+    };
 
     const double BOTTOM_PIECE_Y = 0.919;
     const double BOTTOM_MID_PIECE_Y = 2.138;

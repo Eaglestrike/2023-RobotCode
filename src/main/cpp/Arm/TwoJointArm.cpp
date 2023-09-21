@@ -244,15 +244,11 @@ void TwoJointArm::reset()
     ciSwitchFirstStageDone_ = false;
 }
 
-void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
-{
-
-    if (switchingDirections_)
-    {
+void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition){
+    if (switchingDirections_){
         return;
     }
-    if (state_ == FOLLOWING_TASK_SPACE_PROFILE || state_ == FOLLOWING_JOINT_SPACE_PROFILE)
-    {
+    if (state_ == FOLLOWING_TASK_SPACE_PROFILE || state_ == FOLLOWING_JOINT_SPACE_PROFILE){
         return;
     }
     if (posUnknown_){
@@ -360,7 +356,6 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     else if (position_ == TwoJointArmProfiles::GROUND)
     {
         key_ = {position_, TwoJointArmProfiles::STOWED};
-
         setPosition_ = setPosition;
         state_ = FOLLOWING_TASK_SPACE_PROFILE;
         taskSpaceStartTime_ = timer_.GetFPGATimestamp().value();
@@ -368,7 +363,6 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
     else
     {
         key_ = {position_, setPosition};
-
         setPosition_ = setPosition;
         state_ = FOLLOWING_TASK_SPACE_PROFILE;
         taskSpaceStartTime_ = timer_.GetFPGATimestamp().value();
@@ -377,34 +371,28 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition)
 
 void TwoJointArm::specialSetPosTo(TwoJointArmProfiles::Positions setPosition)
 {
-    if (position_ != TwoJointArmProfiles::CUBE_INTAKE)
-    {
+    if (position_ != TwoJointArmProfiles::CUBE_INTAKE){
         return;
     }
 
-    if (forward_ || switchingDirections_ || posUnknown_)
-    {
+    if (forward_ || switchingDirections_ || posUnknown_){
         return;
     }
 
-    if (state_ == STOPPED)
-    {
+    if (state_ == STOPPED){
         return;
     }
 
-    if (state_ == HOMING)
-    {
+    if (state_ == HOMING){
         setPosition_ = position_;
         return;
     }
 
-    if (position_ == setPosition)
-    {
+    if (position_ == setPosition){
         return;
     }
 
-    if (state_ == FOLLOWING_TASK_SPACE_PROFILE)
-    {
+    if (state_ == FOLLOWING_TASK_SPACE_PROFILE){
         return;
     }
 

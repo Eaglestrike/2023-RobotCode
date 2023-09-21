@@ -305,37 +305,29 @@ void AutoPaths::setPath(Path path)
     case FIRST_CUBE_HIGH:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (isBlue_)
-        {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::SCORING_X.blue;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+        if (isBlue_){
             yaw1 = 90;
             yaw2 = 90;
-            if (mirrored_)
-            {
+            if (mirrored_){
                 y1 = FieldConstants::TOP_PIECE_Y - SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::TOP_CUBE_Y /* - SwerveConstants::CLAW_MID_OFFSET*/ + 0.33;
                 yaw2 = 104;
             }
-            else
-            {
+            else{
                 y1 = FieldConstants::BOTTOM_PIECE_Y - SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
         }
-        else
-        {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::SCORING_X.red;
+        else{
             yaw1 = -90;
             yaw2 = -90;
-            if (!mirrored_)
-            {
+            if (!mirrored_){
                 y1 = FieldConstants::TOP_PIECE_Y + SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::TOP_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
-            else
-            {
+            else{
                 y1 = FieldConstants::BOTTOM_PIECE_Y + SwerveConstants::CLAW_MID_OFFSET;
                 y2 = FieldConstants::BOTTOM_CUBE_Y /* + SwerveConstants::CLAW_MID_OFFSET*/ - 0.33;
                 yaw2 = -76;
@@ -350,33 +342,25 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
-        if (isBlue_)
-        {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::BLUE_AUTO_DOCK_X;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::AUTO_DOCK_X, isBlue_);
+        if (isBlue_){
             yaw1 = -90;
             yaw2 = -90;
-            if (mirrored_)
-            {
+            if (mirrored_){
                 y1 = FieldConstants::TOP_PIECE_Y;
             }
-            else
-            {
+            else{
                 y1 = FieldConstants::BOTTOM_PIECE_Y;
             }
         }
-        else
-        {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::RED_AUTO_DOCK_X;
+        else{
             yaw1 = 90;
             yaw2 = 90;
-            if (!mirrored_)
-            {
+            if (!mirrored_){
                 y1 = FieldConstants::TOP_PIECE_Y;
             }
-            else
-            {
+            else{
                 y1 = FieldConstants::BOTTOM_PIECE_Y;
             }
         }
@@ -389,33 +373,25 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
-        if (isBlue_)
-        {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::RED_AUTO_DOCK_X;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::AUTO_DOCK_X, isBlue_);
+        if (isBlue_){
             yaw1 = 90;
             yaw2 = 90;
-            if (mirrored_)
-            {
+            if (mirrored_){
                 y1 = FieldConstants::TOP_PIECE_Y;
             }
-            else
-            {
+            else{
                 y1 = FieldConstants::BOTTOM_PIECE_Y;
             }
         }
-        else
-        {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::SCORING_X.red;
+        else{
             yaw1 = -90;
             yaw2 = -90;
-            if (!mirrored_)
-            {
+            if (!mirrored_){
                 y1 = FieldConstants::TOP_PIECE_Y;
             }
-            else
-            {
+            else{
                 y1 = FieldConstants::BOTTOM_PIECE_Y;
             }
         }
@@ -427,37 +403,29 @@ void AutoPaths::setPath(Path path)
     case SECOND_CONE:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (isBlue_)
-        {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::SCORING_X.blue;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+        if (isBlue_){
             yaw2 = -90;
-            if (mirrored_)
-            {
+            if (mirrored_){
                 yaw1 = -115;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
                 y2 = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
-            else
-            {
+            else{
                 yaw1 = -65;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
                 y2 = FieldConstants::BOTTOM_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
         }
-        else
-        {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::SCORING_X.red;
+        else{
             yaw2 = 90;
-            if (!mirrored_)
-            {
+            if (!mirrored_){
                 yaw1 = 115;
                 y1 = FieldConstants::TOP_MID_PIECE_Y; // F + 0.3
                 y2 = FieldConstants::TOP_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
-            else
-            {
+            else{
                 yaw1 = 65;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
                 y2 = FieldConstants::BOTTOM_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
@@ -472,38 +440,30 @@ void AutoPaths::setPath(Path path)
     case SECOND_CUBE_MID:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (isBlue_)
-        {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::SCORING_X.blue;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+        if (isBlue_){
             yaw2 = 90;
-            if (mirrored_)
-            {
+            if (mirrored_){
                 yaw1 = 45;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
                 y2 = FieldConstants::TOP_CUBE_Y /* - SwerveConstants::CLAW_MID_OFFSET*/ + 0.33;
                 yaw2 = 115;
             }
-            else
-            {
+            else{
                 yaw1 = 135;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
                 y2 = FieldConstants::BOTTOM_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
         }
-        else
-        {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::SCORING_X.red;
+        else{
             yaw2 = -90;
-            if (!mirrored_)
-            {
+            if (!mirrored_){
                 yaw1 = -45;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
                 y2 = FieldConstants::TOP_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
-            else
-            {
+            else{
                 yaw1 = -135;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
                 y2 = FieldConstants::BOTTOM_CUBE_Y /* + SwerveConstants::CLAW_MID_OFFSET*/ - 0.33;
@@ -519,37 +479,29 @@ void AutoPaths::setPath(Path path)
     case SECOND_CUBE_HIGH:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
-        if (isBlue_)
-        {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::SCORING_X.blue;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+        if (isBlue_){
             yaw2 = 90;
-            if (mirrored_)
-            {
+            if (mirrored_){
                 yaw1 = 65;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
                 y2 = FieldConstants::MID_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
-            else
-            {
+            else{
                 yaw1 = 125;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
                 y2 = FieldConstants::MID_CUBE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
         }
-        else
-        {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::SCORING_X.red;
+        else{
             yaw2 = -90;
-            if (!mirrored_)
-            {
+            if (!mirrored_){
                 yaw1 = -65;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
                 y2 = FieldConstants::MID_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
-            else
-            {
+            else{
                 yaw1 = -115;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
                 y2 = FieldConstants::MID_CUBE_Y + SwerveConstants::CLAW_MID_OFFSET;
@@ -565,10 +517,9 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
-        if (isBlue_)
-        {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::BLUE_AUTO_DOCK_X;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::AUTO_DOCK_X, isBlue_);
+        if (isBlue_){
             yaw2 = -90;
             if (mirrored_)
             {
@@ -581,18 +532,13 @@ void AutoPaths::setPath(Path path)
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
             }
         }
-        else
-        {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::RED_AUTO_DOCK_X;
+        else{
             yaw2 = 90;
-            if (!mirrored_)
-            {
+            if (!mirrored_){
                 yaw1 = 135;
                 y1 = FieldConstants::TOP_MID_PIECE_Y; // F + 0.3
             }
-            else
-            {
+            else{
                 yaw1 = 45;
                 y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
             }
@@ -607,10 +553,11 @@ void AutoPaths::setPath(Path path)
     {
         double x1, x2, y1, y2, yaw1, yaw2;
         y2 = FieldConstants::AUTO_DOCK_Y;
+        x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        x2 = FieldConstants::getPos(FieldConstants::AUTO_DOCK_X, isBlue_);
         if (isBlue_)
         {
-            x1 = FieldConstants::PIECE_X.blue;
-            x2 = FieldConstants::BLUE_AUTO_DOCK_X - 0.33 - 0.33 - 0.8;
+            x2 += - 0.33 - 0.33 - 0.8;
             if (mirrored_)
             {
                 yaw1 = 45;
@@ -626,8 +573,7 @@ void AutoPaths::setPath(Path path)
         }
         else
         {
-            x1 = FieldConstants::PIECE_X.red;
-            x2 = FieldConstants::RED_AUTO_DOCK_X + 0.33 + 0.33 + 0.8;
+            x2 += 0.33 + 0.33 + 0.8;
             if (!mirrored_)
             {
                 yaw1 = -45;
@@ -650,30 +596,23 @@ void AutoPaths::setPath(Path path)
     case SECOND_CUBE_GRAB:
     {
         double x, y, yaw;
-        if (isBlue_)
-        {
-            x = FieldConstants::PIECE_X.blue;
-            if (mirrored_)
-            {
+        x = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
+        if (isBlue_){
+            if (mirrored_){
                 yaw = 45;
                 y = FieldConstants::TOP_MID_PIECE_Y;
             }
-            else
-            {
+            else{
                 yaw = 135;
                 y = FieldConstants::BOTTOM_MID_PIECE_Y;
             }
         }
-        else
-        {
-            x = FieldConstants::PIECE_X.red;
-            if (!mirrored_)
-            {
+        else{
+            if (!mirrored_){
                 yaw = -45;
                 y = FieldConstants::TOP_MID_PIECE_Y;
             }
-            else
-            {
+            else{
                 yaw = -135;
                 y = FieldConstants::BOTTOM_MID_PIECE_Y;
             }
@@ -687,36 +626,25 @@ void AutoPaths::setPath(Path path)
     {
         double x, y, yaw;
         y = FieldConstants::AUTO_DOCK_Y;
+        x = FieldConstants::getPos(FieldConstants::AUTO_DOCK_X, isBlue_);
         // yaw = 0;
         if (isBlue_)
         {
-            x = FieldConstants::BLUE_AUTO_DOCK_X + 1;
+            x += 1;
             yaw = 0; // was 90
         }
         else
         {
-            x = FieldConstants::RED_AUTO_DOCK_X - 1;
+            x += -1;
             yaw = 179.99; // was -90
         }
         swervePoints_.push_back(SwervePose(x, y, yaw, 0.5));
         break;
     }
-    case TAXI_DOCK_DUMB:
-    {
-        break;
-    }
-    case NOTHING:
-    {
-        break;
-    }
-    case DRIVE_BACK_DUMB:
-    {
-        break;
-    }
-    case WAIT_5_SECONDS:
-    {
-        break;
-    }
+    case TAXI_DOCK_DUMB:{break;}
+    case NOTHING:{break;}
+    case DRIVE_BACK_DUMB:{break;}
+    case WAIT_5_SECONDS:{break;}
     }
 
     pathSet_ = true;
@@ -725,28 +653,19 @@ void AutoPaths::setPath(Path path)
     yawStageGenerated_ = false;
 }
 
-AutoPaths::Path AutoPaths::getPath()
-{
+AutoPaths::Path AutoPaths::getPath(){
     return path_;
 }
 
-void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
-{
+void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4){
     actions_.clear();
     actions_.push_back(a1);
     actions_.push_back(a2);
     actions_.push_back(a3);
     actions_.push_back(a4);
 
-    bool overCableBump;
-    if (isBlue_)
-    {
-        overCableBump = !mirrored_;
-    }
-    else
-    {
-        overCableBump = mirrored_;
-    }
+    bool overCableBump = isBlue_ ^ (!mirrored_);
+
     firstCubeArmSafety_ = overCableBump;
     slowTraj_ = overCableBump;
 
@@ -774,9 +693,18 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
 
     switch (a1)
     {
-    case PRELOADED_CONE_MID:
+    case PRELOADED_CONE_HIGH:
+    case PRELOADED_CUBE_HIGH:
+    case PRELOADED_CONE_HIGH_MIDDLE:
     {
-        armPosition_ = TwoJointArmProfiles::MID; // MID THING
+        armPosition_ = TwoJointArmProfiles::HIGH;
+        forward_ = true;
+        break;
+    }
+    case PRELOADED_CONE_MID:
+    case PRELOADED_CONE_MID_MIDDLE:
+    {
+        armPosition_ = TwoJointArmProfiles::MID;
         forward_ = true;
         break;
     }
@@ -786,60 +714,11 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
         forward_ = true;
         break;
     }
-    case PRELOADED_CONE_HIGH:
-    {
-        armPosition_ = TwoJointArmProfiles::HIGH;
-        forward_ = true;
-        break;
-    }
-    case PRELOADED_CUBE_HIGH:
-    {
-        armPosition_ = TwoJointArmProfiles::HIGH;
-        forward_ = true;
-        break;
-    }
-    case PRELOADED_CONE_HIGH_MIDDLE:
-    {
-        armPosition_ = TwoJointArmProfiles::HIGH;
-        forward_ = true;
-        break;
-    }
-    case PRELOADED_CONE_MID_MIDDLE:
-    {
-        armPosition_ = TwoJointArmProfiles::MID;
-        forward_ = true;
-        break;
-    }
     case AUTO_DOCK:
-    {
-        armPosition_ = TwoJointArmProfiles::STOWED;
-        forward_ = true;
-        break;
-    }
     case TAXI_DOCK_DUMB:
-    {
-        armPosition_ = TwoJointArmProfiles::STOWED;
-        forward_ = true;
-        break;
-    }
     case NOTHING:
-    {
-        armPosition_ = TwoJointArmProfiles::STOWED;
-        forward_ = true;
-        break;
-    }
     case DRIVE_BACK_DUMB:
-    {
-        armPosition_ = TwoJointArmProfiles::STOWED;
-        forward_ = true;
-        break;
-    }
     case WAIT_5_SECONDS:
-    {
-        armPosition_ = TwoJointArmProfiles::STOWED;
-        forward_ = true;
-        break;
-    }
     default:
     {
         armPosition_ = TwoJointArmProfiles::STOWED;
@@ -850,7 +729,7 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4)
     if (a3 == SECOND_CUBE_GRAB || a3 == NOTHING || a3 == DRIVE_BACK_DUMB || a3 == AUTO_DOCK || a3 == FIRST_CUBE_HIGH)
     {
         firstCubeArmSafety_ = true;
-        slowTraj_ = true;
+        slowTraj_ = true; //Moving over bump
     }
 }
 
@@ -876,15 +755,13 @@ void AutoPaths::setPathSet(bool pathSet)
 
 void AutoPaths::periodic()
 {
-    if (!actionsSet_)
-    {
+    isBlue_ = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
+    if (!actionsSet_){
         return;
     }
 
-    if (!pathSet_)
-    {
-        if (actionNum_ > static_cast<int>(actions_.size()) - 1)
-        {
+    if (!pathSet_){
+        if (actionNum_ > static_cast<int>(actions_.size()) - 1){
             swerveDrive_->drive({0, 0}, 0);
             return;
         }
@@ -921,7 +798,18 @@ void AutoPaths::periodic()
         for (size_t i = pointNum_; i < swervePoints_.size(); ++i)
         {
             // pose = swervePoints_[i].getPose(time, pointOver);
-            if (!pathGenerated_ || ((path_ == SECOND_CONE || path_ == SECOND_CUBE_MID || path_ == FIRST_CUBE_HIGH || path_ == AUTO_DOCK || (path_ == FIRST_CONE_DOCK && pointNum_ == 1) || (path_ == FIRST_CUBE_DOCK && pointNum_ == 1) || (path_ == SECOND_CONE_DOCK && pointNum_ == 0) || (path_ == SECOND_CUBE_DOCK /* && pointNum_ == 0*/) || path_ == SECOND_CUBE_GRAB) && (!curveSecondStageGenerated_ || !yawStageGenerated_)))
+            if (!pathGenerated_ ||
+                ((  path_ == SECOND_CONE ||
+                    path_ == SECOND_CUBE_MID ||
+                    path_ == FIRST_CUBE_HIGH || 
+                    path_ == AUTO_DOCK || 
+                    (path_ == FIRST_CONE_DOCK && pointNum_ == 1) || 
+                    (path_ == FIRST_CUBE_DOCK && pointNum_ == 1) || 
+                    (path_ == SECOND_CONE_DOCK && pointNum_ == 0) || 
+                    (path_ == SECOND_CUBE_DOCK /* && pointNum_ == 0*/) || 
+                    path_ == SECOND_CUBE_GRAB)
+                    && 
+                    (!curveSecondStageGenerated_ || !yawStageGenerated_)))
             {
                 SwervePose currPose(swerveDrive_->getX(), swerveDrive_->getY(), swerveDrive_->getYaw(), 0);
                 if (path_ == SECOND_CONE || path_ == SECOND_CUBE_MID) // COULDO make the if logic not completely terrible
@@ -2195,7 +2083,7 @@ void AutoPaths::periodic()
                 {
                     frc::SmartDashboard::PutBoolean("Sending it Fast", false);
                     frc::SmartDashboard::PutBoolean("Sending it Medium", false);
-                    double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
+                    double ang = (yaw_)*M_PI / 180.0;                                                          // Radians
                     double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
@@ -2467,12 +2355,10 @@ double AutoPaths::initYaw()
     // }
     // }
 
-    if (isBlue_)
-    {
+    if (isBlue_){
         return -90;
     }
-    else
-    {
+    else{
         return 90;
     }
 }
@@ -2483,15 +2369,7 @@ Point AutoPaths::initPos()
     {
     case PRELOADED_CONE_MID:
     {
-        double x;
-        if (isBlue_)
-        {
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            x = FieldConstants::SCORING_X.red;
-        }
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
 
         double y;
         if (isBlue_)
@@ -2521,15 +2399,7 @@ Point AutoPaths::initPos()
     }
     case PRELOADED_CUBE_MID:
     {
-        double x;
-        if (isBlue_)
-        {
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            x = FieldConstants::SCORING_X.red;
-        }
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
 
         double y;
         if (isBlue_)
@@ -2559,15 +2429,7 @@ Point AutoPaths::initPos()
     }
     case PRELOADED_CONE_HIGH:
     {
-        double x;
-        if (isBlue_)
-        {
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            x = FieldConstants::SCORING_X.red;
-        }
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
 
         double y;
         if (isBlue_)
@@ -2597,15 +2459,7 @@ Point AutoPaths::initPos()
     }
     case PRELOADED_CUBE_HIGH:
     {
-        double x;
-        if (isBlue_)
-        {
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            x = FieldConstants::SCORING_X.red;
-        }
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
 
         double y;
         if (isBlue_)
@@ -2635,19 +2489,10 @@ Point AutoPaths::initPos()
     }
     case PRELOADED_CONE_HIGH_MIDDLE:
     {
-        double x;
-        if (isBlue_)
-        {
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            x = FieldConstants::SCORING_X.red;
-        }
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
 
         double y;
-        if (isBlue_)
-        {
+        if (isBlue_){
             if (mirrored_)
             {
                 y = FieldConstants::TOP_MIDDLE_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
@@ -2657,8 +2502,7 @@ Point AutoPaths::initPos()
                 y = FieldConstants::BOTTOM_MIDDLE_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
             }
         }
-        else
-        {
+        else{
             if (mirrored_)
             {
                 y = FieldConstants::BOTTOM_MIDDLE_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
@@ -2673,15 +2517,7 @@ Point AutoPaths::initPos()
     }
     case PRELOADED_CONE_MID_MIDDLE:
     {
-        double x;
-        if (isBlue_)
-        {
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            x = FieldConstants::SCORING_X.red;
-        }
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
 
         double y;
         if (isBlue_)
@@ -2712,33 +2548,14 @@ Point AutoPaths::initPos()
     case AUTO_DOCK:
     {
         double y = FieldConstants::AUTO_DOCK_Y;
-        double x;
-        if (isBlue_)
-        {
-            // x = FieldConstants::BLUE_AUTO_DOCK_X;
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            // x = FieldConstants::RED_AUTO_DOCK_X;
-            x = FieldConstants::SCORING_X.red;
-        }
+        //double x = FieldConstants::getPos(FieldConstants::AUTO_DOCK_X, isBlue_);
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
         return {x, y};
     }
     case TAXI_DOCK_DUMB:
     {
         double y = FieldConstants::AUTO_DOCK_Y;
-        double x;
-        if (isBlue_)
-        {
-            // x = FieldConstants::BLUE_AUTO_DOCK_X;
-            x = FieldConstants::SCORING_X.blue;
-        }
-        else
-        {
-            // x = FieldConstants::RED_AUTO_DOCK_X;
-            x = FieldConstants::SCORING_X.red;
-        }
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
         return {x, y};
     }
     case NOTHING:
