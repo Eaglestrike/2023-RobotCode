@@ -1616,21 +1616,15 @@ void AutoPaths::periodic()
         coneIntaking_ = false;
         armPosition_ = TwoJointArmProfiles::HIGH;
 
-        if (arm_->getPosition() == TwoJointArmProfiles::HIGH && arm_->getState() == TwoJointArm::HOLDING_POS)
-        {
+        if (arm_->getPosition() == TwoJointArmProfiles::HIGH && arm_->getState() == TwoJointArm::HOLDING_POS){
             // wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
             clawOpen_ = true;
-            if (!placingTimerStarted_)
-            {
+            if (!placingTimerStarted_){
                 placingStartTime_ = timer_.GetFPGATimestamp().value();
                 placingTimerStarted_ = true;
             }
 
-            // if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.2)
-            // {
-            //     clawOpen_ = true;
-            // }
-
+            //Place for 0.3 seconds
             if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.3)
             {
                 // pointOver = true;

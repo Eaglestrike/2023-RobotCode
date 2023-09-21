@@ -313,8 +313,7 @@ void Robot::AutonomousPeriodic()
     cubeIntaking_ = autoPaths_.cubeIntaking();
     coneIntaking_ = autoPaths_.coneIntaking();
 
-    if (cubeIntaking_)
-    {
+    if (cubeIntaking_){
         cubeIntakeNeededDown = true;
         if (arm_.isForward()) {
             if (arm_.isArmOut()){
@@ -466,8 +465,7 @@ void Robot::TeleopPeriodic()
         armsZeroed_ = true;
     }
 
-    if (controls_.getTriggerDown(MANUAL_CONTROL))
-    {
+    if (controls_.getTriggerDown(MANUAL_CONTROL)){
         double thetaVel = controls_.getRawAxis(MANUAL_THETA);
         thetaVel *= abs(thetaVel); //Squared Control -> contact Caleb bc he doesn't know the name, used for driver experience
         double phiVel = controls_.getRawAxis(MANUAL_PHI);
@@ -488,7 +486,7 @@ void Robot::TeleopPeriodic()
         Point scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
         if (scoringPos.getX() == 0 && scoringPos.getY() == 0) // COULDO get a better flag thing
         {
-            // Do nothing?
+            // Do nothing? if no valid scoring position
         }
         else
         {
@@ -497,6 +495,7 @@ void Robot::TeleopPeriodic()
 
             double wantedYaw;
             bool playerStation = false;
+
             // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) FORWARD BASED LINEUP
             // {
             //     if (arm_.isForward())
@@ -541,12 +540,11 @@ void Robot::TeleopPeriodic()
             // }
 
             double yaw = navx_->GetYaw() - yawOffset_/* + swerveDrive_.getYawTagOffset()*/;
-            yaw=GeometryHelper::getPrincipalAng2Deg(yaw);
+            yaw = GeometryHelper::getPrincipalAng2Deg(yaw);
 
             wantedYaw = yaw > 0.0 ? 90.0 : -90.0;
 
-            if (swerveDrive_.getScoringPos() == 9)
-            {
+            if (swerveDrive_.getScoringPos() == 9){
                 wantedYaw += 5;
             }
             
@@ -709,17 +707,14 @@ void Robot::TeleopPeriodic()
                     }
                     break;
                 }
-                case 3:
-                {
+                case 3:{
                     int scoringPos = swerveDrive_.getScoringPos();
                     TwoJointArmProfiles::Positions position;
-                    if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
-                    {
+                    if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
                         position = TwoJointArmProfiles::CUBE_HIGH;
                         // arm_.setPosTo(TwoJointArmProfiles::CUBE_HIGH);//FORWARD BASED LINEUP
                     }
-                    else
-                    {
+                    else{
                         position = TwoJointArmProfiles::HIGH;
                         // arm_.setPosTo(TwoJointArmProfiles::HIGH);//FORWARD BASED LINEUP
                     }
@@ -839,15 +834,13 @@ void Robot::TeleopPeriodic()
                 }
             }  
         }
-        else if (controls_.getPressed(STOW))
-        {
+        else if (controls_.getPressed(STOW)){
             if (!coneIntaking_ && !cubeIntaking_)
             {
                 arm_.setPosTo(TwoJointArmProfiles::STOWED);
             }
         }
-        else if (controls_.getPressed(GO_HIGH))
-        {
+        else if (controls_.getPressed(GO_HIGH)){
             if (!arm_.isForward())
             {
                 /*if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && !arm_.isForward() && arm_.getState() == TwoJointArm::HOLDING_POS)
