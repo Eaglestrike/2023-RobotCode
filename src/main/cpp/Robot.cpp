@@ -276,9 +276,12 @@ void Robot::AutonomousInit()
     else{
         if(arm_.isArmOut()){
             arm_.stop();
-            
+            auto_disable_ = true;
             std::cout<<"RESET ARM ABORT"<<std::endl;
             return;
+        }
+        else{
+            auto_disable_ = false;
         }
     }
 
@@ -309,6 +312,10 @@ void Robot::AutonomousInit()
 }
 
 void Robot::AutonomousPeriodic(){
+    if(auto_disable_){
+        return;
+    }
+
     bool clawOpen = autoPaths_.getClawOpen();
     double wheelSpeed = autoPaths_.getWheelSpeed();
     TwoJointArmProfiles::Positions armPosition = autoPaths_.getArmPosition();

@@ -71,4 +71,6 @@ private:
     bool cubeIntaking_, coneIntaking_, coneIntakeDown_, armsZeroed_, grabbedCone_;
     int scoringLevel_/*, psType_*/;
 
+    bool auto_disable_ = false;
+
 };
