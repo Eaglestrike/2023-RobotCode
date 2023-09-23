@@ -130,14 +130,14 @@ void AutoPaths::setPath(Path path)
             {
                 yaw = 90;
                 y = FieldConstants::TOP_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
-                x += (0.0254 * 2);
+                x += (0.0254 * 0); //2
             }
             else
             {
                 yaw = 90 + 7;
                 y = FieldConstants::BOTTOM_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
                 y += (0.0254 * 4);
-                x -= (0.0254 * 2);
+                x -= (0.0254 * 2); //2
             }
         }
         else
@@ -158,6 +158,8 @@ void AutoPaths::setPath(Path path)
             }
         }
 
+        frc::SmartDashboard::PutNumber("Target Position X", x);
+        frc::SmartDashboard::PutNumber("Target Position Y", y);
         swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
@@ -756,6 +758,7 @@ void AutoPaths::setPathSet(bool pathSet)
 void AutoPaths::periodic()
 {
     isBlue_ = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
+    //frc::SmartDashboard::PutBoolean("Auto Is Blue", isBlue_);
     if (!actionsSet_){
         return;
     }
@@ -2338,8 +2341,7 @@ void AutoPaths::setGyros(double yaw, double pitch, double roll)
     roll_ = roll;
 }
 
-double AutoPaths::initYaw()
-{
+double AutoPaths::initYaw(){
     // switch (path_)
     // {
     // case BIG_BOY:
@@ -2348,7 +2350,7 @@ double AutoPaths::initYaw()
     //     break;
     // }
     // }
-
+    isBlue_ = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
     if (isBlue_){
         return -90;
     }
@@ -2357,8 +2359,8 @@ double AutoPaths::initYaw()
     }
 }
 
-Point AutoPaths::initPos()
-{
+Point AutoPaths::initPos(){
+    isBlue_ = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
     switch (actions_[0])
     {
     case PRELOADED_CONE_MID:

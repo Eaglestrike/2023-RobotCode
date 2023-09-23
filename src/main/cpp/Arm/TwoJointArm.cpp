@@ -2153,8 +2153,7 @@ void TwoJointArm::updateIntakeStates(bool cubeIntakeDown, bool coneIntakeDown)
     coneIntakeDown_ = coneIntakeDown;
 }
 
-void TwoJointArm::setForward(bool forward)
-{
+void TwoJointArm::setForward(bool forward){
     forward_ = forward;
 }
 

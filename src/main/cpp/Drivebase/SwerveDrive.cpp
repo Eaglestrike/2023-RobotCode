@@ -42,6 +42,7 @@ void SwerveDrive::periodic(double yaw, double tilt, std::vector<double> data)
     config_.isBlue = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
     yaw_ = yaw;
     calcOdometry();
+
     updateAprilTagFieldXY(tilt, data);
 
     topRight_->periodic();
@@ -132,6 +133,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
 
         if (trackingPlayerStation_)
         {
+            //Reset Trajectory if at target
             // if (get<0>(yProfile) == 0 && get<0>(yawProfile) == 0 && get<1>(yProfile) == 0 && get<1>(yawProfile) == 0)
             // {
             //     if (abs(robotY_ - get<2>(yProfile)) > 0.0254 * 4)
@@ -141,27 +143,27 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
             //         return;
             //     }
             // }
-            double xStrafe;
-            if (config_.isBlue)
-            {
-                xStrafe = strafe_.getY() * SwerveConstants::MAX_TELE_VEL;
-            }
-            else
-            {
-                xStrafe = -strafe_.getY() * SwerveConstants::MAX_TELE_VEL;
-            }
-            SwervePose wantedPose = SwerveFromPose1D({getX(), xStrafe, 0}, yProfile, yawProfile);
-            
-            // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
-            // frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
-            // frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
-            drivePose(wantedPose);
+
+            //Follow trajectory
+            // double xStrafe;
+            // if (config_.isBlue)
+            // {
+            //     xStrafe = strafe_.getY() * SwerveConstants::MAX_TELE_VEL;
+            // }
+            // else
+            // {
+            //     xStrafe = -strafe_.getY() * SwerveConstants::MAX_TELE_VEL;
+            // }
+            // SwervePose wantedPose = SwerveFromPose1D({getX(), xStrafe, 0}, yProfile, yawProfile);
+            // drivePose(wantedPose);
+
+            drive(strafe_, rotation_);
         }
         else
         {
             if (isStationary(xProfile) && isStationary(yProfile) && isStationary(yawProfile)) //Not moving
             {
-                if (abs(robotX_ - xProfile.pos) > 0.08 || abs(robotY_ - yProfile.pos) > 0.08) // At profile when finished
+                if (abs(robotX_ - xProfile.pos) > 0.08 || abs(robotY_ - yProfile.pos) > 0.08) // Not at profile when finished
                 {
                     trackingTag_ = false; //Reset scoring
                     trackingPlayerStation_ = false;
@@ -426,6 +428,9 @@ void SwerveDrive::autoLineup(Point scoringPos){
 
     wantedY += (wantedYaw > 0) ? -SwerveConstants::CLAW_MID_OFFSET : SwerveConstants::CLAW_MID_OFFSET;
     trackingPlayerStation_ = playerStation;
+    if(trackingPlayerStation_){//Don't generate trajectory
+        return;
+    }
 
     // if (playerStation)
     // {
@@ -932,6 +937,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
     double tagZAng = -data.at(4);
     // frc::SmartDashboard::PutNumber("Tag Ang", tagZAng * 180 / M_PI);
     int tagID = data.at(1);
+    frc::SmartDashboard::PutNumber("Last Tag ID", tagID);
     int uniqueVal = data.at(6);
     double delay = data.at(5) / 1000.0; //Seconds
 

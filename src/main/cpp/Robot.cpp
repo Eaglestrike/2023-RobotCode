@@ -14,8 +14,7 @@
 
 using namespace Actions;
 
-Robot::Robot(): autoPaths_(&swerveDrive_, &arm_)
-{
+Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
     AddPeriodic(
         [&]
         {
@@ -270,11 +269,18 @@ void Robot::AutonomousInit()
     arm_.setForward(true);
     // arm_.resetIntaking();
 
-    // if (!armsZeroed_)
-    // {
-    arm_.zeroArmsToAutoStow();
-    armsZeroed_ = true;
-    // }
+    if (!armsZeroed_){
+        arm_.zeroArmsToAutoStow();
+        armsZeroed_ = true;
+    }
+    else{
+        if(arm_.isArmOut()){
+            arm_.stop();
+            
+            std::cout<<"RESET ARM ABORT"<<std::endl;
+            return;
+        }
+    }
 
     AutoPaths::Path action1 = auto1Chooser_.GetSelected();
     AutoPaths::Path action2 = auto2Chooser_.GetSelected();
@@ -302,8 +308,7 @@ void Robot::AutonomousInit()
     autoPaths_.startAutoTimer();
 }
 
-void Robot::AutonomousPeriodic()
-{
+void Robot::AutonomousPeriodic(){
     bool clawOpen = autoPaths_.getClawOpen();
     double wheelSpeed = autoPaths_.getWheelSpeed();
     TwoJointArmProfiles::Positions armPosition = autoPaths_.getArmPosition();
@@ -494,8 +499,7 @@ void Robot::TeleopPeriodic()
             coneIntaking_ = false;
 
             double wantedYaw;
-            bool playerStation = false;
-
+            bool playerStation;
             // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) FORWARD BASED LINEUP
             // {
             //     if (arm_.isForward())
@@ -548,27 +552,11 @@ void Robot::TeleopPeriodic()
                 wantedYaw += 5;
             }
             
-            if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue)
-            {
-                playerStation = (scoringPos.getX() > FieldConstants::FIELD_LENGTH / 2.0);
-            }
-            else
-            {
-                playerStation = (scoringPos.getX() < FieldConstants::FIELD_LENGTH / 2.0);
-            }
+            playerStation = FieldConstants::onPlayerStationHalf(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue, scoringPos.getX());
 
-            double yawError = yaw - wantedYaw;
-            if (abs(yawError) > 180)
-            {
-                if (yawError > 0)
-                {
-                    yawError -= 360;
-                }
-                else
-                {
-                    yawError += 360;
-                }
-            }
+            double yawError = GeometryHelper::getAngDiffDeg(wantedYaw, yaw);
+
+            //If too far away or not lined up enough
             if (abs(yawError) > 15 || (!playerStation && (abs(swerveDrive_.getX() - scoringPos.getX()) > 1.5 || abs(swerveDrive_.getY() - scoringPos.getY()) > 2)))
             {
                 // Do nothing
@@ -669,7 +657,7 @@ void Robot::TeleopPeriodic()
                     }
                     break;
                 }
-                case 2:
+                case 2: //Mid
                 {
                     int scoringPos = swerveDrive_.getScoringPos();
                     TwoJointArmProfiles::Positions position;
@@ -707,7 +695,8 @@ void Robot::TeleopPeriodic()
                     }
                     break;
                 }
-                case 3:{
+                case 3: //High
+                {
                     int scoringPos = swerveDrive_.getScoringPos();
                     TwoJointArmProfiles::Positions position;
                     if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
