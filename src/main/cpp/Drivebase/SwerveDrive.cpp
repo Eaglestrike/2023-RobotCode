@@ -616,6 +616,8 @@ void SwerveDrive::drivePose(const SwervePose pose)
         yawVel += (yawError)*SwerveConstants::kaP; // Just P control correction (wheels can easily stop rotation)
     }
 
+
+
     // frc::SmartDashboard::PutNumber("XE", pose.x - robotX_);
     // frc::SmartDashboard::PutNumber("YE", pose.y - robotY_);
     // frc::SmartDashboard::PutNumber("XVE", pose.xVel - getXYVel().first);
@@ -666,7 +668,7 @@ void SwerveDrive::adjustPos(SwervePose pose)
 /// @brief Calculates the module's orientation and power output
 /// @param xSpeed x speed field-oriented
 /// @param ySpeed y speed field-oriented
-/// @param turn target turn velocity (deg/s if inVolts, rad/s if not inVolts)
+/// @param turn target turn velocity (deg/s if inVolts, rad/s if not inVolts) (involts also means using feedforward)
 /// @param inVolts if the speed should be voltage or [-1, 1]
 void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, double yAcc,*/ double turn, /*double turnAcc,*/ bool inVolts)
 {
@@ -1174,15 +1176,18 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
     else{//Going to score
         wantedX = FieldConstants::getPos(FieldConstants::SCORING_X, config_.isBlue);
         if (scoringLevel == 1){
-            wantedX += config_.isBlue?0.1:-0.1; // scoot towards driverstation by 10 cm, 0.5
+            wantedX += config_.isBlue?0.1:-0.1; // scoot away driverstation by 10 cm
         }
 
         double yIndex = config_.isBlue? (9 - setTagPos_) : (setTagPos_ - 1);//Tag ordering is reversed on opposite side
-        wantedY = yIndex * 0.5588 + 0.512826;
+        wantedY = yIndex * 0.5588 + FieldConstants::BOTTOM_CONE_Y;;
 
         if (setTagPos_ == 9){
             wantedY += (config_.isBlue?1.0:-1.0) * (0.0254 * 4); //Add 4 inches Y
-            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2); //Move away from driverstation 2 inches
+            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2); //Move towards from driverstation 2 inches
+        }
+        else{
+            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2); //Move towards from driverstation 2 inches
         }
     }
     return Point{wantedX , wantedY} + LineupTrim_;
