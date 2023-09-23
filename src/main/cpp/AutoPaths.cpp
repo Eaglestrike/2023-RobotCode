@@ -36,6 +36,9 @@ AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(
 
     frc::SmartDashboard::PutNumber("Min Vel" , 0.0); // TAG
     frc::SmartDashboard::PutNumber("K Vel" , 1.0);
+
+    frc::SmartDashboard::PutNumber("X offset", 0.0);
+    frc::SmartDashboard::PutNumber("Y offset", 0.0);
 }
 
 void AutoPaths::setPath(Path path)
@@ -132,16 +135,21 @@ void AutoPaths::setPath(Path path)
 
         bool top = !(isBlue_ ^ mirrored_);
         if(top){
-            x += (isBlue_? 1.0 : -1.0) * (0.0254 * -2.0); //Move -2 inches towards driver
+            yaw += (isBlue_? 0.0 : 2.5); //Rotate since robot collides with wall, only red
+            x += (isBlue_? 2.0 : 1.5) * 0.0254; //Move 2 inches towards driver
             y = FieldConstants::TOP_CONE_Y;
+            y += (isBlue_? 0.0 : -4.0) * 0.0254; //Shift out a bit away from wall, only for red since it rotates
         }
         else{
-            yaw += (isBlue_? 7.0 : 0.0); //Rotate since robot collides with wall, only blue
-            x += (isBlue_? 1.0 : -1.0) * (0.0254 * -2.0); //Move 2 inches towards from driver
+            yaw += (isBlue_? 5.0 : 0.0); //Rotate since robot collides with wall, only blue
+            x += (isBlue_? 1.0 : 1.5) * 0.0254; //Move 2 inches towards from driver
             y = FieldConstants::BOTTOM_CONE_Y;
-            y += ((isBlue_? 1.0:-1.0) * (0.0254 * -8.5)); //Shift out a bit
+            y += (isBlue_? 5.0 : -4.0) * 0.0254; //Shift out a bit away from wall, blue avoid wall
         }
-        y += ((isBlue_?1.0:-1.0) * SwerveConstants::CLAW_MID_OFFSET); //Account for arm offset
+        y += ((isBlue_? 1.0 : -1.0) * -SwerveConstants::CLAW_MID_OFFSET); //Account for arm offset
+
+        x += frc::SmartDashboard::GetNumber("X offset", 0.0) * 0.0254;
+        y += frc::SmartDashboard::GetNumber("Y offset", 0.0) * 0.0254;
 
         frc::SmartDashboard::PutNumber("Target Position X", x);
         frc::SmartDashboard::PutNumber("Target Position Y", y);
@@ -466,10 +474,11 @@ void AutoPaths::setPath(Path path)
     case SECOND_CUBE_HIGH:
     {
         double x1, x2, y1, y2, yaw1, yaw2;
+        yaw2 = (isBlue_ ? 1.0:-1.0) * 90.0;
         x1 = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
         x2 = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+        bool top = !(isBlue_ ^ mirrored_);
         if (isBlue_){
-            yaw2 = 90;
             if (mirrored_){
                 yaw1 = 65;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
@@ -482,7 +491,6 @@ void AutoPaths::setPath(Path path)
             }
         }
         else{
-            yaw2 = -90;
             if (!mirrored_){
                 yaw1 = -65;
                 y1 = FieldConstants::TOP_MID_PIECE_Y;
@@ -1555,7 +1563,7 @@ void AutoPaths::periodic()
             //     clawOpen_ = true;
             // }
 
-            if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 1.0) //TODO SET TO 0.3
+            if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.3)
             {
                 // pointOver = true;
                 clawOpen_ = true;

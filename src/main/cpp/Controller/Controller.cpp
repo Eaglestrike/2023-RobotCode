@@ -23,7 +23,7 @@ Controller::Controller(){
     }
     //check if any joysticks are nullptr
     for(int i = 0; i<NUM_JOYSTICKS; i++){
-        if(joysticks_[i]){
+        if(!joysticks_[i]){
             std::cout<<"No joystick map for id " << i<< std::endl;
         }
     }

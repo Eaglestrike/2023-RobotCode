@@ -418,7 +418,6 @@ void SwerveDrive::autoLineup(Point scoringPos){
         wantedYaw = -90;
     }
 
-    //TODO: test if this is needed
     if (setTagPos_ == 9)
     {
         wantedYaw += 5;
