@@ -1,5 +1,7 @@
 #include "Controls/Controls.h"
 
+#include <cmath>
+
 Controls::Controls() : lJoy_{InputConstants::LJOY_PORT}, rJoy_{InputConstants::RJOY_PORT}, xbox_{InputConstants::XBOX_PORT}, buttonBoard_{InputConstants::BUTTON_BOARD_PORT}
 {
     dPadUpDown_ = false;
@@ -22,7 +24,7 @@ double Controls::getXStrafe()
 
     double x = lJoy_.GetRawAxis(InputConstants::LJOY_X);
     // double x = xbox_.GetRawAxis(InputConstants::XBOX_LJOY_X);
-    if (abs(x) < 0.07)
+    if (std::abs(x) < 0.07)
     {
         return 0;
     }
@@ -39,7 +41,7 @@ double Controls::getYStrafe()
 
     double y = -lJoy_.GetRawAxis(InputConstants::LJOY_Y);
     // double y = -xbox_.GetRawAxis(InputConstants::XBOX_LJOY_Y);
-    if (abs(y) < 0.07)
+    if (std::abs(y) < 0.07)
     {
         return 0;
     }
@@ -56,7 +58,7 @@ double Controls::getTurn()
 
     double turn = rJoy_.GetRawAxis(InputConstants::RJOY_X);
     // double turn = xbox_.GetRawAxis(InputConstants::XBOX_RJOY_X);
-    if (abs(turn) < 0.07)
+    if (std::abs(turn) < 0.07)
     {
         return 0;
     }
