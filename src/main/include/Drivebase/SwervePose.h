@@ -78,7 +78,7 @@ namespace Poses{
         return (pose.xVel != 0 || pose.yVel != 0 || pose.yawVel != 0);
     }
 
-    /// @brief Returns if all dimensions are stopped
+    /// @brief Returns if all dimensions are stopped, can be used to check of a profile is finished
     /// @param pose SwervePose
     /// @return if the pose is stationary
     static inline bool isStationary(SwervePose pose){

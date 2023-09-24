@@ -25,7 +25,7 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
             frc::SmartDashboard::PutBoolean("Data Stale", socketClient_.IsStale());
             frc::SmartDashboard::PutBoolean("Camera Connection", socketClient_.HasConn());
 
-            double ang = (yaw)*M_PI / 180.0;                                                                       // Radians
+            double ang = (yaw) * M_PI / 180.0;  // Radians
             double pitch = GeometryHelper::getPrincipalAng2Deg((double)navx_->GetPitch() + SwerveConstants::PITCHOFFSET); // Degrees [-180, 180]
             double roll = GeometryHelper::getPrincipalAng2Deg((double)navx_->GetRoll() + SwerveConstants::ROLLOFFSET);    // Degrees [-180, 180]
             double tilt = pitch * sin(ang) - roll * cos(ang); //Field-oriented tilt
@@ -40,7 +40,7 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
 
             arm_.periodic();
             cubeIntake_.Periodic();
-            arm_.updateIntakeStates(cubeIntake_.getState() == PneumaticsIntake::DEPLOYED, false);
+            arm_.updateIntakeStates(cubeIntake_.getState() == PneumaticsIntake::DEPLOYED, false); // TODO here for cone intake
 
             if (frc::DriverStation::IsAutonomous() && frc::DriverStation::IsEnabled())
             {

@@ -34,11 +34,11 @@ AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(
     firstCubeArmSafety_ = false;
     isBlue_ = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
 
-    frc::SmartDashboard::PutNumber("Min Vel" , 0.0); // TAG
-    frc::SmartDashboard::PutNumber("K Vel" , 1.0);
+    // frc::SmartDashboard::PutNumber("Min Vel" , 0.0);
+    // frc::SmartDashboard::PutNumber("K Vel" , 1.0);
 
-    frc::SmartDashboard::PutNumber("X offset", 0.0);
-    frc::SmartDashboard::PutNumber("Y offset", 0.0);
+    // frc::SmartDashboard::PutNumber("X offset", 0.0);
+    // frc::SmartDashboard::PutNumber("Y offset", 0.0);
 }
 
 void AutoPaths::setPath(Path path)
@@ -136,20 +136,20 @@ void AutoPaths::setPath(Path path)
         bool top = !(isBlue_ ^ mirrored_);
         if(top){
             yaw += (isBlue_? 0.0 : 2.5); //Rotate since robot collides with wall, only red
-            x += (isBlue_? 2.0 : 1.5) * 0.0254; //Move 2 inches towards driver
+            x += (isBlue_? 2.0 : 1.5) * 0.0254; //Move towards driver red, away blue
             y = FieldConstants::TOP_CONE_Y;
             y += (isBlue_? 0.0 : -4.0) * 0.0254; //Shift out a bit away from wall, only for red since it rotates
         }
         else{
             yaw += (isBlue_? 5.0 : 0.0); //Rotate since robot collides with wall, only blue
-            x += (isBlue_? 1.0 : 1.5) * 0.0254; //Move 2 inches towards from driver
+            x += (isBlue_? 1.0 : 2.5) * 0.0254; //Move towards from driver red, away blue
             y = FieldConstants::BOTTOM_CONE_Y;
-            y += (isBlue_? 5.0 : -4.0) * 0.0254; //Shift out a bit away from wall, blue avoid wall
+            y += (isBlue_? 5.0 : 0.0) * 0.0254; //Shift out a bit away from wall, blue avoid wall
         }
         y += ((isBlue_? 1.0 : -1.0) * -SwerveConstants::CLAW_MID_OFFSET); //Account for arm offset
 
-        x += frc::SmartDashboard::GetNumber("X offset", 0.0) * 0.0254;
-        y += frc::SmartDashboard::GetNumber("Y offset", 0.0) * 0.0254;
+        //x += frc::SmartDashboard::GetNumber("X offset", 0.0) * 0.0254;
+        //y += frc::SmartDashboard::GetNumber("Y offset", 0.0) * 0.0254;
 
         frc::SmartDashboard::PutNumber("Target Position X", x);
         frc::SmartDashboard::PutNumber("Target Position Y", y);
@@ -788,6 +788,8 @@ void AutoPaths::periodic()
         }
     }
     else */
+
+    //Non dumb trajectories
     if (path_ != DRIVE_BACK_DUMB && path_ != NOTHING && path_ != WAIT_5_SECONDS && path_ != TAXI_DOCK_DUMB)
     {
         SwervePose pose;
@@ -882,18 +884,15 @@ void AutoPaths::periodic()
                     Pose1D yProfile = getYProfile();
 
                     bool curveReady = false;
-                    if (pointNum_ == 0)
-                    {
-                        if (isBlue_)
-                        {
+                    if (pointNum_ == 0){ //First point curve when going out
+                        if (isBlue_){
                             curveReady = (swerveDrive_->getX() > 4.8514); // 2.921
                         }
-                        else
-                        {
+                        else{
                             curveReady = (swerveDrive_->getX() < 11.688318); // 13.621893
                         }
                     }
-                    else
+                    else //Else curve when coming back
                     {
                         if (isBlue_)
                         {
@@ -905,7 +904,12 @@ void AutoPaths::periodic()
                         }
                     }
 
-                    if ((!curveSecondStageGenerated_) && (/*pointNum_ == 1 || */ (pointNum_ == 0 && curveReady && timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5 && isStationary(yProfile))))
+                    // Generate curved profile (y) after leaving charge station and after 1st profile is done
+                    if ((!curveSecondStageGenerated_) &&
+                        (/*pointNum_ == 1 || */ (pointNum_ == 0 &&
+                                                curveReady && 
+                                                timer_.GetFPGATimestamp().value() - curveSecondStageStartTime_ > 1.5 && 
+                                                isStationary(yProfile))))
                     {
                         double setY = swervePoints_[i].y;
                         // yTraj_.generateTrajectory(swerveDrive_->getY(), setY, swerveDrive_->getXYVel().getY());
@@ -913,7 +917,7 @@ void AutoPaths::periodic()
                         curveSecondStageGenerated_ = true;
 
                         double setYaw = swervePoints_[i].yaw;
-                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // 
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0);
                         yawStageGenerated_ = true;
                     }
                     else if ((!curveSecondStageGenerated_) && ((pointNum_ == 1 && curveReady && isStationary(yProfile))))
@@ -1232,8 +1236,7 @@ void AutoPaths::periodic()
                 Pose1D yawProfile = yawTraj_.getProfile();
 
                 pose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
-                if (isStationary(pose))
-                {
+                if (isStationary(pose)){
                     pointOver = true;
                 }
             }
@@ -1429,18 +1432,20 @@ void AutoPaths::periodic()
             {
                 swerveDrive_->lockWheels();
             }
-            else if (!pointOver || pointNum_ != 1 || path_ != SECOND_CUBE_DOCK)
-            {
-                // frc::SmartDashboard::PutNumber("x thing", pose->getXVel());
-                // frc::SmartDashboard::PutNumber("y thing", pose->getYVel());
-                // frc::SmartDashboard::PutNumber("yaw thing", pose->getYawVel());
-                frc::SmartDashboard::PutNumber("VEL X EXPECTED", pose.xVel);
-                frc::SmartDashboard::PutNumber("VEL Y EXPECTED", pose.yVel);
-                if(abs(pose.xVel) < frc::SmartDashboard::GetNumber("Min Vel", 0.0)){ // TAG
-                    pose.xVel *= frc::SmartDashboard::GetNumber("K Vel", 1.0);
+            else if (!pointOver || pointNum_ != 1 || path_ != SECOND_CUBE_DOCK){
+                // frc::SmartDashboard::PutNumber("VEL X EXPECTED", pose.xVel);
+                // frc::SmartDashboard::PutNumber("VEL Y EXPECTED", pose.yVel);
+                // if(abs(pose.xVel) < frc::SmartDashboard::GetNumber("Min Vel", 0.0)){
+                //     pose.xVel *= frc::SmartDashboard::GetNumber("K Vel", 1.0);
+                // }
+                // if(abs(pose.yVel) < frc::SmartDashboard::GetNumber("Min Vel", 0.0)){
+                //     pose.yVel *= frc::SmartDashboard::GetNumber("K Vel", 1.0);
+                // }
+                if(abs(pose.xVel) < 0.25){ //Compensate for overshoot
+                    pose.xVel *= -0.75;
                 }
-                if(abs(pose.yVel) < frc::SmartDashboard::GetNumber("Min Vel", 0.0)){
-                    pose.yVel *= frc::SmartDashboard::GetNumber("K Vel", 1.0);
+                if(abs(pose.yVel) < 0.25){ //Compensate for overshoot
+                    pose.yVel *= 0.1;
                 }
                 swerveDrive_->drivePose(pose);
             }
