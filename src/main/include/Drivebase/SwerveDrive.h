@@ -38,7 +38,7 @@ class SwerveDrive
 
         void autoLineup(Point scoringPos);
 
-        void drive(Vector strafe, double turn);
+        void drive(Vector strafe, double turn, bool inVolts = false);
         void lockWheels();
         void drivePose(const Poses::SwervePose pose);
         void adjustPos(const Poses::SwervePose pose);

@@ -39,6 +39,8 @@ AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(
 
     // frc::SmartDashboard::PutNumber("X offset", 0.0);
     // frc::SmartDashboard::PutNumber("Y offset", 0.0);
+
+    frc::SmartDashboard::PutNumber("DRIVE BACK VOLTS", 0.0); //TODO UNCOMMENT
 }
 
 void AutoPaths::setPath(Path path)
@@ -50,6 +52,7 @@ void AutoPaths::setPath(Path path)
     dumbTimerStarted_ = false;
     failsafeStarted_ = false;
 
+    //Set swerve points
     switch (path_)
     {
     case BIG_BOY:
@@ -2286,7 +2289,7 @@ void AutoPaths::periodic()
         // }
 
         if (timer_.Get().value() < 2){
-            double vel = (isBlue_? 1.0 : -1.0) * 1.0; //Drive away from driverstation
+            double vel = (isBlue_? 1.0 : -1.0) * frc::SmartDashboard::GetNumber("DRIVE BACK VOLTS", 0.0); //Drive away from driverstation TODO FIND GOOD VALUE
             swerveDrive_->drive({vel, 0}, 0);
         }
         else{
@@ -2308,6 +2311,7 @@ void AutoPaths::periodic()
             failsafeStarted_ = false;
             nextPointReady_ = true;
         }
+        break;
     }
     }
 }

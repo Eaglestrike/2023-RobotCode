@@ -301,6 +301,7 @@ void Robot::AutonomousInit()
     yawOffset_ = autoPaths_.initYaw();
 
     Point startXY = autoPaths_.initPos();
+    //Set initial position to be current position for dumb paths
     if (abs(swerveDrive_.getX() - startXY.getX()) > 1 || abs(swerveDrive_.getY() - startXY.getY()) > 1)
     {
         // frc::SmartDashboard::PutBoolean("F", true); 

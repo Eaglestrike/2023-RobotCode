@@ -469,20 +469,19 @@ void SwerveDrive::autoLineup(Point scoringPos){
 /*
  * Drives the robot at the speed and angle
  */
-void SwerveDrive::drive(Vector strafe, double turn)
+void SwerveDrive::drive(Vector strafe, double turn, bool inVolts)
 {
-    double xSpeed = strafe_.getX();
-    double ySpeed = strafe_.getY();
+    frc::SmartDashboard::PutString("Swerve Driving", strafe.toString());
+    double xSpeed = strafe.getX();
+    double ySpeed = strafe.getY();
     if (turn == 0) //Yaw adjustment to prevent drift over time
     {
         double yawError = GeometryHelper::getAngDiffDeg(yaw_, holdingYaw_);
-        if (!isHoldingYaw_)
-        {
+        if (!isHoldingYaw_){
             holdingYaw_ = yaw_;
             isHoldingYaw_ = true;
         }
-        else if (abs(yawError) > 5) //Greater than 5 degrees
-        {
+        else if (abs(yawError) > 5) { //Greater than 5 degrees don't correct angle
             holdingYaw_ = yaw_;
         }
         if (abs(yawError) > 0.5 && (abs(xSpeed) > 0.1 || abs(ySpeed) > 0.1))
@@ -494,8 +493,7 @@ void SwerveDrive::drive(Vector strafe, double turn)
     {
         isHoldingYaw_ = false;
     }
-
-    calcModules(xSpeed, ySpeed, /*0, 0,*/ turn, /*0,*/ false);
+    calcModules(xSpeed, ySpeed, /*0, 0,*/ turn, /*0,*/ inVolts);
 
     // double volts = frc::SmartDashboard::GetNumber("Swerve Volts", 0.0);
 
@@ -532,10 +530,11 @@ void SwerveDrive::drive(Vector strafe, double turn)
     // 6, 9800, 178.7173
     // m = 0.0291946, b = 0.746574
 
-    topRight_->move({trSpeed_, trAngle_}, false);
-    topLeft_->move({tlSpeed_, tlAngle_}, false);
-    bottomRight_->move({brSpeed_, brAngle_}, false);
-    bottomLeft_->move({blSpeed_, blAngle_}, false);
+    
+    topRight_->move({trSpeed_, trAngle_}, inVolts);
+    topLeft_->move({tlSpeed_, tlAngle_}, inVolts);
+    bottomRight_->move({brSpeed_, brAngle_}, inVolts);
+    bottomLeft_->move({blSpeed_, blAngle_}, inVolts);
 
     // double speed = frc::SmartDashboard::GetNumber("Swerve Volts", 0);
     // topRight_->move({speed, trAngle_, true);
@@ -702,6 +701,11 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     double B = newX + (turnComponent);
     double C = newY - (turnComponent);
     double D = newY + (turnComponent);
+
+    // std::cout<<"A:"<<A<<std::endl;
+    // std::cout<<"B:"<<B<<std::endl;
+    // std::cout<<"C:"<<C<<std::endl;
+    // std::cout<<"D:"<<D<<std::endl;
 
     double trVel = sqrt(B * B + C * C);
     double tlVel = sqrt(B * B + D * D);
