@@ -354,29 +354,30 @@ void Robot::AutonomousPeriodic(){
             }
         }
     }
-    else if (forward && arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE){
-        if (arm_.isArmOut()) {
-            arm_.specialSetPosTo(arm_.getPosition());
-        }
-        else
-        {
-            // arm_.toggleForwardCubeIntake(); //NEUTRAL STOW
-            arm_.setPosTo(TwoJointArmProfiles::STOWED); // NEUTRAL STOW
-        }
-    }
-    else{
-        // if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
-        // {
-        //     armPosition = TwoJointArmProfiles::STOWED;
-        // }
-    }
+    //TODO UNCOMMENT
+    // else if (forward && arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE){
+    //     if (arm_.isArmOut()) {
+    //         arm_.specialSetPosTo(arm_.getPosition());
+    //     }
+    //     else
+    //     {
+    //         // arm_.toggleForwardCubeIntake(); //NEUTRAL STOW
+    //         arm_.setPosTo(TwoJointArmProfiles::STOWED); // NEUTRAL STOW
+    //     }
+    // }
+    // else{
+    //     // if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
+    //     // {
+    //     //     armPosition = TwoJointArmProfiles::STOWED;
+    //     // }
+    // }
 
-    if (arm_.isForward() != forward)
-    {
-        arm_.toggleForward();
-    }
+    // if (arm_.isForward() != forward)
+    // {
+    //     arm_.toggleForward();
+    // }
 
-    arm_.setPosTo(armPosition);
+    // arm_.setPosTo(armPosition);
 
     arm_.setClawWheels(wheelSpeed);
     arm_.setClaw(clawOpen);

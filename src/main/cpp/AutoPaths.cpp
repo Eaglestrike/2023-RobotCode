@@ -728,13 +728,11 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4){
     }
 }
 
-void AutoPaths::startTimer()
-{
+void AutoPaths::startTimer(){
     startTime_ = timer_.GetFPGATimestamp().value();
 }
 
-void AutoPaths::startAutoTimer()
-{
+void AutoPaths::startAutoTimer(){
     autoStartTime_ = timer_.GetFPGATimestamp().value();
 }
 
@@ -789,7 +787,7 @@ void AutoPaths::periodic()
     }
     else */
 
-    //Non dumb trajectories
+    //Generating Non dumb trajectories
     if (path_ != DRIVE_BACK_DUMB && path_ != NOTHING && path_ != WAIT_5_SECONDS && path_ != TAXI_DOCK_DUMB)
     {
         SwervePose pose;
@@ -883,6 +881,7 @@ void AutoPaths::periodic()
                     // Pose1D yProfile = yTraj_.getProfile();
                     Pose1D yProfile = getYProfile();
 
+                    //Curve around charge stations, initialize y profile only after going past it
                     bool curveReady = false;
                     if (pointNum_ == 0){ //First point curve when going out
                         if (isBlue_){
@@ -1452,10 +1451,9 @@ void AutoPaths::periodic()
             // delete pose;
         }
     }
-    else if (path_ == WAIT_5_SECONDS)
-    {
-        if (nextPointReady_)
-        {
+    //Dumb paths just have a timer
+    else if (path_ == WAIT_5_SECONDS){
+        if (nextPointReady_){
             pathSet_ = false;
             nextPointReady_ = false;
             ++actionNum_;
@@ -1463,10 +1461,8 @@ void AutoPaths::periodic()
             return;
         }
     }
-    else
-    {
-        if (!dumbTimerStarted_)
-        {
+    else{
+        if (!dumbTimerStarted_){
             timer_.Stop();
             timer_.Reset();
             timer_.Start();
@@ -1474,6 +1470,7 @@ void AutoPaths::periodic()
         }
     }
 
+    //Arm position and drive logic, also ends path after placed
     switch (path_)
     {
     case BIG_BOY:
@@ -1620,7 +1617,7 @@ void AutoPaths::periodic()
         coneIntaking_ = false;
         armPosition_ = TwoJointArmProfiles::HIGH;
 
-        if (arm_->getPosition() == TwoJointArmProfiles::HIGH && arm_->getState() == TwoJointArm::HOLDING_POS){
+        if (true /*arm_->getPosition() == TwoJointArmProfiles::HIGH && arm_->getState() == TwoJointArm::HOLDING_POS*/){ //TODO DELETE
             // wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
             clawOpen_ = true;
             if (!placingTimerStarted_){
@@ -1629,7 +1626,7 @@ void AutoPaths::periodic()
             }
 
             //Place for 0.3 seconds
-            if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.3)
+            if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 2.0) //TODO set to 0.3
             {
                 // pointOver = true;
                 clawOpen_ = true;
@@ -1835,7 +1832,7 @@ void AutoPaths::periodic()
                 }
             }
 
-            if (arm_->getPosition() == TwoJointArmProfiles::CUBE_HIGH && arm_->getState() == TwoJointArm::HOLDING_POS && pointOver)
+            if (/*arm_->getPosition() == TwoJointArmProfiles::CUBE_HIGH && arm_->getState() == TwoJointArm::HOLDING_POS && */pointOver) //TODO UNCOMMENT
             {
                 wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
                 if (!placingTimerStarted_)
@@ -1844,7 +1841,7 @@ void AutoPaths::periodic()
                     placingTimerStarted_ = true;
                 }
 
-                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.4)
+                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 2.0) //TODO SET TO 0.4
                 {
                     nextPointReady_ = true;
                     placingTimerStarted_ = false;
@@ -1966,7 +1963,7 @@ void AutoPaths::periodic()
                 cubeIntaking_ = true;
             }
 
-            if (arm_->getPosition() == TwoJointArmProfiles::CUBE_MID && arm_->getState() == TwoJointArm::HOLDING_POS && pointOver)
+            if (/*arm_->getPosition() == TwoJointArmProfiles::CUBE_MID && arm_->getState() == TwoJointArm::HOLDING_POS &&*/ pointOver) //TODO DELETE
             {
                 wheelSpeed_ = ClawConstants::OUTAKING_SPEED - 3;
                 if (!placingTimerStarted_)
@@ -2199,40 +2196,30 @@ void AutoPaths::periodic()
         double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
         double tilt = pitch * sin(ang) - roll * cos(ang);
 
-        if (isBlue_)
-        {
-            if (tilt > 5)
-            {
+        if (isBlue_){
+            if (tilt > 5){
                 comingDownChargingStation_ = true;
             }
         }
-        else
-        {
-            if (tilt < -5)
-            {
+        else{
+            if (tilt < -5){
                 comingDownChargingStation_ = true;
             }
         }
 
-        if (!comingDownChargingStation_)
-        {
-            if (isBlue_)
-            {
+        if (!comingDownChargingStation_){
+            if (isBlue_){
                 swerveDrive_->drive({0.5, 0}, 0);
             }
-            else
-            {
+            else{
                 swerveDrive_->drive({-0.5, 0}, 0);
             }
         }
-        else if (comingDownChargingStation_ && !taxied_)
-        {
-            if (isBlue_)
-            {
+        else if (comingDownChargingStation_ && !taxied_){
+            if (isBlue_){
                 swerveDrive_->drive({0.35, 0}, 0);
             }
-            else
-            {
+            else{
                 swerveDrive_->drive({-0.35, 0}, 0);
             }
 
@@ -2298,19 +2285,11 @@ void AutoPaths::periodic()
         //     swerveDrive_->drive(0, 0, 0);
         // }
 
-        if (timer_.Get().value() < 2)
-        {
-            if (isBlue_)
-            {
-                swerveDrive_->drive({0.2, 0}, 0);
-            }
-            else
-            {
-                swerveDrive_->drive({-0.2, 0}, 0);
-            }
+        if (timer_.Get().value() < 2){
+            double vel = (isBlue_? 1.0 : -1.0) * 1.0; //Drive away from driverstation
+            swerveDrive_->drive({vel, 0}, 0);
         }
-        else
-        {
+        else{
             swerveDrive_->drive({0, 0}, 0);
         }
 
@@ -2319,15 +2298,13 @@ void AutoPaths::periodic()
     case WAIT_5_SECONDS:
     {
         swerveDrive_->lockWheels();
-        if (!failsafeStarted_)
-        {
+        if (!failsafeStarted_){
             failsafeStarted_ = true;
             failsafeTimer_.Reset();
             failsafeTimer_.Start();
         }
 
-        if (failsafeTimer_.Get().value() > 5)
-        {
+        if (failsafeTimer_.Get().value() > 5){
             failsafeStarted_ = false;
             nextPointReady_ = true;
         }
@@ -2553,18 +2530,9 @@ Point AutoPaths::initPos(){
         double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
         return {x, y};
     }
-    case NOTHING:
-    {
-        return {0, 0};
-    }
-    case DRIVE_BACK_DUMB:
-    {
-        return {0, 0};
-    }
-    default:
-    {
-        return {0, 0};
-    }
+    case NOTHING: {return {0, 0};} //No initial position
+    case DRIVE_BACK_DUMB: {return {0, 0};}
+    default: {return {0, 0};}
     }
 }
 
