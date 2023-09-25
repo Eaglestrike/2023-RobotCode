@@ -39,8 +39,6 @@ AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(
 
     // frc::SmartDashboard::PutNumber("X offset", 0.0);
     // frc::SmartDashboard::PutNumber("Y offset", 0.0);
-
-    frc::SmartDashboard::PutNumber("DRIVE BACK VOLTS", 0.0); //TODO UNCOMMENT
 }
 
 void AutoPaths::setPath(Path path)
@@ -1620,7 +1618,7 @@ void AutoPaths::periodic()
         coneIntaking_ = false;
         armPosition_ = TwoJointArmProfiles::HIGH;
 
-        if (true /*arm_->getPosition() == TwoJointArmProfiles::HIGH && arm_->getState() == TwoJointArm::HOLDING_POS*/){ //TODO DELETE
+        if (arm_->getPosition() == TwoJointArmProfiles::HIGH && arm_->getState() == TwoJointArm::HOLDING_POS){
             // wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
             clawOpen_ = true;
             if (!placingTimerStarted_){
@@ -1629,7 +1627,7 @@ void AutoPaths::periodic()
             }
 
             //Place for 0.3 seconds
-            if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 2.0) //TODO set to 0.3
+            if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.3)
             {
                 // pointOver = true;
                 clawOpen_ = true;
@@ -1756,7 +1754,6 @@ void AutoPaths::periodic()
             nextPointReady_ = true;
         }
 
-        // TODO place cone
         // if done placing
         if (/*done placing &&*/ pointOver && pointNum_ == 1)
         {
@@ -1835,7 +1832,7 @@ void AutoPaths::periodic()
                 }
             }
 
-            if (/*arm_->getPosition() == TwoJointArmProfiles::CUBE_HIGH && arm_->getState() == TwoJointArm::HOLDING_POS && */pointOver) //TODO UNCOMMENT
+            if (arm_->getPosition() == TwoJointArmProfiles::CUBE_HIGH && arm_->getState() == TwoJointArm::HOLDING_POS && pointOver)
             {
                 wheelSpeed_ = ClawConstants::OUTAKING_SPEED;
                 if (!placingTimerStarted_)
@@ -1844,7 +1841,7 @@ void AutoPaths::periodic()
                     placingTimerStarted_ = true;
                 }
 
-                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 2.0) //TODO SET TO 0.4
+                if (timer_.GetFPGATimestamp().value() - placingStartTime_ > 0.4)
                 {
                     nextPointReady_ = true;
                     placingTimerStarted_ = false;
@@ -1966,7 +1963,7 @@ void AutoPaths::periodic()
                 cubeIntaking_ = true;
             }
 
-            if (/*arm_->getPosition() == TwoJointArmProfiles::CUBE_MID && arm_->getState() == TwoJointArm::HOLDING_POS &&*/ pointOver) //TODO DELETE
+            if (arm_->getPosition() == TwoJointArmProfiles::CUBE_MID && arm_->getState() == TwoJointArm::HOLDING_POS && pointOver)
             {
                 wheelSpeed_ = ClawConstants::OUTAKING_SPEED - 3;
                 if (!placingTimerStarted_)
@@ -1984,20 +1981,6 @@ void AutoPaths::periodic()
         }
 
         break;
-
-        // // TODO see if curves are the same
-        // if (pointOver && pointNum_ != 3)
-        // {
-        //     nextPointReady_ = true;
-        // }
-
-        // // TODO place cone
-        // // if done placing
-        // if (/*done placing &&*/ pointOver && pointNum_ == 3)
-        // {
-        //     nextPointReady_ = true;
-        // }
-        // break;
     }
     case SECOND_CUBE_HIGH:
     {
@@ -2211,52 +2194,31 @@ void AutoPaths::periodic()
         }
 
         if (!comingDownChargingStation_){
-            if (isBlue_){
-                swerveDrive_->drive({0.5, 0}, 0);
-            }
-            else{
-                swerveDrive_->drive({-0.5, 0}, 0);
-            }
+            double vel = (isBlue_? 1.0:-1.0) * 0.45;
+            swerveDrive_->drive({vel, 0}, 0);
         }
         else if (comingDownChargingStation_ && !taxied_){
-            if (isBlue_){
-                swerveDrive_->drive({0.35, 0}, 0);
-            }
-            else{
-                swerveDrive_->drive({-0.35, 0}, 0);
-            }
-
+            double vel = (isBlue_? 1.0:-1.0) * 0.2;
+            swerveDrive_->drive({vel, 0}, 0);
             taxied_ = (abs(tilt) < 3);
         }
         else
         {
-            if (!dumbAutoDocking_)
-            {
-                if (abs(tilt) > 7)
-                {
+            if (!dumbAutoDocking_){
+                if (abs(tilt) > 7){
                     dumbAutoDocking_ = true;
                 }
-                else
-                {
-                    if (isBlue_)
-                    {
-                        swerveDrive_->drive({-0.35, 0}, 0);
-                    }
-                    else
-                    {
-                        swerveDrive_->drive({0.35, 0}, 0);
-                    }
+                else{
+                    double vel = (isBlue_? 1.0:-1.0) * -0.35;
+                    swerveDrive_->drive({vel, 0}, 0);
                 }
             }
 
-            if (dumbAutoDocking_)
-            {
-                if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
-                {
+            if (dumbAutoDocking_){
+                if (abs(tilt) < SwerveConstants::AUTODEADANGLE){
                     swerveDrive_->lockWheels();
                 }
-                else
-                {
+                else{
                     double output = -SwerveConstants::AUTOKTILT * tilt;
                     swerveDrive_->drive({output, 0}, 0);
                 }
@@ -2289,7 +2251,7 @@ void AutoPaths::periodic()
         // }
 
         if (timer_.Get().value() < 2){
-            double vel = (isBlue_? 1.0 : -1.0) * frc::SmartDashboard::GetNumber("DRIVE BACK VOLTS", 0.0); //Drive away from driverstation TODO FIND GOOD VALUE
+            double vel = (isBlue_? 1.0 : -1.0) * 0.2; //Drive away from driverstation
             swerveDrive_->drive({vel, 0}, 0);
         }
         else{

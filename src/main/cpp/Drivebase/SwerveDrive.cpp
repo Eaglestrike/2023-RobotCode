@@ -471,7 +471,7 @@ void SwerveDrive::autoLineup(Point scoringPos){
  */
 void SwerveDrive::drive(Vector strafe, double turn, bool inVolts)
 {
-    frc::SmartDashboard::PutString("Swerve Driving", strafe.toString());
+    //frc::SmartDashboard::PutString("Swerve Driving", strafe.toString());
     double xSpeed = strafe.getX();
     double ySpeed = strafe.getY();
     if (turn == 0) //Yaw adjustment to prevent drift over time

@@ -40,7 +40,7 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
 
             arm_.periodic();
             cubeIntake_.Periodic();
-            arm_.updateIntakeStates(cubeIntake_.getState() == PneumaticsIntake::DEPLOYED, false); // TODO here for cone intake
+            arm_.updateIntakeStates(cubeIntake_.getState() == PneumaticsIntake::DEPLOYED, false);
 
             if (frc::DriverStation::IsAutonomous() && frc::DriverStation::IsEnabled())
             {
@@ -51,7 +51,7 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
             {
                 bool armMoving = (arm_.getState() != TwoJointArm::STOPPED && arm_.getState() != TwoJointArm::HOLDING_POS);
                 // bool armOut = (arm_.getPosition() != TwoJointArmProfiles::STOWED /* && arm_.getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_.getPosition() != TwoJointArmProfiles::GROUND);
-                bool armOut = (arm_.getPosition() == TwoJointArmProfiles::MID || arm_.getPosition() == TwoJointArmProfiles::HIGH || arm_.getPosition() == TwoJointArmProfiles::CUBE_MID || arm_.getPosition() == TwoJointArmProfiles::CUBE_HIGH); // TODO make this based on xy position
+                bool armOut = arm_.isArmOut();
 
                 //Panic if arm is out or moving
                 swerveDrive_.setPanic((armMoving || armOut));
@@ -355,30 +355,29 @@ void Robot::AutonomousPeriodic(){
             }
         }
     }
-    //TODO UNCOMMENT
-    // else if (forward && arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE){
-    //     if (arm_.isArmOut()) {
-    //         arm_.specialSetPosTo(arm_.getPosition());
-    //     }
-    //     else
-    //     {
-    //         // arm_.toggleForwardCubeIntake(); //NEUTRAL STOW
-    //         arm_.setPosTo(TwoJointArmProfiles::STOWED); // NEUTRAL STOW
-    //     }
-    // }
-    // else{
-    //     // if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
-    //     // {
-    //     //     armPosition = TwoJointArmProfiles::STOWED;
-    //     // }
-    // }
+    else if (forward && arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE){
+        if (arm_.isArmOut()) {
+            arm_.specialSetPosTo(arm_.getPosition());
+        }
+        else
+        {
+            // arm_.toggleForwardCubeIntake(); //NEUTRAL STOW
+            arm_.setPosTo(TwoJointArmProfiles::STOWED); // NEUTRAL STOW
+        }
+    }
+    else{
+        // if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
+        // {
+        //     armPosition = TwoJointArmProfiles::STOWED;
+        // }
+    }
 
-    // if (arm_.isForward() != forward)
-    // {
-    //     arm_.toggleForward();
-    // }
+    if (arm_.isForward() != forward)
+    {
+        arm_.toggleForward();
+    }
 
-    // arm_.setPosTo(armPosition);
+    arm_.setPosTo(armPosition);
 
     arm_.setClawWheels(wheelSpeed);
     arm_.setClaw(clawOpen);
@@ -417,7 +416,7 @@ void Robot::TeleopInit()
     arm_.stop();
     // arm_.resetIntaking();
 
-    // cubeGrabber_.OuttakeSlow(); TODO DELETE
+    cubeGrabber_.OuttakeSlow();
 }
 
 void Robot::TeleopPeriodic()
