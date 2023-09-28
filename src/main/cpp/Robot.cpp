@@ -97,7 +97,7 @@ void Robot::RobotInit()
     // frc::SmartDashboard::PutBoolean("Sending it Medium", false);
     // frc::SmartDashboard::PutBoolean("Balanced", false);
     socketClient_.Init();
-    arm_.zeroArmsToAutoStow();
+    arm_.zeroArmsToAutoStow(true);
     cubeGrabber_.Stop();
 
     auto1Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
@@ -192,6 +192,8 @@ void Robot::RobotInit()
     sideChooser_.AddOption("Left", true);
     frc::SmartDashboard::PutData("Auto Side", &sideChooser_);
 
+    frc::SmartDashboard::PutBoolean("Slow Trajectory", true);
+
     cubeIntaking_ = false;
     coneIntaking_ = false;
     coneIntakeDown_ = false;
@@ -270,12 +272,12 @@ void Robot::AutonomousInit()
     // arm_.resetIntaking();
 
     if (!armsZeroed_){
-        arm_.zeroArmsToAutoStow();
+        arm_.zeroArmsToAutoStow(true);
         armsZeroed_ = true;
     }
     else{
+        arm_.zeroArmsToAutoStow(false);
         if(arm_.isArmOut()){
-            arm_.stop();
             auto_disable_ = true;
             std::cout<<"RESET ARM ABORT"<<std::endl;
             return;
@@ -289,11 +291,12 @@ void Robot::AutonomousInit()
     AutoPaths::Path action2 = auto2Chooser_.GetSelected();
     AutoPaths::Path action3 = auto3Chooser_.GetSelected();
     AutoPaths::Path action4 = auto4Chooser_.GetSelected();
+    bool slow = frc::SmartDashboard::GetBoolean("Slow Trajectory", true);
     autoPaths_.setMirrored(sideChooser_.GetSelected());
 
     // m_autoSelected = frc::SmartDashboard::GetString("Auto Selector", kAutoNameDefault);
     // fmt::print("Auto selected: {}\n", m_autoSelected);
-    autoPaths_.setActions(action1, action2, action3, action4);
+    autoPaths_.setActions(action1, action2, action3, action4, slow);
 
     swerveDrive_.reset();
 
@@ -324,7 +327,6 @@ void Robot::AutonomousPeriodic(){
 
     bool cubeIntakeNeededDown = arm_.cubeIntakeNeededDown();
     cubeIntaking_ = autoPaths_.cubeIntaking();
-    coneIntaking_ = autoPaths_.coneIntaking();
 
     if (cubeIntaking_){
         cubeIntakeNeededDown = true;

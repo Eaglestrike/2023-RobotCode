@@ -91,6 +91,9 @@ void AutoPaths::setPath(Path path)
             }
         }
 
+        frc::SmartDashboard::PutNumber("Target Position X", x);
+        frc::SmartDashboard::PutNumber("Target Position Y", y);
+
         swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
@@ -124,6 +127,9 @@ void AutoPaths::setPath(Path path)
             }
         }
 
+        frc::SmartDashboard::PutNumber("Target Position X", x);
+        frc::SmartDashboard::PutNumber("Target Position Y", y);
+
         swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
@@ -136,8 +142,8 @@ void AutoPaths::setPath(Path path)
 
         bool top = !(isBlue_ ^ mirrored_);
         if(top){
-            yaw += (isBlue_? 0.0 : 2.5); //Rotate since robot collides with wall, only red
-            x += (isBlue_? 2.0 : 1.5) * 0.0254; //Move towards driver red, away blue
+            yaw += (isBlue_? 0.0 : 5.0); //Rotate since robot collides with wall, only red
+            x += (isBlue_? -2.0 : 1.5) * 0.0254; //Move towards driver red, away blue
             y = FieldConstants::TOP_CONE_Y;
             y += (isBlue_? 0.0 : -4.0) * 0.0254; //Shift out a bit away from wall, only for red since it rotates
         }
@@ -187,38 +193,36 @@ void AutoPaths::setPath(Path path)
             }
         }
 
+        frc::SmartDashboard::PutNumber("Target Position X", x);
+        frc::SmartDashboard::PutNumber("Target Position Y", y);
+
         swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
     }
     case PRELOADED_CONE_HIGH_MIDDLE:
     {
         double x, y, yaw;
-        if (isBlue_)
-        {
-            x = FieldConstants::SCORING_X.blue;
-            yaw = 90;
-            if (mirrored_)
-            {
-                y = FieldConstants::TOP_MIDDLE_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
-            }
-            else
-            {
-                y = FieldConstants::BOTTOM_MIDDLE_CONE_Y - SwerveConstants::CLAW_MID_OFFSET;
-            }
+        yaw = (isBlue_?1.0:-1.0) * (90.0);
+
+        x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+
+        bool top = !(isBlue_ ^ mirrored_);
+        if(top){
+            yaw += (isBlue_? 0.0 : 0.0); //Rotate since robot collides with wall, only red
+            x += (isBlue_? 0.0 : 0.0) * 0.0254; //Move towards driver red, away blue
+            y = FieldConstants::TOP_MIDDLE_CONE_Y;
+            y += (isBlue_? 0.0 : 0.0) * 0.0254; //Shift out a bit away from wall, only for red since it rotates
         }
-        else
-        {
-            x = FieldConstants::SCORING_X.red;
-            yaw = -90;
-            if (!mirrored_)
-            {
-                y = FieldConstants::TOP_MIDDLE_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
-            }
-            else
-            {
-                y = FieldConstants::BOTTOM_MIDDLE_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
-            }
+        else{
+            yaw += (isBlue_? 5.0 : 0.0); //Rotate since robot collides with wall, only blue
+            x += (isBlue_? 0.0 : 0.0) * 0.0254; //Move towards from driver red, away blue
+            y = FieldConstants::BOTTOM_MIDDLE_CONE_Y;
+            y += (isBlue_? 0.0 : 0.0) * 0.0254; //Shift out a bit away from wall, blue avoid wall
         }
+        y += ((isBlue_? 1.0 : -1.0) * -SwerveConstants::CLAW_MID_OFFSET); //Account for arm offset
+
+        frc::SmartDashboard::PutNumber("Target Position X", x);
+        frc::SmartDashboard::PutNumber("Target Position Y", y);
 
         swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
@@ -252,6 +256,9 @@ void AutoPaths::setPath(Path path)
                 y = FieldConstants::BOTTOM_MIDDLE_CONE_Y + SwerveConstants::CLAW_MID_OFFSET;
             }
         }
+
+        frc::SmartDashboard::PutNumber("Target Position X", x);
+        frc::SmartDashboard::PutNumber("Target Position Y", y);
 
         swervePoints_.push_back(SwervePose(x, y, yaw, 0));
         break;
@@ -653,18 +660,21 @@ AutoPaths::Path AutoPaths::getPath(){
     return path_;
 }
 
-void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4){
+void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4, bool slow){
     actions_.clear();
     actions_.push_back(a1);
     actions_.push_back(a2);
     actions_.push_back(a3);
     actions_.push_back(a4);
 
-    bool overCableBump = isBlue_ ^ (!mirrored_);
+    isBlue_ = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
+    //bool overCableBump = (isBlue_ ^ mirrored_);
 
-    firstCubeArmSafety_ = overCableBump;
-    slowTraj_ = overCableBump;
-
+    //firstCubeArmSafety_ = overCableBump;
+    //slowTraj_ = overCableBump;
+    firstCubeArmSafety_ = slow;
+    slowTraj_ = slow;
+ 
     actionNum_ = 0;
     pointNum_ = 0;
     swervePoints_.clear();
@@ -687,46 +697,36 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4){
     sendingIt_ = false;
     hitChargeStation_ = false;
 
+    forward_ = true;
+
     switch (a1)
     {
-    case PRELOADED_CONE_HIGH:
-    case PRELOADED_CUBE_HIGH:
-    case PRELOADED_CONE_HIGH_MIDDLE:
-    {
-        armPosition_ = TwoJointArmProfiles::HIGH;
-        forward_ = true;
-        break;
+        case PRELOADED_CONE_HIGH:
+        case PRELOADED_CUBE_HIGH:
+        case PRELOADED_CONE_HIGH_MIDDLE:
+            armPosition_ = TwoJointArmProfiles::HIGH;
+            forward_ = true;
+            break;
+        case PRELOADED_CONE_MID:
+        case PRELOADED_CONE_MID_MIDDLE:
+            armPosition_ = TwoJointArmProfiles::MID;
+            forward_ = true;
+            break;
+        case PRELOADED_CUBE_MID:
+            armPosition_ = TwoJointArmProfiles::CUBE_MID;
+            forward_ = true;
+            break;
+        case AUTO_DOCK:
+        case TAXI_DOCK_DUMB:
+        case NOTHING:
+        case DRIVE_BACK_DUMB:
+        case WAIT_5_SECONDS:
+        default:
+            armPosition_ = TwoJointArmProfiles::STOWED;
+            forward_ = true;
     }
-    case PRELOADED_CONE_MID:
-    case PRELOADED_CONE_MID_MIDDLE:
-    {
-        armPosition_ = TwoJointArmProfiles::MID;
-        forward_ = true;
-        break;
-    }
-    case PRELOADED_CUBE_MID:
-    {
-        armPosition_ = TwoJointArmProfiles::CUBE_MID;
-        forward_ = true;
-        break;
-    }
-    case AUTO_DOCK:
-    case TAXI_DOCK_DUMB:
-    case NOTHING:
-    case DRIVE_BACK_DUMB:
-    case WAIT_5_SECONDS:
-    default:
-    {
-        armPosition_ = TwoJointArmProfiles::STOWED;
-        forward_ = true;
-    }
-    }
-
-    if (a3 == SECOND_CUBE_GRAB || a3 == NOTHING || a3 == DRIVE_BACK_DUMB || a3 == AUTO_DOCK || a3 == FIRST_CUBE_HIGH)
-    {
-        firstCubeArmSafety_ = true;
-        slowTraj_ = true; //Moving over bump
-    }
+    
+    //frc::SmartDashboard::PutBoolean("SLOW TRAJ", slowTraj_);
 }
 
 void AutoPaths::startTimer(){
@@ -1105,12 +1105,10 @@ void AutoPaths::periodic()
                             // double setYaw = swervePoints_[i].yaw;
                             // yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // 
                             double setYaw;
-                            if (isBlue_)
-                            {
+                            if (isBlue_){
                                 setYaw = 90;
                             }
-                            else
-                            {
+                            else{
                                 setYaw = -90;
                             }
                             yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // 
@@ -1118,8 +1116,7 @@ void AutoPaths::periodic()
 
                             // double setY = swervePoints_[i].y;
                             double setY;
-                            if (isBlue_)
-                            {
+                            if (isBlue_){
                                 if (mirrored_)
                                 {
                                     setY = FieldConstants::TOP_CONE_Y - 0.05 /* + 0.1*/;
@@ -1129,8 +1126,7 @@ void AutoPaths::periodic()
                                     setY = FieldConstants::BOTTOM_CONE_Y + 0.05 /* - 0.1*/;
                                 }
                             }
-                            else
-                            {
+                            else{
                                 if (mirrored_)
                                 {
                                     setY = FieldConstants::BOTTOM_CONE_Y + 0.05 /* - 0.1*/;
@@ -2177,50 +2173,53 @@ void AutoPaths::periodic()
         wheelSpeed_ = 0;
         armPosition_ = TwoJointArmProfiles::STOWED;
 
-        double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
-        double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
-        double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
-        double tilt = pitch * sin(ang) - roll * cos(ang);
+        //Let time for arm to come down
+        if(timer_.Get().value() > 1.5){
+            double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
+            double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+            double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+            double tilt = pitch * sin(ang) - roll * cos(ang);
 
-        if (isBlue_){
-            if (tilt > 5){
-                comingDownChargingStation_ = true;
-            }
-        }
-        else{
-            if (tilt < -5){
-                comingDownChargingStation_ = true;
-            }
-        }
-
-        if (!comingDownChargingStation_){
-            double vel = (isBlue_? 1.0:-1.0) * 0.45;
-            swerveDrive_->drive({vel, 0}, 0);
-        }
-        else if (comingDownChargingStation_ && !taxied_){
-            double vel = (isBlue_? 1.0:-1.0) * 0.2;
-            swerveDrive_->drive({vel, 0}, 0);
-            taxied_ = (abs(tilt) < 3);
-        }
-        else
-        {
-            if (!dumbAutoDocking_){
-                if (abs(tilt) > 7){
-                    dumbAutoDocking_ = true;
+            if (isBlue_){
+                if (tilt > 5){
+                    comingDownChargingStation_ = true;
                 }
-                else{
-                    double vel = (isBlue_? 1.0:-1.0) * -0.35;
-                    swerveDrive_->drive({vel, 0}, 0);
+            }
+            else{
+                if (tilt < -5){
+                    comingDownChargingStation_ = true;
                 }
             }
 
-            if (dumbAutoDocking_){
-                if (abs(tilt) < SwerveConstants::AUTODEADANGLE){
-                    swerveDrive_->lockWheels();
+            if (!comingDownChargingStation_){
+                double vel = (isBlue_? 1.0:-1.0) * 0.45;
+                swerveDrive_->drive({vel, 0}, 0);
+            }
+            else if (comingDownChargingStation_ && !taxied_){
+                double vel = (isBlue_? 1.0:-1.0) * 0.2;
+                swerveDrive_->drive({vel, 0}, 0);
+                taxied_ = (abs(tilt) < 2);
+            }
+            else
+            {
+                if (!dumbAutoDocking_){
+                    if (abs(tilt) > 7){
+                        dumbAutoDocking_ = true;
+                    }
+                    else{
+                        double vel = (isBlue_? 1.0:-1.0) * -0.35;
+                        swerveDrive_->drive({vel, 0}, 0);
+                    }
                 }
-                else{
-                    double output = -SwerveConstants::AUTOKTILT * tilt;
-                    swerveDrive_->drive({output, 0}, 0);
+
+                if (dumbAutoDocking_){
+                    if (abs(tilt) < SwerveConstants::AUTODEADANGLE){
+                        swerveDrive_->lockWheels();
+                    }
+                    else{
+                        double output = -SwerveConstants::AUTOKTILT * tilt;
+                        swerveDrive_->drive({output, 0}, 0);
+                    }
                 }
             }
         }
@@ -2541,43 +2540,35 @@ bool AutoPaths::coneIntaking()
 
 void AutoPaths::generateXTraj(double pos, double setPos, double vel)
 {
-    if (slowTraj_)
-    {
+    if (slowTraj_){
         xSlowTraj_.generateTrajectory(pos, setPos, vel);
     }
-    else
-    {
+    else{
         xTraj_.generateTrajectory(pos, setPos, vel);
     }
 }
 void AutoPaths::generateYTraj(double pos, double setPos, double vel){
-    if (slowTraj_)
-    {
+    if (slowTraj_){
         ySlowTraj_.generateTrajectory(pos, setPos, vel);
     }
-    else
-    {
+    else{
         yTraj_.generateTrajectory(pos, setPos, vel);
     }
 }
 
 Pose1D AutoPaths::getXProfile(){
-    if (slowTraj_)
-    {
+    if (slowTraj_){
         return xSlowTraj_.getProfile();
     }
-    else
-    {
+    else{
         return xTraj_.getProfile();
     }
 }
 Pose1D AutoPaths::getYProfile(){
-    if (slowTraj_)
-    {
+    if (slowTraj_){
         return ySlowTraj_.getProfile();
     }
-    else
-    {
+    else{
         return yTraj_.getProfile();
     }
 }

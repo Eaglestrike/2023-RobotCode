@@ -189,28 +189,28 @@ void TwoJointArm::zeroArms()
     // elbowMaster_.setPos_(180);
 }
 
-void TwoJointArm::zeroArmsToAutoStow()
-{
-    //-18.5, 164.5
-    double shoulderAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2];
-    double elbowAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3];
+///Zeros the arm to initial auto pos
+void TwoJointArm::zeroArmsToAutoStow(bool zero){
+    if(zero){
+        //-18.5, 164.5
+        double shoulderAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][2];
+        double elbowAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::AUTO_STOW_NUM][3];
 
-    double shoulderPos = shoulderAng * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
-    shoulderMaster_.SetSelectedSensorPosition(shoulderPos);
-    // shoulderMaster_.setPos_(-18.5);
+        double shoulderPos = shoulderAng * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
+        shoulderMaster_.SetSelectedSensorPosition(shoulderPos);
+        // shoulderMaster_.setPos_(-18.5);
 
-    // double elbowAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3] + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2] - (getTheta());
-    // double elbowPos = (elbowAng + (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * 2048 / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
+        // double elbowAng = TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3] + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2] - (getTheta());
+        // double elbowPos = (elbowAng + (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * 2048 / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
 
-    double theta = getTheta();
-    if (!forward_)
-    {
-        theta *= -1;
+        double theta = getTheta();
+        if (!forward_){
+            theta *= -1;
+        }
+        double elbowPos = (elbowAng + (theta * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
+        elbowMaster_.SetSelectedSensorPosition(elbowPos);
+        // elbowMaster_.setPos_(164.5); 
     }
-    double elbowPos = (elbowAng + (theta * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO)) * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
-    elbowMaster_.SetSelectedSensorPosition(elbowPos);
-    // elbowMaster_.setPos_(164.5);
-
     stop();
     forward_ = true;
 

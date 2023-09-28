@@ -38,7 +38,7 @@ class TwoJointArm
 
         void periodic();
         void zeroArms();
-        void zeroArmsToAutoStow();
+        void zeroArmsToAutoStow(bool zero);
         void reset();
         void setPosTo(TwoJointArmProfiles::Positions setPosition);
         void specialSetPosTo(TwoJointArmProfiles::Positions setPosition);

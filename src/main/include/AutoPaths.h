@@ -43,7 +43,7 @@ class AutoPaths
             WAIT_5_SECONDS
         };
         AutoPaths(SwerveDrive* swerveDrive, TwoJointArm* arm);
-        void setActions(Path a1, Path a2, Path a3, Path a4);
+        void setActions(Path a1, Path a2, Path a3, Path a4, bool slow);
         std::vector<Path> getActions();
 
         void startTimer();
