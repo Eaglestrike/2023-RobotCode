@@ -195,8 +195,6 @@ void Robot::RobotInit()
     frc::SmartDashboard::PutBoolean("Slow Trajectory", true);
 
     cubeIntaking_ = false;
-    coneIntaking_ = false;
-    coneIntakeDown_ = false;
     armsZeroed_ = false;
     scoringLevel_ = 1;
     // psType_ = 1;
@@ -410,8 +408,6 @@ void Robot::TeleopInit()
     // frc::SmartDashboard::PutNumber("Swerve Volts", 0);
 
     cubeIntaking_ = false;
-    coneIntaking_ = false;
-    coneIntakeDown_ = false;
     PCM.EnableDigital();
 
     arm_.checkPos();
@@ -435,7 +431,6 @@ void Robot::TeleopPeriodic()
     // }
 
     bool cubeIntakeNeededDown = arm_.cubeIntakeNeededDown();
-    bool coneIntakeHalfway = false;
 
     if (controls_.getPressed(AUTO_BALANCE)){
         // ang, pitch, roll
@@ -486,8 +481,6 @@ void Robot::TeleopPeriodic()
         phiVel *= abs(phiVel);
         arm_.manualControl(thetaVel, phiVel, true);
         cubeIntaking_ = false;
-        coneIntaking_ = false;
-        coneIntakeDown_ = false;
     }
     else if (controls_.getPressed(GRAVITY))
     {
@@ -505,7 +498,6 @@ void Robot::TeleopPeriodic()
         else
         {
             cubeIntaking_ = false;
-            coneIntaking_ = false;
 
             double wantedYaw;
             bool playerStation;
@@ -781,7 +773,7 @@ void Robot::TeleopPeriodic()
             }
             else
             {
-                if (!coneIntaking_ && !cubeIntaking_){
+                if (!cubeIntaking_){
                     arm_.setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
                 }
             }   
@@ -807,7 +799,7 @@ void Robot::TeleopPeriodic()
             }
             else
             {
-                if (!coneIntaking_ && !cubeIntaking_)
+                if (!cubeIntaking_)
                 {
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && swerveDrive_.getX() > FieldConstants::FIELD_LENGTH / 2)
                     {
@@ -833,7 +825,7 @@ void Robot::TeleopPeriodic()
             }  
         }
         else if (controls_.getPressed(STOW)){
-            if (!coneIntaking_ && !cubeIntaking_)
+            if (!cubeIntaking_)
             {
                 arm_.setPosTo(TwoJointArmProfiles::STOWED);
             }
@@ -858,7 +850,7 @@ void Robot::TeleopPeriodic()
             }
             else
             {
-                if (!coneIntaking_ && !cubeIntaking_)
+                if (!cubeIntaking_)
                 {
                     int scoringPos = swerveDrive_.getScoringPos();
                     if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
@@ -883,7 +875,6 @@ void Robot::TeleopPeriodic()
                     //  arm_.setClaw(false);
                 }
                 cubeIntaking_ = !cubeIntaking_;
-                coneIntaking_ = false;
             }
         }
         // else if (coneIntakePressed)
@@ -937,9 +928,7 @@ void Robot::TeleopPeriodic()
     {
         arm_.stop();
         // arm_.resetIntaking();
-        coneIntaking_ = false;
         cubeIntaking_ = false;
-        coneIntakeDown_ = false;
         arm_.setEStopped(true);
     }
     else if (cubeIntaking_ && armsZeroed_)
@@ -1111,7 +1100,7 @@ void Robot::TeleopPeriodic()
 
     if (controls_.getPressedOnce(TOGGLE_CLAW))
     {
-        if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
+        if (/*!arm_.intaking() && */ !cubeIntaking_)
         {
             arm_.setClaw(!arm_.getClawOpen());
         }
@@ -1151,7 +1140,7 @@ void Robot::TeleopPeriodic()
     
     if (controls_.getPressedOnce(INTAKE))
     {
-        if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
+        if (/*!arm_.intaking() && */ !cubeIntaking_)
         {
             if (arm_.getClawWheelSpeed() == ClawConstants::INTAKING_SPEED)
             {
@@ -1165,7 +1154,7 @@ void Robot::TeleopPeriodic()
     }
     else if (controls_.getPressedOnce(OUTAKE))
     {
-        if (/*!arm_.intaking() && */ !cubeIntaking_ && !coneIntaking_)
+        if (/*!arm_.intaking() && */ !cubeIntaking_)
         {
             if (arm_.getClawWheelSpeed() == ClawConstants::OUTAKING_SPEED)
             {

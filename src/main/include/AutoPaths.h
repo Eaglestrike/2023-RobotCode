@@ -26,14 +26,10 @@ class AutoPaths
             PRELOADED_CUBE_HIGH,
             PRELOADED_CONE_HIGH_MIDDLE,
             PRELOADED_CONE_MID_MIDDLE,
-            FIRST_CONE_MID,
             FIRST_CUBE_HIGH,
-            FIRST_CONE_DOCK,
             FIRST_CUBE_DOCK,
-            SECOND_CONE,
             SECOND_CUBE_MID,
             SECOND_CUBE_HIGH,
-            SECOND_CONE_DOCK,
             SECOND_CUBE_DOCK,
             SECOND_CUBE_GRAB,
             AUTO_DOCK,
@@ -65,7 +61,6 @@ class AutoPaths
         double getWheelSpeed();
         TwoJointArmProfiles::Positions getArmPosition();
         bool cubeIntaking();
-        bool coneIntaking();
 
         void generateXTraj(double pos, double setPos, double vel);
         void generateYTraj(double pos, double setPos, double vel);
@@ -89,7 +84,7 @@ class AutoPaths
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
         double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_, autoStartTime_, sendingItTime_;
-        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, slowTraj_, mirrored_, cubeIntaking_, coneIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_, sendingIt_, firstCubeArmSafety_, hitChargeStation_;
+        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, slowTraj_, mirrored_, cubeIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_, sendingIt_, firstCubeArmSafety_, hitChargeStation_;
 
         bool isBlue_;
 
