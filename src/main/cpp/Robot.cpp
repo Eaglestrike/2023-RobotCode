@@ -382,15 +382,12 @@ void Robot::AutonomousPeriodic(){
     arm_.setClawWheels(wheelSpeed);
     arm_.setClaw(clawOpen);
 
-    if (cubeIntakeNeededDown)
-    {
+    if (cubeIntakeNeededDown){
         cubeIntake_.Deploy();
-        if (cubeIntaking_)
-        {
+        if (cubeIntaking_){
             cubeIntake_.setRollerMode(PneumaticsIntake::INTAKE);
         }
-        else
-        {
+        else{
             cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
         }
     }
@@ -797,8 +794,7 @@ void Robot::TeleopPeriodic()
                     arm_.setPosTo(TwoJointArmProfiles::STOWED);
                 }
             }
-            else
-            {
+            else{
                 if (!cubeIntaking_)
                 {
                     if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && swerveDrive_.getX() > FieldConstants::FIELD_LENGTH / 2)
