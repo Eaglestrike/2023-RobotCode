@@ -42,6 +42,7 @@ class TwoJointArm
         void reset();
         void setPosTo(TwoJointArmProfiles::Positions setPosition);
         void specialSetPosTo(TwoJointArmProfiles::Positions setPosition);
+        bool setToForward();
         void toggleForward();
         // void toggleForwardCubeIntake();
         void toggleForwardExtendedToCubeIntake();
