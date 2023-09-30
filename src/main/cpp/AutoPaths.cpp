@@ -886,8 +886,7 @@ void AutoPaths::periodic()
                         curveSecondStageGenerated_ = true;
                     }
                 }
-                else if ((path_ == SECOND_CUBE_DOCK || path_ == SECOND_CUBE_GRAB) /* && pointNum_ == 0*/)
-                {
+                else if ((path_ == SECOND_CUBE_DOCK || path_ == SECOND_CUBE_GRAB) /* && pointNum_ == 0*/){
                     if (pointNum_ == 0)
                     {
                         if (!pathGenerated_)
@@ -1092,23 +1091,18 @@ void AutoPaths::periodic()
                 // {
                 //     yProfile = yTraj_.getProfile();
                 // }
-                if (pointNum_ == 0)
-                {
+                if (pointNum_ == 0){
                     pose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
-                    if (isStationary(pose))
-                    {
+                    if (isStationary(pose)){
                         pointOver = true;
                     }
                 }
-                else if (!hitChargeStation_)
-                {
+                else if (!hitChargeStation_){
                     double xVel;
-                    if (isBlue_)
-                    {
+                    if (isBlue_){
                         xVel = -SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
-                    else
-                    {
+                    else{
                         xVel = SwerveConstants::PRE_SENDING_IT_SPEED * SwerveConstants::MAX_TELE_VEL;
                     }
                     // frc::SmartDashboard::PutNumber("Y DOCK VEL", get<1>(yProfile));
@@ -1118,25 +1112,18 @@ void AutoPaths::periodic()
                     double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
-                    frc::SmartDashboard::PutNumber("DTilt", tilt);
                     if (isBlue_){
                         if (tilt > 5){
-                            // pointOver = true;
-                            // return;
                             hitChargeStation_ = true;
                         }
                     }
                     else{
                         if (tilt < -5){
-                            // pointOver = true;
-                            // return;
                             hitChargeStation_ = true;
                         }
                     }
 
                     frc::SmartDashboard::PutBoolean("Hit Charge Station", false);
-                    frc::SmartDashboard::PutBoolean("Sending it Fast", false);
-                    frc::SmartDashboard::PutBoolean("Sending it Medium", false);
                 }
                 else
                 {
@@ -1677,7 +1664,7 @@ void AutoPaths::periodic()
     }
     case SECOND_CUBE_DOCK:
     {
-        if (pointNum_ == 0){
+        if (pointNum_ == 0){ //Grab second cube
             armPosition_ = TwoJointArmProfiles::CUBE_INTAKE;
             forward_ = false;
             cubeIntaking_ = true;
@@ -1688,7 +1675,7 @@ void AutoPaths::periodic()
                 nextPointReady_ = true;
             }
         }
-        else{
+        else{ //Dock
             wheelSpeed_ = ClawConstants::INTAKING_SPEED;
             clawOpen_ = true;
             if (timer_.GetFPGATimestamp().value() - startTime_ > 0.4){
@@ -1698,64 +1685,44 @@ void AutoPaths::periodic()
             }
 
             if (hitChargeStation_ && timer_.GetFPGATimestamp().value() - autoStartTime_ < 14.9){
-                if (!sendingIt_)
-                {
+                if (!sendingIt_){
                     sendingItTime_ = timer_.GetFPGATimestamp().value();
                     sendingIt_ = true;
                 }
                 double time = timer_.GetFPGATimestamp().value() - sendingItTime_;
-                if (time < SwerveConstants::SENDING_IT_TIME)
-                {
+                if (time < SwerveConstants::SENDING_IT_TIME){ //Go fast for a bit
                     double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
                     double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
-                    if (isBlue_)
-                    {
-                        if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION)
-                        {
-                            frc::SmartDashboard::PutBoolean("Sending it Fast", true);
-                            frc::SmartDashboard::PutBoolean("Sending it Medium", false);
+                    if (isBlue_){
+                        if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION){
                             swerveDrive_->drive({-SwerveConstants::SENDING_IT_FAST_SPEED, 0}, 0);
                         }
-                        else
-                        {
-                            frc::SmartDashboard::PutBoolean("Sending it Fast", false);
-                            frc::SmartDashboard::PutBoolean("Sending it Medium", true);
+                        else{
                             swerveDrive_->drive({-SwerveConstants::SENDING_IT_MED_SPEED, 0}, 0);
                         }
                     }
                     else
                     {
-                        if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION)
-                        {
-                            frc::SmartDashboard::PutBoolean("Sending it Fast", true);
-                            frc::SmartDashboard::PutBoolean("Sending it Medium", false);
+                        if (abs(tilt) < SwerveConstants::MIN_TILT_ON_STATION){
                             swerveDrive_->drive({SwerveConstants::SENDING_IT_FAST_SPEED, 0}, 0);
                         }
-                        else
-                        {
-                            frc::SmartDashboard::PutBoolean("Sending it Fast", false);
-                            frc::SmartDashboard::PutBoolean("Sending it Medium", true);
+                        else{
                             swerveDrive_->drive({SwerveConstants::SENDING_IT_MED_SPEED, 0}, 0);
                         }
                     }
                 }
-                else
-                {
-                    frc::SmartDashboard::PutBoolean("Sending it Fast", false);
-                    frc::SmartDashboard::PutBoolean("Sending it Medium", false);
+                else{ //Auto balance
                     double ang = (yaw_)*M_PI / 180.0;                                                          // Radians
                     double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
                     double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
                     double tilt = pitch * sin(ang) - roll * cos(ang);
-                    if (abs(tilt) < SwerveConstants::AUTODEADANGLE)
-                    {
+                    if (abs(tilt) < SwerveConstants::AUTODEADANGLE){ 
                         frc::SmartDashboard::PutBoolean("Balanced", true);
                         swerveDrive_->lockWheels();
                     }
-                    else
-                    {
+                    else{
                         frc::SmartDashboard::PutBoolean("Balanced", false);
                         double output = -SwerveConstants::AUTOKTILT * tilt;
                         swerveDrive_->drive({output, 0}, 0);
@@ -1890,8 +1857,11 @@ void AutoPaths::periodic()
                     taxiStart = timer_.GetFPGATimestamp().value();
                     taxiDriving_ = true;
                 }
-                if(timer_.GetFPGATimestamp().value() - taxiStart < 1.0){ //Drive out for a bit
+                if(timer_.GetFPGATimestamp().value() - taxiStart < 1.5){ //Drive out for a bit
                     swerveDrive_->drive({forward * 0.1, 0}, 0);
+                }
+                else if(timer_.GetFPGATimestamp().value() - taxiStart < 3.5){ //Wait
+                    swerveDrive_->drive({0.0, 0.0}, 0.0);
                 }
                 else{
                     if (!dumbAutoDocking_){ // Drive back into charge station

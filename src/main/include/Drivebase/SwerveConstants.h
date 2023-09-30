@@ -79,14 +79,14 @@ namespace SwerveConstants
 
     const double CLAW_MID_OFFSET = 0.0254 * 4.5; //was 2
 
-    const double AUTOKTILT = 0.01;
+    const double AUTOKTILT = 0.015; // was 0.01
     const double AUTODEADANGLE = 10.0;
     const double PITCHOFFSET = 0.0;
     const double ROLLOFFSET = 180.0 + 2;
     const double MIN_TILT_ON_STATION = 12;
 
     const double PRE_SENDING_IT_SPEED = 0.25;
-    const double SENDING_IT_FAST_SPEED = 0.4;
+    const double SENDING_IT_FAST_SPEED = 0.45; //was 0.4
     const double SENDING_IT_MED_SPEED = 0.35; //Was 0.3
 
     const double SENDING_IT_TIME = 1.1; //was 0.9
