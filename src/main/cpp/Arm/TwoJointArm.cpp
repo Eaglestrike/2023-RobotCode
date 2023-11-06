@@ -278,19 +278,16 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition){
     // }
 
     bool atGroundPos = (abs(getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
-    if (state_ == STOPPED && !atGroundPos)
-    {
+    if (state_ == STOPPED && !atGroundPos){
         state_ = HOMING;
     }
 
-    if (state_ == HOMING)
-    {
+    if (state_ == HOMING){
         setPosition_ = setPosition;
         return;
     }
 
-    if (position_ == setPosition && !atGroundPos)
-    {
+    if (position_ == setPosition && !atGroundPos){
         return;
     }
 
@@ -360,8 +357,7 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition){
         state_ = FOLLOWING_TASK_SPACE_PROFILE;
         taskSpaceStartTime_ = timer_.GetFPGATimestamp().value();
     }
-    else
-    {
+    else{
         key_ = {position_, setPosition};
         setPosition_ = setPosition;
         state_ = FOLLOWING_TASK_SPACE_PROFILE;
@@ -428,6 +424,20 @@ void TwoJointArm::specialSetPosTo(TwoJointArmProfiles::Positions setPosition)
     taskSpaceStartTime_ = timer_.GetFPGATimestamp().value();
 }
 
+/// @brief Checks if is forward, if not stow (call in periodic to move to forward)
+/// @return if is forward
+bool TwoJointArm::setToForward(){
+    if (!forward_){
+        if (position_ == TwoJointArmProfiles::STOWED && state_ == TwoJointArm::HOLDING_POS){
+            forward_ = true;
+        }
+        else{
+            setPosTo(TwoJointArmProfiles::STOWED);
+        }
+    }
+    return forward_;
+}
+
 void TwoJointArm::setBrakes(bool shoulder, bool elbow)
 {
     shoulderBrake_.Set(!shoulder);
@@ -437,12 +447,10 @@ void TwoJointArm::setBrakes(bool shoulder, bool elbow)
 }
 void TwoJointArm::stop()
 {
-    if (state_ == FOLLOWING_JOINT_SPACE_PROFILE || state_ == FOLLOWING_TASK_SPACE_PROFILE || state_ == HOMING || state_ == MANUAL)
-    {
+    if (state_ == FOLLOWING_JOINT_SPACE_PROFILE || state_ == FOLLOWING_TASK_SPACE_PROFILE || state_ == HOMING || state_ == MANUAL){
         state_ = STOPPED;
     }
-    else if (state_ == HOLDING_POS)
-    {
+    else if (state_ == HOLDING_POS){
         checkPos();
     }
     setPosition_ = position_;
@@ -1294,8 +1302,7 @@ void TwoJointArm::toggleForward()
 
 void TwoJointArm::toggleForwardExtendedToCubeIntake()
 {
-    if (position_ == TwoJointArmProfiles::STOWED)
-    {
+    if (position_ == TwoJointArmProfiles::STOWED){
         // toggleForwardCubeIntake();
         toggleForward();
         setPosTo(TwoJointArmProfiles::CUBE_INTAKE); // NEUTRAL STOW
@@ -1307,17 +1314,14 @@ void TwoJointArm::toggleForwardExtendedToCubeIntake()
     //     swingthroughExtendedToCubeIntake();
     // }
 
-    if (state_ == HOLDING_POS && !posUnknown_ && (position_ == TwoJointArmProfiles::MID || position_ == TwoJointArmProfiles::HIGH || position_ == TwoJointArmProfiles::CUBE_MID || position_ == TwoJointArmProfiles::CUBE_HIGH) && forward_)
-    {
+    if (state_ == HOLDING_POS && !posUnknown_ && isArmOut() && forward_){
         swingthroughExtendedToCubeIntake();
     }
 }
 
-void TwoJointArm::manualControl(double thetaVel, double phiVel, bool gravity)
-{
+void TwoJointArm::manualControl(double thetaVel, double phiVel, bool gravity){
     state_ = MANUAL;
-    if (eStopped_)
-    {
+    if (eStopped_){
         return;
     }
 

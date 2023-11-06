@@ -96,10 +96,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
         {
             holdingYaw_ = false;
             Point scoringPos = checkScoringPos(scoringLevel);
-            // frc::SmartDashboard::PutNumber("SX", scoringPos.first);
-            // frc::SmartDashboard::PutNumber("SY", scoringPos.second);
-            if (scoringPos.isZero()) // Did not find scoring pos: COULDO get a better flag thing
-            {
+            if (scoringPos.isZero()){ // Did not find scoring pos: COULDO get a better flag thing
                 drive(strafe_, rotation_);
                 return;
             }
@@ -1283,8 +1280,8 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
     // return -1;
 }
 
-void SwerveDrive::setScoringPos(int scoringPos)
-{
+
+void SwerveDrive::setScoringPos(int scoringPos){
     if (scoringPos != -1){
         setTagPos_ = scoringPos;
     }

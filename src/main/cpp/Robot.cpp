@@ -14,6 +14,10 @@
 
 using namespace Actions;
 
+double absDiff(double x, double y){
+    return std::abs(x - y);
+}
+
 Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
     AddPeriodic(
         [&]
@@ -50,7 +54,6 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
             else if (frc::DriverStation::IsTeleop())
             {
                 bool armMoving = (arm_.getState() != TwoJointArm::STOPPED && arm_.getState() != TwoJointArm::HOLDING_POS);
-                // bool armOut = (arm_.getPosition() != TwoJointArmProfiles::STOWED /* && arm_.getPosition() != TwoJointArmProfiles::CONE_INTAKE*/ && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE && arm_.getPosition() != TwoJointArmProfiles::GROUND);
                 bool armOut = arm_.isArmOut();
 
                 //Panic if arm is out or moving
@@ -337,12 +340,10 @@ void Robot::AutonomousPeriodic(){
                 arm_.setPosTo(TwoJointArmProfiles::STOWED);
             }
             else{
-                // arm_.toggleForwardCubeIntake();//NEUTRAL STOW
-                arm_.toggleForward(); // NEUTRAL STOW
+                arm_.toggleForward();
             }
         }
-        else
-        {
+        else{
             if (arm_.getPosition() != TwoJointArmProfiles::STOWED && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE)
             {
                 armPosition = TwoJointArmProfiles::STOWED;
@@ -360,17 +361,9 @@ void Robot::AutonomousPeriodic(){
         if (arm_.isArmOut()) {
             arm_.specialSetPosTo(arm_.getPosition());
         }
-        else
-        {
-            // arm_.toggleForwardCubeIntake(); //NEUTRAL STOW
+        else{
             arm_.setPosTo(TwoJointArmProfiles::STOWED); // NEUTRAL STOW
         }
-    }
-    else{
-        // if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE)
-        // {
-        //     armPosition = TwoJointArmProfiles::STOWED;
-        // }
     }
 
     if (arm_.isForward() != forward)
@@ -399,8 +392,7 @@ void Robot::AutonomousPeriodic(){
     }
 }
 
-void Robot::TeleopInit()
-{
+void Robot::TeleopInit(){
     // frc::SmartDashboard::PutNumber("Set Theta", 0);
     // frc::SmartDashboard::PutNumber("Set Phi", 0);
     // frc::SmartDashboard::PutNumber("Swerve Volts", 0);
@@ -417,16 +409,14 @@ void Robot::TeleopInit()
 
 void Robot::TeleopPeriodic()
 {
+    bool isBlue = frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue;
+    double forward = isBlue? 1.0 : -1.0;
+
     swerveDrive_.setScoringPos(controls_.getValue(ControllerMapData::SCORING_POS, -1));
     int level = controls_.getValue(ControllerMapData::GET_LEVEL, -1);
     if (level != -1){
         scoringLevel_ = level;
     }
-
-    // if (controls_.checkPSButtons() != -1)
-    // {
-    //     psType_ = controls_.checkPSButtons();
-    // }
 
     bool cubeIntakeNeededDown = arm_.cubeIntakeNeededDown();
 
@@ -451,96 +441,43 @@ void Robot::TeleopPeriodic()
         }
     }
 
-    if (controls_.getPressed(FIELD_ORIENT))
-    {
+    if (controls_.getPressed(FIELD_ORIENT)){
         navx_->ZeroYaw();
-        if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue){
-            yawOffset_ = 90;
-        }
-        else{
-            yawOffset_ = -90;
-        }
+        yawOffset_ = forward * 90;
         std::cout<<"ZEROED"<<std::endl;
         // swerveDrive_.resetYawTagOffset();
     }
 
-    if (controls_.getPressed(ZERO_ARMS_1) &&
-        controls_.getTriggerDown(ZERO_ARMS_2) &&
-        controls_.getTriggerDown(ZERO_ARMS_3))
-    {
+    if (controls_.getPressed(ZERO_ARMS_1) && controls_.getTriggerDown(ZERO_ARMS_2) && controls_.getTriggerDown(ZERO_ARMS_3)){
         arm_.zeroArms();
         armsZeroed_ = true;
     }
 
     if (controls_.getTriggerDown(MANUAL_CONTROL)){
         double thetaVel = controls_.getRawAxis(MANUAL_THETA);
-        thetaVel *= abs(thetaVel); //Squared Control -> contact Caleb bc he doesn't know the name, used for driver experience
         double phiVel = controls_.getRawAxis(MANUAL_PHI);
+        thetaVel *= abs(thetaVel); //Squared Control -> contact Caleb bc he doesn't know the name, used for driver experience
         phiVel *= abs(phiVel);
         arm_.manualControl(thetaVel, phiVel, true);
         cubeIntaking_ = false;
     }
-    else if (controls_.getPressed(GRAVITY))
-    {
+    else if (controls_.getPressed(GRAVITY)){
         double thetaVel = controls_.getRawAxis(MANUAL_THETA_2);
         thetaVel *= abs(thetaVel); //Squared control thing
         arm_.manualControl(thetaVel, 0, false);
     }
-    else if (controls_.getPressed(SCORE) && armsZeroed_)
-    {
+    else if (controls_.getPressed(SCORE) && armsZeroed_){
         Point scoringPos = swerveDrive_.checkScoringPos(scoringLevel_);
-        if (scoringPos.getX() == 0 && scoringPos.getY() == 0) // COULDO get a better flag thing
-        {
+        double scoreX = scoringPos.getX();
+        double scoreY = scoringPos.getY();
+        if (scoreX == 0 && scoreY == 0){  // COULDO get a better flag thing
             // Do nothing? if no valid scoring position
         }
-        else
-        {
+        else{
             cubeIntaking_ = false;
 
             double wantedYaw;
             bool playerStation;
-            // if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue) FORWARD BASED LINEUP
-            // {
-            //     if (arm_.isForward())
-            //     {
-            //         wantedYaw = 90.0;
-            //         if (scoringPos.getX() > 6.0)
-            //         {
-            //             playerStation = true;
-            //             wantedYaw *= -1;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         wantedYaw = -90.0;
-            //         if (scoringPos.getX() > 6.0)
-            //         {
-            //             playerStation = true;
-            //             wantedYaw *= -1;
-            //         }
-            //     }
-            // }
-            // else
-            // {
-            //     if (arm_.isForward())
-            //     {
-            //         wantedYaw = -90.0;
-            //         if (scoringPos.getX() < 6.0)
-            //         {
-            //             playerStation = true;
-            //             wantedYaw *= -1;
-            //         }
-            //     }
-            //     else
-            //     {
-            //         wantedYaw = 90.0;
-            //         if (scoringPos.getX() < 6.0)
-            //         {
-            //             playerStation = true;
-            //             wantedYaw *= -1;
-            //         }
-            //     }
-            // }
 
             double yaw = navx_->GetYaw() - yawOffset_/* + swerveDrive_.getYawTagOffset()*/;
             yaw = GeometryHelper::getPrincipalAng2Deg(yaw);
@@ -551,304 +488,112 @@ void Robot::TeleopPeriodic()
                 wantedYaw += 5;
             }
             
-            playerStation = FieldConstants::onPlayerStationHalf(frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue, scoringPos.getX());
+            playerStation = FieldConstants::onPlayerStationHalf(isBlue, scoringPos.getX());
 
             double yawError = GeometryHelper::getAngDiffDeg(wantedYaw, yaw);
-
-            //If too far away or not lined up enough
-            if (abs(yawError) > 15 || (!playerStation && (abs(swerveDrive_.getX() - scoringPos.getX()) > 1.5 || abs(swerveDrive_.getY() - scoringPos.getY()) > 2)))
-            {
-                // Do nothing
-            }
-            else if (playerStation)
-            {
+            if (playerStation){
                 arm_.setClawWheels(ClawConstants::INTAKING_SPEED);
-                if (
-                    (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue &&
-                    swerveDrive_.getX() < FieldConstants::PLAYER_STATION_X.blue - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] + 0.6)
-                    ||
-                    (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed &&
-                    swerveDrive_.getX() > FieldConstants::PLAYER_STATION_X.red + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] - 0.6)
-                    )
-                {
-                    // arm_.setPosTo(TwoJointArmProfiles::MID); //FORWARD BASED LINEUP
-
-                    // TwoJointArmProfiles::Positions position = TwoJointArmProfiles::RAMMING_PLAYER_STATION;
-                    // if (psType_ == 2)
-                    // {
-                    //     position = TwoJointArmProfiles::MID;
-                    // }
-
-                    if (!arm_.isForward())
-                    {
-                        /*if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && !arm_.isForward() && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            cubeIntaking_ = false;
-                            arm_.specialSetPosTo(position);
-                        }
-                        else */
-                        if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            arm_.toggleForward();
-                        }
-                        else
-                        {
-                            arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                        }
-                    }
-                    else
-                    {
-                        if (controls_.getPressed(RAM_PLAYER_STATION))
-                        {
+                double maxPos = FieldConstants::getPos(FieldConstants::PLAYER_STATION_X, isBlue);//don't extend too close to playerstation
+                maxPos += forward * (TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0] + 0.6);
+                if ((forward * (maxPos - swerveDrive_.getX())) > 0){ //If bot is less than max
+                    if(arm_.setToForward()){
+                        if (controls_.getPressed(RAM_PLAYER_STATION)){
                             arm_.setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
                         }
-                        else if (controls_.getPressed(GO_MID))
-                        {
+                        else if (controls_.getPressed(GO_MID)){
                             arm_.setPosTo(TwoJointArmProfiles::MID);
                         }
-                        if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
+                        if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS){ //Default player station
                             arm_.setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
                         }
-                        else if (arm_.getPosition() != TwoJointArmProfiles::RAMMING_PLAYER_STATION && arm_.getPosition() != TwoJointArmProfiles::MID)
-                        {
+                        else if (arm_.getPosition() != TwoJointArmProfiles::RAMMING_PLAYER_STATION && arm_.getPosition() != TwoJointArmProfiles::MID){
                             arm_.setPosTo(TwoJointArmProfiles::STOWED);
                         }
                     }
                 }
-            }
 
-            // if nearby, attempt scoring process
-            // original condition: abs(swerveDrive_.getX() - scoringPos.getX()) < 1 && abs(swerveDrive_.getY() - scoringPos.getY()) < 1
-            else
-            {
-                switch (scoringLevel_)
-                {
-                case 0: // Reset, nothing
-                {
-                    break;
-                }
-                case 1: // Low
-                {
-                    if (!arm_.isForward())
-                    {
-                        if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            arm_.toggleForward();
-                        }
-                        else
-                        {
-                            arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                        }
-                    }
-                    else
-                    {
-                        bool atGroundPos = (abs(arm_.getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
-                        // arm_.setPosTo(TwoJointArmProfiles::GROUND);
-                        if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
-                        }
-                        else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving()))
-                        {
-                            arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                        }
-                    }
-                    break;
-                }
-                case 2: //Mid
-                {
+                // if nearby, attempt scoring process
+                else if(abs(yawError) > 15 || (absDiff(swerveDrive_.getX(), scoringPos.getX()) > 1.5 || abs(swerveDrive_.getY() - scoringPos.getY()) > 2)){
                     int scoringPos = swerveDrive_.getScoringPos();
-                    TwoJointArmProfiles::Positions position;
-                    if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
-                    {
-                        position = TwoJointArmProfiles::CUBE_MID; // FORWARD BASED LINEUP
-                        // arm_.setPosTo(TwoJointArmProfiles::CUBE_MID);
+                    TwoJointArmProfiles::Positions position = TwoJointArmProfiles::STOWED;
+                    switch (scoringLevel_){
+                        case 0: // Reset, nothing
+                            break;
+                        case 1: // Low
+                            if(arm_.setToForward()){
+                                bool atGroundPos = (abs(arm_.getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
+                                // arm_.setPosTo(TwoJointArmProfiles::GROUND);
+                                if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS){
+                                    arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
+                                }
+                                else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving())){
+                                    arm_.setPosTo(TwoJointArmProfiles::STOWED);
+                                }
+                            }
+                            break;
+                        case 2: //Mid
+                            if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
+                                position = TwoJointArmProfiles::CUBE_MID;
+                            }
+                            else{
+                                position = TwoJointArmProfiles::MID;
+                            }
+                            if(arm_.setToForward()){
+                                arm_.setPosTo(position);
+                            }
+                            break;
+                        case 3: //High
+                            if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
+                                position = TwoJointArmProfiles::CUBE_HIGH;
+                            }
+                            else{
+                                position = TwoJointArmProfiles::HIGH;
+                            }
+                            if (arm_.setToForward()){
+                                arm_.setPosTo(position);
+                            }
+                            break;
                     }
-                    else
-                    {
-                        position = TwoJointArmProfiles::MID;
-                        // arm_.setPosTo(TwoJointArmProfiles::MID); // MID THING and FORWARD BASED LINEUP
-                    }
-
-                    if (!arm_.isForward())
-                    {
-                        /*if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && !arm_.isForward() && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            cubeIntaking_ = false;
-                            arm_.specialSetPosTo(position);
-                        }
-                        else */
-                        if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            arm_.toggleForward();
-                        }
-                        else
-                        {
-                            arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                        }
-                    }
-                    else
-                    {
-                        arm_.setPosTo(position);
-                    }
-                    break;
-                }
-                case 3: //High
-                {
-                    int scoringPos = swerveDrive_.getScoringPos();
-                    TwoJointArmProfiles::Positions position;
-                    if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
-                        position = TwoJointArmProfiles::CUBE_HIGH;
-                        // arm_.setPosTo(TwoJointArmProfiles::CUBE_HIGH);//FORWARD BASED LINEUP
-                    }
-                    else{
-                        position = TwoJointArmProfiles::HIGH;
-                        // arm_.setPosTo(TwoJointArmProfiles::HIGH);//FORWARD BASED LINEUP
-                    }
-
-                    if (!arm_.isForward())
-                    {
-                        /*if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && !arm_.isForward() && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            cubeIntaking_ = false;
-                            arm_.specialSetPosTo(position);
-                        }
-                        else */
-                        if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                        {
-                            arm_.toggleForward();
-                        }
-                        else
-                        {
-                            arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                        }
-                    }
-                    else
-                    {
-                        arm_.setPosTo(position);
-                    }
-                    break;
-                }
                 }
             }
         }
     }
-    else if (armsZeroed_)
-    {
-        // if(controls_.aPressed())
-        // {
-        //     arm_.goToPos(frc::SmartDashboard::GetNumber("Set Theta", 0), frc::SmartDashboard::GetNumber("Set Phi", 0));
-        // }
-        // else
-        // {
-        //     //arm_.stop();
-        // }
-
-        if (arm_.getState() == TwoJointArm::MANUAL)
-        {
+    else if (armsZeroed_){
+        if (arm_.getState() == TwoJointArm::MANUAL){ //Check if in manual (somehow)
             arm_.stop();
         }
 
-        if (controls_.getPressed(RAM_PLAYER_STATION))
-        {
-            if (!arm_.isForward())
-            {
-                /*if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && !arm_.isForward() && arm_.getState() == TwoJointArm::HOLDING_POS)
-                {
-                    cubeIntaking_ = false;
-                    arm_.specialSetPosTo(position);
-                }
-                else */
-                if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                {
-                    arm_.toggleForward();
-                }
-                else
-                {
-                    arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                }
-            }
-            else
-            {
+        if (controls_.getPressed(RAM_PLAYER_STATION)){
+            if(arm_.setToForward()){
                 if (!cubeIntaking_){
                     arm_.setPosTo(TwoJointArmProfiles::RAMMING_PLAYER_STATION);
                 }
             }   
         }
-        else if (controls_.getPressed(GO_MID))
-        {
-            if (!arm_.isForward())
-            {
-                /*if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && !arm_.isForward() && arm_.getState() == TwoJointArm::HOLDING_POS)
-                {
-                    cubeIntaking_ = false;
-                    arm_.specialSetPosTo(position);
-                }
-                else */
-                if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                {
-                    arm_.toggleForward();
-                }
-                else
-                {
-                    arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                }
-            }
-            else{
-                if (!cubeIntaking_)
-                {
-                    if (frc::DriverStation::GetAlliance() == frc::DriverStation::kBlue && swerveDrive_.getX() > FieldConstants::FIELD_LENGTH / 2)
-                    {
-                        arm_.setPosTo(TwoJointArmProfiles::MID); // MID THING
+        else if (controls_.getPressed(GO_MID)){
+            if(arm_.setToForward()){
+                if (!cubeIntaking_){ //Don't double extend
+                    if (FieldConstants::onPlayerStationHalf(isBlue, swerveDrive_.getX())){
+                        arm_.setPosTo(TwoJointArmProfiles::MID);
                     }
-                    else if (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && swerveDrive_.getX() < FieldConstants::FIELD_LENGTH / 2)
-                    {
-                        arm_.setPosTo(TwoJointArmProfiles::MID); // MID THING
-                    }
-                    else
-                    {
+                    else{
                         int scoringPos = swerveDrive_.getScoringPos();
-                        if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
-                        {
+                        if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){ //Sort cube/cone height
                             arm_.setPosTo(TwoJointArmProfiles::CUBE_MID);
                         }
-                        else
-                        {
-                            arm_.setPosTo(TwoJointArmProfiles::MID); // MID THING
+                        else{
+                            arm_.setPosTo(TwoJointArmProfiles::MID);
                         }
                     }
                 }
             }  
         }
-        else if (controls_.getPressed(STOW)){
-            if (!cubeIntaking_)
-            {
-                arm_.setPosTo(TwoJointArmProfiles::STOWED);
-            }
+        else if (controls_.getPressed(STOW) && !cubeIntaking_){
+            arm_.setPosTo(TwoJointArmProfiles::STOWED);
         }
         else if (controls_.getPressed(GO_HIGH)){
-            if (!arm_.isForward())
-            {
-                /*if (arm_.getPosition() == TwoJointArmProfiles::CUBE_INTAKE && !arm_.isForward() && arm_.getState() == TwoJointArm::HOLDING_POS)
-                {
-                    cubeIntaking_ = false;
-                    arm_.specialSetPosTo(position);
-                }
-                else */
-                if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-                {
-                    arm_.toggleForward();
-                }
-                else
-                {
-                    arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                }
-            }
-            else
-            {
-                if (!cubeIntaking_)
-                {
+            if(arm_.setToForward()){
+                if (!cubeIntaking_){
                     int scoringPos = swerveDrive_.getScoringPos();
                     if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8)
                     {
@@ -861,10 +606,8 @@ void Robot::TeleopPeriodic()
                 }
             }
         }
-        else if (controls_.getPOVDown(EXIT_INTAKE))
-        {
-            if (arm_.getState() == TwoJointArm::HOLDING_POS)
-            {
+        else if (controls_.getPOVDown(EXIT_INTAKE)){
+            if (arm_.getState() == TwoJointArm::HOLDING_POS){
                 if (cubeIntaking_)
                 {
                     arm_.setPosTo(TwoJointArmProfiles::STOWED);
@@ -874,89 +617,43 @@ void Robot::TeleopPeriodic()
                 cubeIntaking_ = !cubeIntaking_;
             }
         }
-        // else if (coneIntakePressed)
-        // {
-        //     // if (arm_.getState() == TwoJointArm::HOLDING_POS)
-        //     // {
-        //     //     if (coneIntaking_)
-        //     //     {
-        //     //         arm_.setPosTo(TwoJointArmProfiles::STOWED);
-        //     //         arm_.setClawWheels(0);
-        //     //         // arm_.setClaw(false);
-        //     //     }
-        //     //     coneIntaking_ = !coneIntaking_;
-        //     //     cubeIntaking_ = false;
-        //     // }
-
-        //     if (arm_.getState() == TwoJointArm::HOLDING_POS && arm_.getPosition() == TwoJointArmProfiles::STOWED)
-        //     {
-        //         coneIntaking_ = true;
-        //     }
-        // }
-        else if (controls_.getPressed(FLIP_ARM))
-        {
-            // if (cubeIntaking_ && arm_.getState() == TwoJointArm::HOLDING_POS)//NEUTRAL STOW
-            // {
-            //     arm_.toggleForwardCubeIntake();
-            //     cubeIntaking_ = false;
-            // }
-            if (cubeIntaking_)
-            {
-                // arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                // return;
-            }
-            else
-            {
-                arm_.toggleForward();
-            }
+        else if (controls_.getPressed(FLIP_ARM) && !cubeIntaking_){ //Don't flip when intaking (specialize not forward)
+            arm_.toggleForward();
         }
         else
         {
             arm_.setEStopped(false);
         }
     }
-    else
-    {
-        // manual arm or auto lineup not pressed and arms not zeroed
-        arm_.stop();
+    else{
+        arm_.stop(); // manual arm or auto lineup not pressed and arms not zeroed
     }
 
-    if (controls_.getPressed(STOP_EVERYTHING))
-    {
+    if (controls_.getPressed(STOP_EVERYTHING)){
         arm_.stop();
         // arm_.resetIntaking();
         cubeIntaking_ = false;
         arm_.setEStopped(true);
     }
-    else if (cubeIntaking_ && armsZeroed_)
-    {
-        if (arm_.getState() == TwoJointArm::STOPPED || arm_.getState() == TwoJointArm::HOMING)
-        {
+    else if (cubeIntaking_ && armsZeroed_){
+        if (arm_.getState() == TwoJointArm::STOPPED || arm_.getState() == TwoJointArm::HOMING){
             cubeIntaking_ = false;
         }
-        else
-        {
+        else{
             cubeIntakeNeededDown = true;
-            if (arm_.isForward())
-            {
-                if (arm_.isArmOut())
-                {
+            if (arm_.isForward()){
+                if (arm_.isArmOut()){
                     arm_.toggleForwardExtendedToCubeIntake();
                 }
-                else if (arm_.getPosition() != TwoJointArmProfiles::STOWED)
-                {
+                else if (arm_.getPosition() != TwoJointArmProfiles::STOWED){
                     arm_.setPosTo(TwoJointArmProfiles::STOWED);
                 }
-                else
-                {
-                    // arm_.toggleForwardCubeIntake();//NEUTRAL STOW
+                else{
                     arm_.toggleForward(); // NEUTRAL STOW
                 }
             }
-            else
-            {
-                if(arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE || arm_.getState() != TwoJointArm::HOLDING_POS)
-                {
+            else{
+                if(arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE || arm_.getState() != TwoJointArm::HOLDING_POS){
                     arm_.setPosTo(TwoJointArmProfiles::CUBE_INTAKE);
                 }
             }
@@ -965,128 +662,7 @@ void Robot::TeleopPeriodic()
             arm_.setClaw(true);
         }
     }
-    // else if (coneIntaking_ && armsZeroed_)
-    // {
-    //     bool atConeIntakePos = (abs(arm_.getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
-    //     if (/*arm_.getState() == TwoJointArm::STOPPED || */ arm_.getState() == TwoJointArm::HOMING)
-    //     {
-    //         coneIntaking_ = false;
-    //     }
-    //     else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atConeIntakePos /* || arm_.getPosition() != TwoJointArmProfiles::CONE_INTAKE*/)
-    //     {
-    //         coneIntaking_ = false;
-    //     }
-    //     else
-    //     {
-    //         if (!arm_.isForward())
-    //         {
-    //             if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-    //             {
-    //                 arm_.toggleForward();
-    //             }
-    //             else
-    //             {
-    //                 arm_.setPosTo(TwoJointArmProfiles::STOWED);
-    //             }
-    //         }
-
-    //         if (!arm_.isForward())
-    //         {
-    //         }
-    //         else if (!grabbedCone_)
-    //         {
-    //             intakesNeededDown.getY() = true;
-    //             coneIntakeDown_ = false;
-    //             if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-    //             {
-    //                 // coneIntakeHalfway = true;
-    //                 // arm_.setPosTo(TwoJointArmProfiles::CONE_INTAKE);
-
-    //                 intakesNeededDown.getY() = true;
-    //                 coneIntakeDown_ = false;
-    //                 arm_.setJointPath(arm_.getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
-    //                 arm_.setClaw(true);
-    //             }
-    //             else if ((arm_.getState() == TwoJointArm::STOPPED || arm_.getState() == TwoJointArm::HOLDING_POS) && (abs(arm_.getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2]) > TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD))
-    //             {
-    //                 arm_.setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2], TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
-    //             }
-    //             else if (atConeIntakePos && (arm_.getState() == TwoJointArm::STOPPED || arm_.getState() == TwoJointArm::HOLDING_POS))
-    //             {
-    //                 if (!coneGrabTimerStarted_)
-    //                 {
-    //                     coneGrabTimerStartTime_ = timer_.GetFPGATimestamp().value();
-    //                     coneGrabTimerStarted_ = true;
-    //                 }
-
-    //                 arm_.setClawWheels(ClawConstants::INTAKING_SPEED);
-
-    //                 double time = timer_.GetFPGATimestamp().value() - coneGrabTimerStartTime_;
-
-    //                 coneIntakeHalfway = true;
-
-    //                 if (time > 0.25)
-    //                 {
-    //                     arm_.setClaw(false);
-    //                     // intakesNeededDown.getY() = false;
-    //                     // coneIntakeHalfway = false;
-    //                     // OUTAKE CONE
-    //                 }
-
-    //                 if(time > 0.45)
-    //                 {
-    //                     intakesNeededDown.getY() = false;
-    //                     coneIntakeHalfway = false;
-    //                     coneIntakeDown_ = false;
-    //                 }
-
-    //                 if (time > 0.6)
-    //                 {
-    //                     grabbedCone_ = true;
-    //                     coneGrabTimerStarted_ = false;
-    //                 }
-    //             }
-    //         }
-    //         else
-    //         {
-    //             arm_.setClawWheels(0);
-    //             arm_.setClaw(false);
-
-    //             // if (!coneGrabTimerStarted_)
-    //             // {
-    //             //     coneGrabTimerStartTime_ = timer_.GetFPGATimestamp().value();
-    //             //     coneGrabTimerStarted_ = true;
-    //             // }
-
-    //             // double time = timer_.GetFPGATimestamp().value() - coneGrabTimerStartTime_;
-
-    //             double intermediatePhi = 140;
-    //             if (atConeIntakePos && (arm_.getState() == TwoJointArm::HOLDING_POS || arm_.getState() == TwoJointArm::STOPPED))
-    //             {
-    //                 arm_.setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], intermediatePhi);
-    //                 // arm_.setPosTo(TwoJointArmProfiles::STOWED);
-    //             }
-    //             else if(abs(arm_.getTheta() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && (arm_.getState() == TwoJointArm::HOLDING_POS || arm_.getState() == TwoJointArm::STOPPED))
-    //             {
-    //                 arm_.setJointPath(TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]);
-    //             }
-    //             else if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-    //             {
-    //                 coneIntakeHalfway = false;
-    //                 coneIntaking_ = false;
-    //                 intakesNeededDown.getY() = false;
-    //                 coneIntakeDown_ = false;
-    //             }
-
-    //             if(abs(arm_.getPhi() - intermediatePhi) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-    //             {
-    //                 intakesNeededDown.getY() = true;
-    //             }
-    //         }
-    //     }
-    // }
-    else
-    {
+    else{
         coneGrabTimerStarted_ = false;
         grabbedCone_ = false;
     }
@@ -1095,141 +671,84 @@ void Robot::TeleopPeriodic()
     //     arm_.setPosTo(TwoJointArmProfiles::STOWED);
     // }
 
-    if (controls_.getPressedOnce(TOGGLE_CLAW))
-    {
-        if (/*!arm_.intaking() && */ !cubeIntaking_)
-        {
-            arm_.setClaw(!arm_.getClawOpen());
-        }
+    if (controls_.getPressedOnce(TOGGLE_CLAW) && !cubeIntaking_){
+        arm_.setClaw(!arm_.getClawOpen());
     }
 
-    if (/*dPadRightPressed*/ controls_.getPOVDown(CUBE_INTAKE))
-    {
-        if (!arm_.isForward())
-        {
-            if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-            {
-                arm_.toggleForward();
-            }
-            else
-            {
-                arm_.setPosTo(TwoJointArmProfiles::STOWED);
-            }
-        }
-        else
-        {
+    if (controls_.getPOVDown(CUBE_INTAKE)){
+        if(arm_.setToForward()){
             bool atGroundPos = (abs(arm_.getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
             // arm_.setPosTo(TwoJointArmProfiles::GROUND);
-            if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS)
-            {
+            if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS){
                 arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
             }
-            else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving()))
-            {
+            else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving())){
                 arm_.setPosTo(TwoJointArmProfiles::STOWED);
             }
         }
-        // if(!coneIntaking_ && !cubeIntaking_)
-        // {
-        //     coneIntakeDown_ = !coneIntakeDown_;
-        // }
     }
     
-    if (controls_.getPressedOnce(INTAKE))
-    {
-        if (/*!arm_.intaking() && */ !cubeIntaking_)
-        {
-            if (arm_.getClawWheelSpeed() == ClawConstants::INTAKING_SPEED)
-            {
-                arm_.setClawWheels(0);
-            }
-            else
-            {
-                arm_.setClawWheels(ClawConstants::INTAKING_SPEED);
-            }
+    if (controls_.getPressedOnce(INTAKE) && !cubeIntaking_){ //Toggle claw intake
+        if (arm_.getClawWheelSpeed() == ClawConstants::INTAKING_SPEED){
+            arm_.setClawWheels(0);
+        }
+        else{
+            arm_.setClawWheels(ClawConstants::INTAKING_SPEED);
         }
     }
-    else if (controls_.getPressedOnce(OUTAKE))
-    {
-        if (/*!arm_.intaking() && */ !cubeIntaking_)
-        {
-            if (arm_.getClawWheelSpeed() == ClawConstants::OUTAKING_SPEED)
-            {
-                arm_.setClawWheels(0);
-            }
-            else
-            {
-                arm_.setClawWheels(ClawConstants::OUTAKING_SPEED);
-            }
+    else if (controls_.getPressedOnce(OUTAKE) && !cubeIntaking_) {//Toggle claw outtake
+        if (arm_.getClawWheelSpeed() == ClawConstants::OUTAKING_SPEED){
+            arm_.setClawWheels(0);
         }
+        else{
+            arm_.setClawWheels(ClawConstants::OUTAKING_SPEED);
+        }           
     }
 
-    bool cutoutIntakePressed = controls_.getPOVDown(CUTOUT_INTAKE);
-    bool cutoutOutakePressed = controls_.getPOVDownOnce(CUTOUT_OUTAKE);
-    if(cutoutIntakePressed)
-    {
-        cubeGrabber_.Intake();
-    }
-    else if(cutoutOutakePressed)
-    {
-        if(cubeGrabber_.getState() == CubeGrabber::OUTTAKING)
-        {
+    
+    if(controls_.getPOVDownOnce(CUTOUT_OUTAKE)){ //Set default to be outtake slow
+        if(cubeGrabber_.getState() == CubeGrabber::OUTTAKING){
             cubeGrabber_.OuttakeSlow();
         }
-        else
-        {
+        else{
             cubeGrabber_.Outtake();
         }
     }
+    else if(controls_.getPOVDown(CUTOUT_INTAKE)){
+        cubeGrabber_.Intake();
+    }
 
-    if (cubeIntakeNeededDown)
-    {
+    if (cubeIntakeNeededDown){
         cubeIntake_.Deploy();
-        if (cubeIntaking_)
-        {
+        if (cubeIntaking_){
             cubeIntake_.setRollerMode(PneumaticsIntake::INTAKE);
         }
-        else
-        {
-            // cubeIntake_.setRollerMode(PneumaticsIntake::INTAKE);
+        else{
             cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
         }
     }
-    else
-    {
+    else{
         cubeIntake_.Stow();
         cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
     }
 
     frc::SmartDashboard::PutBoolean("Cube Intake Down", cubeIntakeNeededDown);
-    // frc::SmartDashboard::PutBoolean("Cone Intake Down", intakesNeededDown.getY() || coneIntakeDown_);
-    // frc::SmartDashboard::PutBoolean("Cone Intake Halfway", coneIntakeHalfway);
 }
 
-void Robot::DisabledInit()
-{
+void Robot::DisabledInit(){
     arm_.stop();
     autoPaths_.setActionsSet(false);
     autoPaths_.setPathSet(false);
     PCM.Disable();
-    // pneumaticHub_.DisableCompressor();
 }
 
-void Robot::DisabledPeriodic()
-{
+void Robot::DisabledPeriodic(){
     frc::SmartDashboard::PutNumber("Theta", arm_.getTheta());
     swerveDrive_.reset();
     autoPaths_.setActionsSet(false);
     autoPaths_.setPathSet(false);
     arm_.checkPos();
     cubeGrabber_.Stop();
-
-    // frc::SmartDashboard::PutBoolean("XDown", controls_.lineupTrimXDownPressed());
-    // frc::SmartDashboard::PutBoolean("XUp", controls_.lineupTrimXUpPressed());
-    // frc::SmartDashboard::PutBoolean("YDown", controls_.lineupTrimYDownPressed());
-    // frc::SmartDashboard::PutBoolean("YUp", controls_.lineupTrimYUpPressed());
-
-    // frc::SmartDashboard::PutNumber("PS", controls_.checkPSButtons());
 
     // Calling all the pressed functions so that they don't buffer
     controls_.stopBuffer();
