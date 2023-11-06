@@ -120,6 +120,8 @@ void Robot::RobotInit()
     auto1Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto1Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto1Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
+    auto1Chooser_.AddOption("No Taxi Dock Dumb", AutoPaths::NO_TAXI_DOCK_DUMB);
+    
     frc::SmartDashboard::PutData("First Auto Stage", &auto1Chooser_);
 
     // auto2Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
@@ -142,6 +144,7 @@ void Robot::RobotInit()
     auto2Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto2Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto2Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
+    auto2Chooser_.AddOption("No Taxi Dock Dumb", AutoPaths::NO_TAXI_DOCK_DUMB);
     frc::SmartDashboard::PutData("Second Auto Stage", &auto2Chooser_);
 
     // auto3Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
@@ -164,6 +167,7 @@ void Robot::RobotInit()
     auto3Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto3Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto3Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
+    auto3Chooser_.AddOption("No Taxi Dock Dumb", AutoPaths::NO_TAXI_DOCK_DUMB);
     frc::SmartDashboard::PutData("Third Auto Stage", &auto3Chooser_);
 
     // auto4Chooser_.AddOption("Preloaded Cone Mid", AutoPaths::PRELOADED_CONE_MID);
@@ -186,13 +190,14 @@ void Robot::RobotInit()
     auto4Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto4Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto4Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
+    auto4Chooser_.AddOption("No Taxi Dock Dumb", AutoPaths::NO_TAXI_DOCK_DUMB);
     frc::SmartDashboard::PutData("Fourth Auto Stage", &auto4Chooser_);
 
     sideChooser_.SetDefaultOption("Right", false);
     sideChooser_.AddOption("Left", true);
     frc::SmartDashboard::PutData("Auto Side", &sideChooser_);
 
-    frc::SmartDashboard::PutBoolean("Slow Trajectory", true);
+    frc::SmartDashboard::PutBoolean("Slow Trajectory", false);
 
     cubeIntaking_ = false;
     armsZeroed_ = false;
@@ -202,12 +207,10 @@ void Robot::RobotInit()
     coneGrabTimerStartTime_ = 0;
     // frc::SmartDashboard::PutNumber("Test Volts", 3);
 
-    try
-    {
+    try{
         navx_ = new AHRS(frc::SerialPort::kUSB);
     }
-    catch (const std::exception &e)
-    {
+    catch (const std::exception &e){
         std::cout << e.what() << std::endl;
     }
     navx_->ZeroYaw();
@@ -221,8 +224,7 @@ void Robot::RobotInit()
  * <p> This runs after the mode specific periodic functions, but before
  * LiveWindow and SmartDashboard integrated updating.
  */
-void Robot::RobotPeriodic()
-{
+void Robot::RobotPeriodic(){
     // frc::SmartDashboard::PutBoolean("Shoulder Brake", arm_.shoulderBrakeEngaged());
     // frc::SmartDashboard::PutBoolean("Elbow Brake", arm_.elbowBrakeEngaged());
     frc::SmartDashboard::PutBoolean("Forward", arm_.isForward());
@@ -262,8 +264,7 @@ void Robot::RobotPeriodic()
  * if-else structure below with additional strings. If using the SendableChooser
  * make sure to add them to the chooser code above as well.
  */
-void Robot::AutonomousInit()
-{
+void Robot::AutonomousInit(){
     // arm_.stop();
     arm_.reset();
     arm_.setForward(true);

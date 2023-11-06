@@ -28,6 +28,7 @@ AutoPaths::AutoPaths(SwerveDrive *swerveDrive, TwoJointArm *arm) : swerveDrive_(
     comingDownChargingStation_ = false;
     taxied_ = false;
     dumbAutoDocking_ = false;
+    onCharge_ = false;
     sendingIt_ = false;
     hitChargeStation_ = false;
     firstCubeArmSafety_ = false;
@@ -54,6 +55,7 @@ void AutoPaths::setPath(Path path)
 
     taxiStart = 0.0; //Drive out a bit taxi
     taxiDriving_ = false;
+    onCharge_ = false;
 
     //Set swerve points
     switch (path_)
@@ -337,20 +339,19 @@ void AutoPaths::setPath(Path path)
         x2 = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
         bool top = !(isBlue_ ^ left_);
         if(top){
-            yaw1 += forward * (-60.0); //Rotate 60 degrees towards cube
             y1 = FieldConstants::TOP_MID_PIECE_Y;
             y2 = FieldConstants::TOP_CUBE_Y;
         }
         else{
-            yaw1 += forward * (60.0); //Rotate 60 degrees towards cube
             y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
             y2 = FieldConstants::BOTTOM_CUBE_Y;
         }
         if(left_){ //Left
+            yaw1 += -60.0; //Rotate towards cube
             yaw2 += 25; //Rotate more on right to place
         }
         else{
-            yaw1 += forward * 15.0; //Rotate back a bit
+            yaw1 += 45.0; //Rotate towards cube
             y2 += forward * 0.444; //Shift placing pos
         }
 
@@ -408,17 +409,18 @@ void AutoPaths::setPath(Path path)
         y2 = FieldConstants::AUTO_DOCK_Y;
         bool top = !(isBlue_ ^ left_);
         if(top){
-            yaw1 += forward * (-60.0); //Rotate 60 degrees towards cube
-            yaw2 += forward * (-89.9); //Have gearbox face charge station (89.9 for turning logic)
             y1 = FieldConstants::TOP_MID_PIECE_Y;
         }
         else{
-            yaw1 += forward * (60.0); //Rotate 60 degrees towards cube
-            yaw2 += forward * (89.9); //Have gearbox face charge station
             y1 = FieldConstants::BOTTOM_MID_PIECE_Y;
         }
-        if(!left_){ //Right
-            yaw1 += forward * (15.0); //Rotate back a bit
+        if(left_){
+            yaw1 += -60.0; //Rotate 60 degrees towards cube
+            yaw2 += -89.9; //Have gearbox face charge station
+        }
+        else{
+            yaw1 += 45.0; //Rotate 60 degrees towards cube
+            yaw2 += 89.9; //Have gearbox face charge station (89.9 for turning logic)
         }
         swervePoints_.push_back(SwervePose(x1, y1, yaw1, 0));
         swervePoints_.push_back(SwervePose(x2, y2, yaw2, 0.5));
@@ -429,17 +431,19 @@ void AutoPaths::setPath(Path path)
         double x, y, yaw;
         x = FieldConstants::getPos(FieldConstants::PIECE_X, isBlue_);
         double forward = isBlue_? 1.0 : -1.0; //Forward direction
+        yaw = forward * 90.0;
         bool top = !(isBlue_ ^ left_);
         if(top){
-            yaw += forward * -60.0; //Rotate 60 degrees towards cube
             y = FieldConstants::TOP_MID_PIECE_Y;
         }
         else{
-            yaw += forward * 60.0; //Rotate 60 degrees towards cube
             y = FieldConstants::BOTTOM_MID_PIECE_Y;
         }
-        if(!left_){//Right
-            yaw += forward * (15.0); //Rotate back a bit
+        if(left_){//Right
+            yaw += -60.0; //Rotate towards cube
+        }
+        else{
+            yaw += 45.0; //Rotate towards cube
         }
         swervePoints_.push_back(SwervePose(x, y, yaw, 0));
 
@@ -465,6 +469,7 @@ void AutoPaths::setPath(Path path)
         break;
     }
     case TAXI_DOCK_DUMB:{break;}
+    case NO_TAXI_DOCK_DUMB:{break;}
     case NOTHING:{break;}
     case DRIVE_BACK_DUMB:{break;}
     case WAIT_5_SECONDS:{break;}
@@ -513,6 +518,7 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4, bool slow){
     comingDownChargingStation_ = false;
     taxied_ = false;
     dumbAutoDocking_ = false;
+    onCharge_ = false;
     sendingIt_ = false;
     hitChargeStation_ = false;
 
@@ -537,6 +543,7 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4, bool slow){
             break;
         case AUTO_DOCK:
         case TAXI_DOCK_DUMB:
+        case NO_TAXI_DOCK_DUMB:
         case NOTHING:
         case DRIVE_BACK_DUMB:
         case WAIT_5_SECONDS:
@@ -544,7 +551,6 @@ void AutoPaths::setActions(Path a1, Path a2, Path a3, Path a4, bool slow){
             armPosition_ = TwoJointArmProfiles::STOWED;
             forward_ = true;
     }
-    
     //frc::SmartDashboard::PutBoolean("SLOW TRAJ", slowTraj_);
 }
 
@@ -607,7 +613,7 @@ void AutoPaths::periodic()
     else */
 
     //Generating Non dumb trajectories
-    if (path_ != DRIVE_BACK_DUMB && path_ != NOTHING && path_ != WAIT_5_SECONDS && path_ != TAXI_DOCK_DUMB)
+    if (path_ != DRIVE_BACK_DUMB && path_ != NOTHING && path_ != WAIT_5_SECONDS && path_ != TAXI_DOCK_DUMB && path_ != NO_TAXI_DOCK_DUMB)
     {
         SwervePose pose;
         for (size_t i = pointNum_; i < swervePoints_.size(); ++i)
@@ -858,7 +864,7 @@ void AutoPaths::periodic()
                         curveSecondStageGenerated_ = true;
 
                         double setYaw = swervePoints_[i].yaw;
-                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0); // 
+                        yawTraj_.generateTrajectory(currPose.yaw, setYaw, 0);
                         yawStageGenerated_ = true;
                     }
                 }
@@ -1844,16 +1850,16 @@ void AutoPaths::periodic()
             }
 
             if (!comingDownChargingStation_){ //Drive over charge to come down
-                double vel = forward * 0.45;
+                double vel = forward * SwerveConstants::SENDING_IT_FAST_SPEED;
                 swerveDrive_->drive({vel, 0}, 0);
             }
             else if (comingDownChargingStation_ && !taxied_){
-                double vel = forward * 0.2;
+                double vel = forward * 0.2; //Slowly roll out
                 swerveDrive_->drive({vel, 0}, 0);
                 taxied_ = (abs(tilt) < 1);
             }
             else{
-                if(!taxiDriving_){
+                if(!taxiDriving_){ //Set countdown for taxi wait
                     taxiStart = timer_.GetFPGATimestamp().value();
                     taxiDriving_ = true;
                 }
@@ -1869,7 +1875,7 @@ void AutoPaths::periodic()
                             dumbAutoDocking_ = true;
                         }
                         else{
-                            double vel = forward * -0.35;
+                            double vel = forward * -SwerveConstants::SENDING_IT_FAST_SPEED;
                             swerveDrive_->drive({vel, 0}, 0);
                         }
                     }
@@ -1884,6 +1890,45 @@ void AutoPaths::periodic()
                         }
                     }
                 }
+            }
+        }
+        break;
+    }
+    case NO_TAXI_DOCK_DUMB:
+    {
+        forward_ = true;
+        wheelSpeed_ = 0;
+        armPosition_ = TwoJointArmProfiles::STOWED;
+
+        //Let time for arm to come down
+        double time = timer_.Get().value();
+        if(time > 1.5){
+            double ang = (yaw_)*M_PI / 180.0;                                                   // Radians
+            double pitch = GeometryHelper::getPrincipalAng2Deg(pitch_ + SwerveConstants::PITCHOFFSET); // Degrees
+            double roll = GeometryHelper::getPrincipalAng2Deg(roll_ + SwerveConstants::ROLLOFFSET);    // Degrees
+            double tilt = pitch * sin(ang) - roll * cos(ang);
+
+            double forward = isBlue_? 1.0:-1.0;
+
+            time -= 1.5; //Start at 0
+            if(abs(tilt) > 10){
+                onCharge_ = true;
+            }
+
+            if (!onCharge_){ //Drive over charge to come down
+                double vel = forward * SwerveConstants::SENDING_IT_FAST_SPEED;
+                double forwardVel = (sin(sin(time - 3.0) + 2.3) + cos(time - 0.9))/2.0; //Goofy desmos graph
+                vel *= forwardVel;
+                swerveDrive_->drive({vel, 0}, 0);
+            }
+            else{
+                if (abs(tilt) < SwerveConstants::AUTODEADANGLE){ // Auto dock
+                    swerveDrive_->lockWheels();
+                }
+                else{
+                    double output = -SwerveConstants::AUTOKTILT * tilt;
+                    swerveDrive_->drive({output, 0}, 0);
+                }   
             }
         }
         break;
@@ -2153,6 +2198,12 @@ Point AutoPaths::initPos(){
         return {x, y};
     }
     case TAXI_DOCK_DUMB:
+    {
+        double y = FieldConstants::AUTO_DOCK_Y;
+        double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);
+        return {x, y};
+    }
+    case NO_TAXI_DOCK_DUMB:
     {
         double y = FieldConstants::AUTO_DOCK_Y;
         double x = FieldConstants::getPos(FieldConstants::SCORING_X, isBlue_);

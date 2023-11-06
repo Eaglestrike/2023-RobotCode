@@ -33,6 +33,7 @@ class AutoPaths
             SECOND_CUBE_DOCK,
             SECOND_CUBE_GRAB,
             AUTO_DOCK,
+            NO_TAXI_DOCK_DUMB,
             TAXI_DOCK_DUMB,
             NOTHING,
             DRIVE_BACK_DUMB,
@@ -91,6 +92,7 @@ class AutoPaths
         
         double taxiStart = 0.0; //Drive out a bit taxi
         bool taxiDriving_ = false;
+        bool onCharge_ = false;
 
         bool isBlue_;
 

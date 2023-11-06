@@ -159,10 +159,8 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
 
             drive(strafe_, rotation_);
         }
-        else
-        {
-            if (isStationary(xProfile) && isStationary(yProfile) && isStationary(yawProfile)) //Not moving
-            {
+        else{
+            if (isStationary(xProfile) && isStationary(yProfile) && isStationary(yawProfile)){ //Not moving
                 if (abs(robotX_ - xProfile.pos) > 0.08 || abs(robotY_ - yProfile.pos) > 0.08) // Not at profile when finished
                 {
                     trackingTag_ = false; //Reset scoring
