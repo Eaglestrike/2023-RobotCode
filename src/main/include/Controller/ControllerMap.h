@@ -133,9 +133,9 @@ namespace ControllerMapData{
         {BB_X_TRIM_DOWN, -1.0}
     };
 
-    const std::vector<ValueMapElement<double>> GET_TRIM_Y = {
-        {BB_Y_TRIM_UP, 1.0},
-        {BB_Y_TRIM_DOWN, -1.0}
+    const std::vector<ValueMapElement<double>> GET_INCH_ARM_Y = { //Degrees
+        {BB_Y_TRIM_UP, 3.0},
+        {BB_Y_TRIM_DOWN, -3.0}
     };
 
     //Takes the range from min to max

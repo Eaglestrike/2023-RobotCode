@@ -90,10 +90,8 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
     frc::SmartDashboard::PutNumber("STime", timer_.GetFPGATimestamp().value());
 
     frc::SmartDashboard::PutBoolean("Scoring", score);
-    if (score)
-    {
-        if (!trackingTag_)
-        {
+    if (score){
+        if (!trackingTag_){
             holdingYaw_ = false;
             Point scoringPos = checkScoringPos(scoringLevel);
             if (scoringPos.isZero()){ // Did not find scoring pos: COULDO get a better flag thing
@@ -102,26 +100,6 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
             }
             autoLineup(scoringPos); //Generates trajectory
         }
-
-        // bool end = false;
-        // double time = timer_.GetFPGATimestamp().value() - tagFollowingStartTime_;
-        // frc::SmartDashboard::PutNumber("T", time);
-        // SwervePose *wantedPose = tagPath_.getPose(time, end);
-        // frc::SmartDashboard::PutNumber("WX", wantedPose->getX());
-        // frc::SmartDashboard::PutNumber("WY", wantedPose->getY());
-        // frc::SmartDashboard::PutNumber("WYAW", wantedPose->getYaw());
-
-        // if (!end)
-        // {
-        //     frc::SmartDashboard::PutBoolean("Driving", true);
-        //     drivePose(*wantedPose);
-        // }
-        // else
-        // {
-        //     frc::SmartDashboard::PutBoolean("Driving", false);
-        //     adjustPos(SwervePose(wantedPose->getX(), wantedPose->getY(), wantedPose->getYaw(), 0, 0, 0, 0, 0, 0));
-        // }
-        // delete wantedPose;
 
         //Follow trajectory
         const Pose1D xProfile = xTagTraj_.getProfile();
@@ -158,8 +136,7 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
         }
         else{
             if (isStationary(xProfile) && isStationary(yProfile) && isStationary(yawProfile)){ //Not moving
-                if (abs(robotX_ - xProfile.pos) > 0.08 || abs(robotY_ - yProfile.pos) > 0.08) // Not at profile when finished
-                {
+                if (abs(robotX_ - xProfile.pos) > 0.08 || abs(robotY_ - yProfile.pos) > 0.08){ // Not at profile when finished
                     trackingTag_ = false; //Reset scoring
                     trackingPlayerStation_ = false;
                     return;
@@ -173,21 +150,17 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
             drivePose(wantedPose);
         }
     }
-    else if (islockWheels)
-    {
+    else if (islockWheels){
         lockWheels();
     }
-    else if (!autoBalance)
-    {
+    else if (!autoBalance){
         trackingTag_ = false;
         trackingPlayerStation_ = false;
         Vector fieldStrafe;
-        if (config_.isBlue)
-        {
+        if (config_.isBlue){
             fieldStrafe = strafe_.rotateClockwise90();
         }
-        else
-        {
+        else{
             fieldStrafe = strafe_.rotateCounterclockwise90();
         }
         double turn = rotation_;
@@ -339,82 +312,14 @@ void SwerveDrive::autoLineup(Point scoringPos){
     double wantedY = scoringPos.getY();
     double wantedYaw;
     bool playerStation; //At the playerstation
-
-    // Code to flip robot if arm is the wrong way
-    // if (config_.isBlue)
-    // {
-    //     if (forward)
-    //     {
-    //         wantedYaw = 90.0;
-    //         if (scoringPos.first > 6.0)
-    //         {
-    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-    //             wantedYaw *= -1;
-    //             playerStation = true;
-    //         }
-    //         else
-    //         {
-    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         wantedYaw = -90.0;
-    //         if (scoringPos.first > 6.0)
-    //         {
-    //             wantedYaw *= -1;
-    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-    //             playerStation = true;
-    //         }
-    //         else
-    //         {
-    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-    //         }
-    //     }
-    // }
-    // else
-    // {
-    //     if (forward)
-    //     {
-    //         wantedYaw = -90.0;
-    //         if (scoringPos.first < 6.0)
-    //         {
-    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-    //             wantedYaw *= -1;
-    //             playerStation = true;
-    //         }
-    //         else
-    //         {
-    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         wantedYaw = 90.0;
-    //         if (scoringPos.first < 6.0)
-    //         {
-    //             wantedY += SwerveConstants::CLAW_MID_OFFSET;
-    //             wantedYaw *= -1;
-    //             playerStation = true;
-    //         }
-    //         else
-    //         {
-    //             wantedY -= SwerveConstants::CLAW_MID_OFFSET;
-    //         }
-    //     }
-    // }
-
-    if (yaw_ > 0)
-    {
+    if (yaw_ > 0){
         wantedYaw = 90;
     }
-    else
-    {
+    else{
         wantedYaw = -90;
     }
 
-    if (setTagPos_ == 9)
-    {
+    if (setTagPos_ == 9){
         wantedYaw += 5;
     }
 
@@ -1141,8 +1046,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
 Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
 {
     // If tag not found
-    if (!foundTag_)
-    {
+    if (!foundTag_){
         return {0, 0};
     }
 
@@ -1152,8 +1056,7 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
     // }
 
     // If robot is out of bounds, odometry says out of field lmao
-    if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH)
-    {
+    if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH){
         return {0, 0};
     }
 
@@ -1181,103 +1084,14 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
         wantedY = yIndex * 0.5588 + FieldConstants::BOTTOM_CONE_Y;;
 
         if (setTagPos_ == 9){
-            wantedY += (config_.isBlue?1.0:-1.0) * (0.0254 * 4); //Add 4 inches Y
-            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2); //Move towards from driverstation 2 inches
+            wantedY += (config_.isBlue?1.0:-1.0) * (0.0254 * 4.0); //Add 4 inches Y
+            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2.0); //Move towards from driverstation 2 inches
         }
         else{
-            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2); //Move towards from driverstation 2 inches
+            wantedX += (config_.isBlue?-1.0:1.0) * (0.0254 * 2.0); //Move towards from driverstation 2 inches
         }
     }
     return Point{wantedX , wantedY} + LineupTrim_;
-
-    // Below is which ever is in front of the robot, above is choosing
-
-    // if (!foundTag_)
-    // {
-    //     return -1;
-    // }
-
-    // if (robotX_ > 3.919857 && robotX_ < 12.621893)
-    // {
-    //     return -1;
-    // }
-
-    // if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH)
-    // {
-    //     return -1;
-    // }
-
-    // if (config_.isBlue)
-    // {
-    //     if (robotX_ >= FieldConstants::TAG_XY[0][0]) //TODO make parameters better for all TAG_XY, probably make it check y first
-    //     {
-    //         if (robotY_ > FieldConstants::TAG_XY[2][1])
-    //         {
-    //             return 10;
-    //         }
-    //         else
-    //         {
-    //             return -1;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         if (robotY_ > FieldConstants::TAG_XY[2][1])
-    //         {
-    //             return -1;
-    //         }
-    //         else if(robotX_ > 3.919857)
-    //         {
-    //             return -1;
-    //         }
-    //         else
-    //         {
-    //             //int scoringPos = (int)round(robotY_ / 0.5588);
-    //             int scoringPos = (int)round((robotY_ - (0.5*FieldConstants::TAG_XY[0][1])) / 0.5588);
-    //             if (scoringPos == 10)
-    //             {
-    //                 scoringPos = 9; // TODO fix, yeah yeah
-    //             }
-    //             return scoringPos;
-    //         }
-    //     }
-    // }
-    // else if (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed)
-    // {
-    //     if (robotX_ <= FieldConstants::TAG_XY[5][0]) //TODO make parameters beter for all TAG_XY, probably make it check y first
-    //     {
-    //         if (robotY_ > FieldConstants::TAG_XY[2][1])
-    //         {
-    //             return 10;
-    //         }
-    //         else
-    //         {
-    //             return -1;
-    //         }
-    //     }
-    //     else
-    //     {
-    //         if (robotY_ > FieldConstants::TAG_XY[2][1])
-    //         {
-    //             return -1;
-    //         }
-    //         else if(robotX_ < 12.621893)
-    //         {
-    //             return -1;
-    //         }
-    //         else
-    //         {
-    //             int scoringPos = (int)round(robotY_ / 0.5588);
-    //             if (scoringPos == 10)
-    //             {
-    //                 scoringPos = 9; // TODO fix, yeah yeah
-    //             }
-    //             return scoringPos;
-    //         }
-    //     }
-    // }
-
-    // return -1;
 }
 
 
