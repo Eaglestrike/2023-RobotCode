@@ -511,49 +511,49 @@ void Robot::TeleopPeriodic()
                         }
                     }
                 }
-
-                // if nearby, attempt scoring process
-                else if(abs(yawError) > 15 || (absDiff(swerveDrive_.getX(), scoringPos.getX()) > 1.5 || abs(swerveDrive_.getY() - scoringPos.getY()) > 2)){
-                    int scoringPos = swerveDrive_.getScoringPos();
-                    TwoJointArmProfiles::Positions position = TwoJointArmProfiles::STOWED;
-                    switch (scoringLevel_){
-                        case 0: // Reset, nothing
-                            break;
-                        case 1: // Low
-                            if(arm_.setToForward()){
-                                bool atGroundPos = (abs(arm_.getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
-                                // arm_.setPosTo(TwoJointArmProfiles::GROUND);
-                                if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS){
-                                    arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
-                                }
-                                else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving())){
-                                    arm_.setPosTo(TwoJointArmProfiles::STOWED);
-                                }
+            }
+            // if nearby, attempt scoring process
+            else if(abs(yawError) < 15 && (absDiff(swerveDrive_.getX(), scoringPos.getX()) < 1.5) && (abs(swerveDrive_.getY() - scoringPos.getY()) < 2)){
+                std::cout<<"arm out"<<std::endl;
+                int scoringPos = swerveDrive_.getScoringPos();
+                TwoJointArmProfiles::Positions position = TwoJointArmProfiles::STOWED;
+                switch (scoringLevel_){
+                    case 0: // Reset, nothing
+                        break;
+                    case 1: // Low
+                        if(arm_.setToForward()){
+                            bool atGroundPos = (abs(arm_.getTheta()) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(arm_.getPhi() - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD);
+                            // arm_.setPosTo(TwoJointArmProfiles::GROUND);
+                            if (arm_.getPosition() == TwoJointArmProfiles::STOWED && arm_.getState() == TwoJointArm::HOLDING_POS){
+                                arm_.setJointPath(0, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]);
                             }
-                            break;
-                        case 2: //Mid
-                            if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
-                                position = TwoJointArmProfiles::CUBE_MID;
+                            else if (arm_.getPosition() != TwoJointArmProfiles::STOWED && !atGroundPos && (!arm_.isArmMoving())){
+                                arm_.setPosTo(TwoJointArmProfiles::STOWED);
                             }
-                            else{
-                                position = TwoJointArmProfiles::MID;
-                            }
-                            if(arm_.setToForward()){
-                                arm_.setPosTo(position);
-                            }
-                            break;
-                        case 3: //High
-                            if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
-                                position = TwoJointArmProfiles::CUBE_HIGH;
-                            }
-                            else{
-                                position = TwoJointArmProfiles::HIGH;
-                            }
-                            if (arm_.setToForward()){
-                                arm_.setPosTo(position);
-                            }
-                            break;
-                    }
+                        }
+                        break;
+                    case 2: //Mid
+                        if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
+                            position = TwoJointArmProfiles::CUBE_MID;
+                        }
+                        else{
+                            position = TwoJointArmProfiles::MID;
+                        }
+                        if(arm_.setToForward()){
+                            arm_.setPosTo(position);
+                        }
+                        break;
+                    case 3: //High
+                        if (scoringPos == 2 || scoringPos == 5 || scoringPos == 8){
+                            position = TwoJointArmProfiles::CUBE_HIGH;
+                        }
+                        else{
+                            position = TwoJointArmProfiles::HIGH;
+                        }
+                        if (arm_.setToForward()){
+                            arm_.setPosTo(position);
+                        }
+                        break;
                 }
             }
         }
