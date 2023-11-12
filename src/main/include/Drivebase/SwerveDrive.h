@@ -88,7 +88,7 @@ class SwerveDrive
 
         double trSpeed_, brSpeed_, tlSpeed_, blSpeed_, trAngle_, brAngle_, tlAngle_, blAngle_, holdingYaw_;
 
-        bool trackingTag_, trackingPlayerStation_, foundTag_, isHoldingYaw_/*, inching_*/;
+        bool trackingTag_, trackingPlayerStation_, foundTag_, isHoldingYaw_;
         int setTagPos_, prevTag_, prevUniqueVal_, numLargeDiffs_;
 
         Vector LineupTrim_;

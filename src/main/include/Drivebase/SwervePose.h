@@ -27,7 +27,7 @@ namespace Poses{
     /// @param startPose start pose
     /// @param endPose end pose
     /// @return distance
-    static double SwervePoseDist(SwervePose startPose, SwervePose endPose)
+    inline double SwervePoseDist(SwervePose startPose, SwervePose endPose)
     {
         double dx = endPose.x - startPose.x;
         double dy = endPose.y - startPose.y;
@@ -38,7 +38,7 @@ namespace Poses{
     /// @param startPose starting pose
     /// @param endPose ending pose
     /// @return ang from start to finish in degrees
-    static double SwervePoseAng(SwervePose startPose, SwervePose endPose)
+    inline double SwervePoseAng(SwervePose startPose, SwervePose endPose)
     {
         double dx = endPose.x - startPose.x;
         double dy = endPose.y - startPose.y;
@@ -57,7 +57,7 @@ namespace Poses{
     /// @param yPose Pose1D of y component
     /// @param angPose Pose1D of angular component
     /// @return Combined SwervePose
-    static inline SwervePose SwerveFromPose1D(Pose1D xPose, Pose1D yPose, Pose1D angPose){
+    inline SwervePose SwerveFromPose1D(Pose1D xPose, Pose1D yPose, Pose1D angPose){
         return SwervePose{
             xPose.pos,
             yPose.pos,
@@ -74,14 +74,14 @@ namespace Poses{
     /// @brief returns if any of the velocities aren't zero
     /// @param pose SwervePose
     /// @return if the pose is moving
-    static inline bool isMoving(SwervePose pose){
+    inline bool isMoving(SwervePose pose){
         return (pose.xVel != 0 || pose.yVel != 0 || pose.yawVel != 0);
     }
 
     /// @brief Returns if all dimensions are stopped, can be used to check of a profile is finished
     /// @param pose SwervePose
     /// @return if the pose is stationary
-    static inline bool isStationary(SwervePose pose){
+    inline bool isStationary(SwervePose pose){
         return pose.xVel == 0 && pose.yVel == 0 && pose.yawVel == 0 &&
                pose.xAcc == 0 && pose.yAcc == 0 && pose.yawAcc == 0;
     }
@@ -89,7 +89,7 @@ namespace Poses{
     /// @brief Returns if everything's zero
     /// @param pose SwervePose
     /// @return if everything's zero
-    static inline bool isZero(SwervePose pose){
+    inline bool isZero(SwervePose pose){
         return pose.x == 0.0 &&
                pose.y == 0.0 &&
                pose.yaw == 0.0 &&

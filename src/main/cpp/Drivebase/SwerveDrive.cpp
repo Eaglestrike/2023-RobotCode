@@ -10,26 +10,18 @@ using namespace Poses;
  * Constructor
  */
 SwerveDrive::SwerveDrive():
+    tagFollowingStartTime_(0),
+    holdingYaw_(0),
     trackingTag_(false),
     trackingPlayerStation_(false),
     foundTag_(false),
+    isHoldingYaw_(false),
     setTagPos_(1),
-    tagFollowingStartTime_(0),
     prevTag_(-1),
     prevUniqueVal_(-1),
-    holdingYaw_(0),
-    isHoldingYaw_(false),
-    LineupTrim_(0,0),
-    numLargeDiffs_(0)
+    numLargeDiffs_(0),
+    LineupTrim_(0,0)
 {
-    // autoX_ = 0;
-    // autoY_ = 0;
-    // inching_ = false;
-
-    // aprilTagX_ = 0;
-    // aprilTagY_ = 0;
-
-    // yawTagOffset_ = 0;
 }
 
 
@@ -168,94 +160,6 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
         double turn = rotation_;
 
         drive(strafe_, turn);
-
-        // if (abs(xStrafe) < 0.005 && abs(yStrafe) < 0.005 && abs(turn) < 0.02)
-        // {
-        //     if (!inching_)
-        //     {
-        //         if (inchUp)
-        //         {
-        //             inching_ = true;
-        //             Point vel = getXYVel();
-        //             if (config_.isBlue)
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-        //             }
-        //             else
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-        //             }
-        //         }
-        //         else if (inchDown)
-        //         {
-        //             inching_ = true;
-        //             Point vel = getXYVel();
-        //             if (config_.isBlue)
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ - SwerveConstants::INCHING_DIST, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-        //             }
-        //             else
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_ + SwerveConstants::INCHING_DIST, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_, vel.second);
-        //             }
-        //         }
-        //         else if (inchLeft)
-        //         {
-        //             inching_ = true;
-        //             Point vel = getXYVel();
-        //             if (config_.isBlue)
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ + SwerveConstants::INCHING_DIST, vel.second);
-        //             }
-        //             else
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ - SwerveConstants::INCHING_DIST, vel.second);
-        //             }
-        //         }
-        //         else if (inchRight)
-        //         {
-        //             inching_ = true;
-        //             Point vel = getXYVel();
-        //             if (config_.isBlue)
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ - SwerveConstants::INCHING_DIST, vel.second);
-        //             }
-        //             else
-        //             {
-        //                 xTagTraj_.generateTrajectory(robotX_, robotX_, vel.first);
-        //                 yTagTraj_.generateTrajectory(robotY_, robotY_ + SwerveConstants::INCHING_DIST, vel.second);
-        //             }
-        //         }
-        //         else
-        //         {
-        //             drive(0, 0, 0);
-        //         }
-        //     }
-        //     else
-        //     {
-        //         tuple<double, double, double> xProfile = xTagTraj_.getProfile();
-        //         tuple<double, double, double> yProfile = yTagTraj_.getProfile();
-        //         SwervePose wantedPose(get<2>(xProfile), get<2>(yProfile), yaw_, get<1>(xProfile), get<1>(yProfile), 0, get<0>(xProfile), get<0>(yProfile), 0);
-        //         drivePose(wantedPose);
-
-        //         if (get<0>(xProfile) == 0 && get<0>(yProfile) == 0 && get<1>(xProfile) == 0 && get<1>(yProfile) == 0)
-        //         {
-        //             inching_ = false;
-        //         }
-        //     }
-        // }
-        // else
-        // {
-        //     inching_ = false;
-        //     drive(xStrafe, yStrafe, turn);
-        // }
     }
 }
 
