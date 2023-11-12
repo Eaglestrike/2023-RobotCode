@@ -36,8 +36,6 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
             frc::SmartDashboard::PutNumber("Tilt", tilt);
             frc::SmartDashboard::PutNumber("Pitch", pitch);
             frc::SmartDashboard::PutNumber("Roll", roll);
-            // frc::SmartDashboard::PutNumber("Pitch Raw", navx_->GetPitch());
-            // frc::SmartDashboard::PutNumber("Roll Raw", navx_->GetRoll());
 
             std::vector<double> data = socketClient_.GetData();
             swerveDrive_.periodic(yaw, tilt, data);
@@ -46,13 +44,11 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
             cubeIntake_.Periodic();
             arm_.updateIntakeStates(cubeIntake_.getState() == PneumaticsIntake::DEPLOYED, false);
 
-            if (frc::DriverStation::IsAutonomous() && frc::DriverStation::IsEnabled())
-            {
+            if (frc::DriverStation::IsAutonomous() && frc::DriverStation::IsEnabled()){
                 autoPaths_.periodic();
                 autoPaths_.setGyros(yaw, navx_->GetPitch(), navx_->GetRoll());
             }
-            else if (frc::DriverStation::IsTeleop())
-            {
+            else if (frc::DriverStation::IsTeleop()){
                 bool armMoving = (arm_.getState() != TwoJointArm::STOPPED && arm_.getState() != TwoJointArm::HOLDING_POS);
                 bool armOut = arm_.isArmOut();
 
@@ -74,7 +70,9 @@ Robot::Robot(): autoPaths_(&swerveDrive_, &arm_){
 
                 //Shift odometry
                 double lineupTrimX = controls_.getValueOnce(ControllerMapData::GET_TRIM_X, 0.0);
-                swerveDrive_.trim(0.0, lineupTrimX);
+                if(lineupTrimX != 0.0){
+                    swerveDrive_.trim(0.0, lineupTrimX);
+                }
 
                 //Periodic call
                 swerveDrive_.teleopPeriodic(controls_.getPressed(SCORE),
@@ -96,13 +94,12 @@ void Robot::RobotInit(){
     auto1Chooser_.SetDefaultOption("Preloaded Cone High", AutoPaths::PRELOADED_CONE_HIGH);
     auto1Chooser_.AddOption("Preloaded Cone High Middle", AutoPaths::PRELOADED_CONE_HIGH_MIDDLE);
     auto1Chooser_.AddOption("Preloaded Cone Mid Middle", AutoPaths::PRELOADED_CONE_MID_MIDDLE);
-
     auto1Chooser_.AddOption("Nothing", AutoPaths::NOTHING);
     auto1Chooser_.AddOption("Drive Back Dumb", AutoPaths::DRIVE_BACK_DUMB);
     auto1Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto1Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
     auto1Chooser_.AddOption("No Taxi Dock Dumb", AutoPaths::NO_TAXI_DOCK_DUMB);
-    
+    auto1Chooser_.AddOption("Rotate Only Rotate", AutoPaths::ROTATE_ONLY_ROTATE);
     frc::SmartDashboard::PutData("First Auto Stage", &auto1Chooser_);
 
     auto2Chooser_.SetDefaultOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
@@ -112,6 +109,7 @@ void Robot::RobotInit(){
     auto2Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto2Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
     auto2Chooser_.AddOption("No Taxi Dock Dumb", AutoPaths::NO_TAXI_DOCK_DUMB);
+    auto2Chooser_.AddOption("Rotate Only Rotate", AutoPaths::ROTATE_ONLY_ROTATE);
     frc::SmartDashboard::PutData("Second Auto Stage", &auto2Chooser_);
 
     auto3Chooser_.AddOption("First Cube High", AutoPaths::FIRST_CUBE_HIGH);
@@ -123,6 +121,7 @@ void Robot::RobotInit(){
     auto3Chooser_.AddOption("Wait Five Seconds", AutoPaths::WAIT_5_SECONDS);
     auto3Chooser_.AddOption("Taxi Dock Dumb", AutoPaths::TAXI_DOCK_DUMB);
     auto3Chooser_.AddOption("No Taxi Dock Dumb", AutoPaths::NO_TAXI_DOCK_DUMB);
+    auto3Chooser_.AddOption("Rotate Only Rotate", AutoPaths::ROTATE_ONLY_ROTATE);
     frc::SmartDashboard::PutData("Third Auto Stage", &auto3Chooser_);
 
     auto4Chooser_.AddOption("Second Cube Mid", AutoPaths::SECOND_CUBE_MID);
@@ -195,7 +194,6 @@ void Robot::RobotPeriodic(){
         navx_->ZeroYaw();
         yawOffset_ = forward * 90.0;
         std::cout<<"ZEROED"<<std::endl;
-        // swerveDrive_.resetYawTagOffset();
     }
 
     //Zero Arms
@@ -294,12 +292,10 @@ void Robot::AutonomousPeriodic(){
             }
         }
         else{
-            if (arm_.getPosition() != TwoJointArmProfiles::STOWED && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE)
-            {
+            if (arm_.getPosition() != TwoJointArmProfiles::STOWED && arm_.getPosition() != TwoJointArmProfiles::CUBE_INTAKE){
                 armPosition = TwoJointArmProfiles::STOWED;
             }
-            else
-            {
+            else{
                 cubeIntakeNeededDown = true;
                 armPosition = TwoJointArmProfiles::CUBE_INTAKE;
                 wheelSpeed = ClawConstants::INTAKING_SPEED;
@@ -335,8 +331,7 @@ void Robot::AutonomousPeriodic(){
             cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
         }
     }
-    else
-    {
+    else{
         cubeIntake_.Stow();
         cubeIntake_.setRollerMode(PneumaticsIntake::STOP);
     }

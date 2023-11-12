@@ -30,7 +30,7 @@ namespace PneumaticsIntakeConstants
     const int RIGHT_SOLENOID_ID = 7;
     const int ROLLER_MOTOR_ID = 13;
 
-    const double ROLLER_INTAKE_VOLTAGE = -2.5;
+    const double ROLLER_INTAKE_VOLTAGE = -2.7; //was -2.5
     const double ROLLER_OUTTAKE_VOLTAGE = 2.5;
 } // namespace PneumaticsIntakeConstants
 

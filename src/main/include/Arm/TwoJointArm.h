@@ -109,6 +109,7 @@ class TwoJointArm
         frc::Solenoid elbowBrake_;
 
         frc::DutyCycleEncoder shoulderEncoder_;
+        double elbowOffset_; //For inching
 
         Claw claw_;
 

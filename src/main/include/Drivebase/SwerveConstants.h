@@ -37,15 +37,16 @@ namespace SwerveConstants
     const int BR_CANCODER_ID = 9; // 8, 8
     const int BL_CANCODER_ID = 6; // 42, 6
 
-    const double TR_CANCODER_OFFSET = -12.5 + 180; // 172.7
-    const double TL_CANCODER_OFFSET = -7.29 + 180;  // 177.02
-    const double BR_CANCODER_OFFSET = -31.3 + 180;  // 75.85
-    const double BL_CANCODER_OFFSET = -96.3 + 180;   // 43.2
+    const double TR_CANCODER_OFFSET = -12.5 + 180.0; // 172.7
+    const double TL_CANCODER_OFFSET = -7.29 + 180.0;  // 177.02
+    const double BR_CANCODER_OFFSET = -31.3 + 180.0;  // 75.85
+    const double BL_CANCODER_OFFSET = -96.3 + 180.0;   // 43.2
 
-    const double MAX_LA = 2.75;// Max Linear Acceleration
-    const double MAX_LV = 4;   // Max Linear Velocity (past year: 3, 4) (stable but a bit too slow: 2, 4) (2.75, 4 for three piece)
-    const double MAX_AA = 360; // 270
-    const double MAX_AV = 540; // 450
+    //Trajectory constants
+    const double MAX_LA = 2.95;// Max Linear Acceleration was 2.75
+    const double MAX_LV = 4.05;   // Max Linear Velocity (past year: 3, 4) (stable but a bit too slow: 2, 4) (2.75, 4 for three piece)
+    const double MAX_AA = 360.0; // 270
+    const double MAX_AV = 540.0; // 450
 
     const double klV = 0.502636; // If you increase pd, check auto lineup
     const double klVI = -0.359672; //Vel offset
@@ -55,9 +56,9 @@ namespace SwerveConstants
 
     const double kaV = 34.2064;
     const double kaVI = -25.4095;
-    const double kaA = 0;
-    const double kaP = 4; // 0.008
-    const double kaD = 0;
+    const double kaA = 0.0;
+    const double kaP = 4.0; // 0.008
+    const double kaD = 0.0;
 
     namespace ModuleConstants{
         const double maxV = 1440;
@@ -86,8 +87,8 @@ namespace SwerveConstants
     const double MIN_TILT_ON_STATION = 12;
 
     const double PRE_SENDING_IT_SPEED = 0.25;
-    const double SENDING_IT_FAST_SPEED = 0.4; //was 0.4 , 0.35 is too slow
-    const double SENDING_IT_MED_SPEED = 0.35; //Was 0.3
+    const double SENDING_IT_FAST_SPEED = 0.40; //was 0.4, 0.35 is too slow
+    const double SENDING_IT_MED_SPEED = 0.35; //Was 0.35
 
     const double SENDING_IT_TIME = 1.1; //was 0.9
 }

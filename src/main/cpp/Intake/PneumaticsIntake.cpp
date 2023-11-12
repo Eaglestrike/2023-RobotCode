@@ -61,16 +61,13 @@ void PneumaticsIntake::Periodic()
   case DEPLOYED:
     m_lSolenoid.Set(!m_lInverted);
     m_rSolenoid.Set(!m_rInverted);
-    if (m_mode == RollerMode::INTAKE)
-    {
+    if (m_mode == RollerMode::INTAKE){
       m_roller.SetVoltage(units::volt_t{PneumaticsIntakeConstants::ROLLER_INTAKE_VOLTAGE});
     }
-    else if (m_mode == RollerMode::STOP)
-    {
+    else if (m_mode == RollerMode::STOP){
       m_roller.SetVoltage(units::volt_t{0});
     }
-    else
-    {
+    else{
       m_roller.SetVoltage(units::volt_t{PneumaticsIntakeConstants::ROLLER_OUTTAKE_VOLTAGE});
     }
 

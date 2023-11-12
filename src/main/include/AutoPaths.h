@@ -35,6 +35,7 @@ class AutoPaths
             AUTO_DOCK,
             NO_TAXI_DOCK_DUMB,
             TAXI_DOCK_DUMB,
+            ROTATE_ONLY_ROTATE,
             NOTHING,
             DRIVE_BACK_DUMB,
             WAIT_5_SECONDS
@@ -79,13 +80,10 @@ class AutoPaths
         TrajectoryCalc yTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 1.0, 0, 0, 0, 0}};
         TrajectoryCalc yawTraj_{{SwerveConstants::MAX_AV * 0.3, SwerveConstants::MAX_AA * 0.3, 0, 0, 0, 0}};
 
-        TrajectoryCalc xSlowTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0}};
-        TrajectoryCalc ySlowTraj_{{SwerveConstants::MAX_LV * 1.0, SwerveConstants::MAX_LA * 0.64, 0, 0, 0, 0}};
-
         frc::Timer timer_;
         frc::Timer failsafeTimer_;
         double startTime_, curveSecondStageStartTime_, placingStartTime_, yaw_, pitch_, roll_, autoStartTime_, sendingItTime_;
-        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, slowTraj_, left_, cubeIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_, sendingIt_, firstCubeArmSafety_, hitChargeStation_;
+        bool nextPointReady_, failsafeStarted_, dumbTimerStarted_, pathSet_, pathGenerated_, curveSecondStageGenerated_, yawStageGenerated_, actionsSet_, left_, cubeIntaking_, placingTimerStarted_, comingDownChargingStation_, taxied_, dumbAutoDocking_, sendingIt_, firstCubeArmSafety_, hitChargeStation_;
 
         double armStart_ = 0.0; //Time started arm extension
         bool armPlacing_ = false;

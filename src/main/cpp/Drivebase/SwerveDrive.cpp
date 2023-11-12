@@ -141,8 +141,10 @@ void SwerveDrive::teleopPeriodic(bool score, bool forward, int scoringLevel, boo
                     trackingPlayerStation_ = false;
                     return;
                 }
+                else{
+                    std::cout<<"at target"<<std::endl;
+                }
             }
-
             SwervePose wantedPose = SwerveFromPose1D(xProfile, yProfile, yawProfile);
             // frc::SmartDashboard::PutNumber("WX", wantedPose.x);
             // frc::SmartDashboard::PutNumber("WY", wantedPose.y);
@@ -330,32 +332,6 @@ void SwerveDrive::autoLineup(Point scoringPos){
     if(trackingPlayerStation_){//Don't generate trajectory
         return;
     }
-
-    // if (playerStation)
-    // {
-    //     if ((config_.isBlue && getX() > FieldConstants::PLAYER_STATION_X.blue - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]) || (frc::DriverStation::GetAlliance() == frc::DriverStation::kRed && getX() < FieldConstants::PLAYER_STATION_X.red + TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][0]))
-    //     {
-    //         double xStrafe, yStrafe;
-    //         if (config_.isBlue)
-    //         {
-    //             xStrafe = controls->getYStrafe();
-    //             yStrafe = -controls->getXStrafe();
-    //         }
-    //         else
-    //         {
-    //             xStrafe = -controls->getYStrafe();
-    //             yStrafe = controls->getXStrafe();
-    //         }
-    //         double turn = controls->getTurn();
-    //         if (panic)
-    //         {
-    //             turn = std::clamp(turn, -0.075, 0.075);
-    //         }
-    //         trackingTag_ = false;
-    //         drive(xStrafe, yStrafe, turn);
-    //         return;
-    //     }
-    // }
 
     frc::SmartDashboard::PutNumber("WX", wantedX);
     frc::SmartDashboard::PutNumber("WY", wantedY);
@@ -602,11 +578,6 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     double C = newY - (turnComponent);
     double D = newY + (turnComponent);
 
-    // std::cout<<"A:"<<A<<std::endl;
-    // std::cout<<"B:"<<B<<std::endl;
-    // std::cout<<"C:"<<C<<std::endl;
-    // std::cout<<"D:"<<D<<std::endl;
-
     double trVel = sqrt(B * B + C * C);
     double tlVel = sqrt(B * B + D * D);
     double brVel = sqrt(A * A + C * C);
@@ -623,8 +594,7 @@ void SwerveDrive::calcModules(double xSpeed, double ySpeed, /*double xAcc, doubl
     // double blAcc = sqrt(AA * AA + DA * DA);
 
     //Prevent swerve modules from returning to 0 when stationary
-    if (xSpeed != 0 || ySpeed != 0 || turn != 0)
-    {
+    if (xSpeed != 0 || ySpeed != 0 || turn != 0){
         //Set target module angles
         trAngle_ = -atan2(B, C) * 180 / M_PI;
         tlAngle_ = -atan2(B, D) * 180 / M_PI;
@@ -972,33 +942,24 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
         //Find most recent pose
         double time = timer_.GetFPGATimestamp().value();
         auto historicalPose = prevPoses_.lower_bound(time - SwerveConstants::CAMERA_DELAY - delay);
-        if (historicalPose != prevPoses_.end() && abs(historicalPose->first - (time - SwerveConstants::CAMERA_DELAY) < 0.007))
-        {
-            // frc::SmartDashboard::PutNumber("HX", historicalPose->second.first.first);
-            // frc::SmartDashboard::PutNumber("HY", historicalPose->second.first.second);
+        if (historicalPose != prevPoses_.end() && abs(historicalPose->first - (time - SwerveConstants::CAMERA_DELAY) < 0.007)){
             double vel = historicalPose->second.second.getMagnitude();
             
             double xDiff = xPos - historicalPose->second.first.getX();
             double yDiff = yPos - historicalPose->second.first.getY();
-            // frc::SmartDashboard::PutNumber("DiffX", xDiff);
-            // frc::SmartDashboard::PutNumber("DiffY", yDiff);
 
             double dist;
-            if (xPos > FieldConstants::FIELD_LENGTH / 2)
-            {
+            if (xPos > FieldConstants::FIELD_LENGTH / 2){
                 dist = FieldConstants::FIELD_LENGTH - xPos;
             }
-            else
-            {
+            else{
                 dist = xPos;
             }
             double multiplier;
-            if (dist > FieldConstants::FIELD_LENGTH / 2)
-            {
+            if (dist > FieldConstants::FIELD_LENGTH / 2){
                 multiplier = 0;
             }
-            else
-            {
+            else{
                 multiplier = 0.75 * (1 - (dist / (FieldConstants::FIELD_LENGTH / 2)));
             }
 
@@ -1021,21 +982,6 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
 
             robotX_ = prevPoses_.rbegin()->second.first.getX();
             robotY_ = prevPoses_.rbegin()->second.first.getY();
-
-            // if (frc::DriverStation::IsDisabled())
-            // {
-            //     if (true)
-            //     {
-            //         yawTagOffset_ = (tagAngToRobotAng - yaw_);
-            //     }
-            // }
-            // else
-            // {
-            //     if (getXYVel().first < 0.1 && getXYVel().second < 0.1 && abs(tagAngToRobotAng - yaw_) < 5 && abs(abs(yaw_) - 90) < 10 /* && IN FRONT OF CUBE OR SOMETHING*/)
-            //     {
-            //         yawTagOffset_ += 0.3 * (tagAngToRobotAng - yaw_);
-            //     }
-            // }
         }
     }
 }
@@ -1043,8 +989,7 @@ void SwerveDrive::updateAprilTagFieldXY(double tilt, std::vector<double> data)
 /// @brief gets the target scoring position
 /// @param scoringLevel target scoring level [1, 9]
 /// @return {wantedtX, wantedtY} or {0,0} if invalid data
-Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
-{
+Point SwerveDrive::checkScoringPos(int scoringLevel){
     // If tag not found
     if (!foundTag_){
         return {0, 0};
@@ -1056,9 +1001,9 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
     // }
 
     // If robot is out of bounds, odometry says out of field lmao
-    if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH){
-        return {0, 0};
-    }
+    // if (robotX_ < 0 || robotY_ < 0 || robotX_ > FieldConstants::FIELD_LENGTH || robotY_ > FieldConstants::FIELD_WIDTH){
+    //     return {0, 0};
+    // }
 
     //Target scoring position
     double wantedX, wantedY;
@@ -1076,8 +1021,8 @@ Point SwerveDrive::checkScoringPos(int scoringLevel) // TODO get better values
     }
     else{//Going to score
         wantedX = FieldConstants::getPos(FieldConstants::SCORING_X, config_.isBlue);
-        if (scoringLevel == 1){
-            wantedX += config_.isBlue?0.1:-0.1; // scoot away driverstation by 10 cm
+        if (scoringLevel == 1){ //Scoring low
+            wantedX += config_.isBlue? 0.1 : -0.1; // scoot away driverstation by 10 cm
         }
 
         double yIndex = config_.isBlue? (9 - setTagPos_) : (setTagPos_ - 1);//Tag ordering is reversed on opposite side
@@ -1099,20 +1044,8 @@ void SwerveDrive::setScoringPos(int scoringPos){
     if (scoringPos != -1){
         setTagPos_ = scoringPos;
     }
-    // frc::SmartDashboard::PutNumber("s", setTagPos_);
 }
 
 int SwerveDrive::getScoringPos(){
     return setTagPos_;
 }
-
-// void SwerveDrive::resetYawTagOffset()
-// {
-//     yawTagOffset_ = 0;
-// }
-
-// double SwerveDrive::getYawTagOffset()
-// {
-//     return 0;
-//     return yawTagOffset_;
-// }

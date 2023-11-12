@@ -85,30 +85,30 @@ namespace TwoJointArmConstants
 
     const double ARM_POSITIONS[11][4] =
         {
-            {0.0, -0.3175, 0, 179.999999}, // stowed, 0, 180
+            {0.0, -0.3175, 0, 179.999999}, // stowed, 0, 180 , index 0
 
             // {0.63102, -0.26025, 16.2, 140.5},    // cube intake, 16.2, 140.5
-            {0.68919, -0.19095, 13, 138},       // cube intake, 13, 138
+            {0.68919, -0.19095, 13, 138},       // cube intake, 13, 138, index 1
 
-            {1.1607, 0.59354, 8, 90},     // mid, 8, 90 {1.15488, 0.55676, 8, 92}
+            {1.1607, 0.59354, 8, 90},     // mid, 8, 90 {1.15488, 0.55676, 8, 92}, index 2
 
             // {-0.63102, -0.26025, -16.2, 219.5}, // cube intake other side, or just special paths!
-            {-0.68919, -0.19095, -13, 222},       // cube intake other side, or just special paths!
+            {-0.68919, -0.19095, -13, 222},       // cube intake other side, or just special paths!, index 3
 
-            {1.54007, 0.92549, 49, 17},     // high, 49, 17
-            {1.02963, 0.36889, 2.5, 108.35},     // cube mid, 2.5, 108.35
-            {1.38, 0.7587, 24.96, 60.78},      // cube high, 24.96, 60.78
+            {1.54007, 0.92549, 49, 17},     // high, 49, 17, index 4
+            {1.02963, 0.36889, 2.5, 108.35},     // cube mid, 2.5, 108.35 index 5
+            {1.38, 0.7587, 24.96, 60.78},      // cube high, 24.96, 60.78 index 6
 
             // {1.10306, 0.04506, 20.5, 107.5},        // ground but high, 20.5, 107.5
-            {0.72371, -0.49738, 43, 125.5}, //Cone intake from the ground, 43, 125.5
+            {0.72371, -0.49738, 43, 125.5}, //Cone intake from the ground, 43, 125.5 index 7
 
             // {0.76201, 0.55449, -23.3, 120.5}, //ramming player station, -23.3, 120.5
             // {0.6685, 0.53897, -31.7, 127}, //ramming player station closer to bumper, -31.7, 127
-            {0.70918, 0.55008, -28, 124}, //ramming player station, far but not as far, -28, -124
+            {0.70918, 0.55008, -28, 124}, //ramming player station, far but not as far, -28, -124 index 8
 
-            {0.10074, -0.30109, -18.5, 179.99999}, //Auto stow with cone intake, -18.5, 180
+            {0.10074, -0.30109, -18.5, 179.99999}, //Auto stow with cone intake, -18.5, 180 index 9
 
-            {0, 0, 25.7, 138} //Cone intake from intake, no trajectories, 25.7, 138
+            {0, 0, 25.7, 138} //Cone intake from intake, no trajectories, 25.7, 138 index 10
     };
 
     const int STOWED_NUM = 0;

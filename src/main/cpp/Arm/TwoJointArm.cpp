@@ -102,25 +102,20 @@ void TwoJointArm::periodic()
         //     setClawWheels(0);
         // }
         checkPos();
-        if (posUnknown_)
-        {
+        if (posUnknown_){
             state_ = STOPPED;
         }
         stop();
-        if (position_ != setPosition_)
-        {
-            if (setPosition_ == TwoJointArmProfiles::SPECIAL)
-            {
+        if (position_ != setPosition_){
+            if (setPosition_ == TwoJointArmProfiles::SPECIAL){
                 setPosition_ = position_;
-                if (position_ == TwoJointArmProfiles::SPECIAL)
-                {
+                if (position_ == TwoJointArmProfiles::SPECIAL){
                     state_ = STOPPED;
                     position_ = TwoJointArmProfiles::STOWED;
                     setPosition_ = TwoJointArmProfiles::STOWED;
                 }
             }
-            else
-            {
+            else{
                 setPosTo(setPosition_);
             }
         }
@@ -190,8 +185,52 @@ void TwoJointArm::zeroArms()
 }
 
 void TwoJointArm::inchArm(double diff){
+    if(diff == 0.0){
+        return;
+    }
     double diffTicks = diff * GeneralConstants::TICKS_PER_ROTATION / 360.0 / TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO / TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO;
-    elbowMaster_.SetSelectedSensorPosition(elbowMaster_.GetSelectedSensorPosition() + diffTicks);
+    elbowOffset_ += diffTicks; 
+
+    checkPos();
+    if(posUnknown_){
+        return;
+    }
+    int index = -1;
+    switch(position_){
+        case TwoJointArmProfiles::STOWED:
+            index = TwoJointArmConstants::STOWED_NUM;
+            break;
+		case TwoJointArmProfiles::CUBE_INTAKE:
+            break;
+		case TwoJointArmProfiles::MID:
+            index = TwoJointArmConstants::MID_NUM;
+            break;
+		case TwoJointArmProfiles::SPECIAL:
+            break;
+		case TwoJointArmProfiles::HIGH:
+            index = TwoJointArmConstants::HIGH_NUM;
+            break;
+		case TwoJointArmProfiles::CUBE_MID:
+            index = TwoJointArmConstants::CUBE_MID_NUM;
+            break;
+		case TwoJointArmProfiles::CUBE_HIGH:
+            index = TwoJointArmConstants::CUBE_HIGH_NUM;
+            break;
+		case TwoJointArmProfiles::GROUND:
+            break;
+		case TwoJointArmProfiles::RAMMING_PLAYER_STATION:
+            break;
+		case TwoJointArmProfiles::AUTO_STOW:
+            break;
+        default:
+            break;
+    }
+    if(index == -1){
+        return;
+    }
+    shoulderTraj_.generateTrajectory(getTheta(), getTheta(), 0);
+    elbowTraj_.generateTrajectory(getPhi(), TwoJointArmConstants::ARM_POSITIONS[index][3], 0);
+    state_ = FOLLOWING_JOINT_SPACE_PROFILE;
 }
 
 ///Zeros the arm to initial auto pos
@@ -296,17 +335,6 @@ void TwoJointArm::setPosTo(TwoJointArmProfiles::Positions setPosition){
         return;
     }
 
-    // if (position_ == TwoJointArmProfiles::CONE_INTAKE && setPosition != TwoJointArmProfiles::STOWED)
-    // {
-    //     return;
-    // }
-
-    // if (setPosition == TwoJointArmProfiles::CONE_INTAKE && position_ != TwoJointArmProfiles::STOWED)
-    // {
-    //     return;
-    // }
-
-
     if(atGroundPos)
     {
         shoulderTraj_.generateTrajectory(getTheta(), TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2], 0);
@@ -396,29 +424,6 @@ void TwoJointArm::specialSetPosTo(TwoJointArmProfiles::Positions setPosition)
     if (state_ == FOLLOWING_TASK_SPACE_PROFILE){
         return;
     }
-
-    /*if(!forward_ && setPosition == TwoJointArmProfiles::ABOVE_INTAKE)
-    {
-        if(position_ == TwoJointArmProfiles::STOWED)
-        {
-            forward_ = true;
-            key_ = {position_, TwoJointArmProfiles::ABOVE_INTAKE};
-        }
-        else
-        {
-            claw_.setOpen(false);
-            key_ = {position_, TwoJointArmProfiles::STOWED};
-        }
-
-    }
-    else
-    {
-        if(setPosition == TwoJointArmProfiles::STOWED)
-        {
-            claw_.setOpen(false);
-        }
-        key_ = {position_, setPosition};
-    }*/
 
     forward_ = true;
     position_ = TwoJointArmProfiles::SPECIAL;
@@ -541,12 +546,10 @@ void TwoJointArm::followTaskSpaceProfile(double time)
         double aheadPhi = phiAheadProfile.pos;
         std::pair<double, double> xyAhead = ArmKinematics::angToXY(aheadTheta, aheadPhi);
 
-        if (xyAhead.first > 0)
-        {
+        if (xyAhead.first > 0){
             intakeNeededDown = true;
         }
-        else
-        {
+        else{
             intakeNeededDown = false;
         }
     }
@@ -625,8 +628,7 @@ void TwoJointArm::followTaskSpaceProfile(double time)
             elbowTraj_.generateTrajectory(phi, wantedPhi, 0);
             state_ = FOLLOWING_JOINT_SPACE_PROFILE;
         }
-        else
-        {
+        else{
             state_ = HOLDING_POS;
         }
     }
@@ -720,14 +722,12 @@ void TwoJointArm::followJointSpaceProfile()
         {
             state_ = STOPPED;
         }
-        else if (abs(theta - wantedTheta) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD || abs(phi - wantedPhi) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD)
-        {
+        else if (abs(theta - wantedTheta) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD || abs(phi - wantedPhi) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD){
             shoulderTraj_.generateTrajectory(theta, wantedTheta, 0);
             elbowTraj_.generateTrajectory(phi, wantedPhi, 0);
             state_ = FOLLOWING_JOINT_SPACE_PROFILE;
         }
-        else
-        {
+        else{
             state_ = HOLDING_POS;
         }
     }
@@ -899,24 +899,7 @@ void TwoJointArm::home()
         // elbowMaster_.setVel(phiVel);
         // elbowMaster_.setPos_(wantedPhi);
 
-        if (/*phiVel == 0 && thetaVel == 0 && homingRaising_*/ false) // HERE
-        {
-            elbowTraj_.generateTrajectory(phi, TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3], 0);
-            setBrakes(shoulderBrakeEngaged(), false);
-            homingRaising_ = false;
-            if (forward_)
-            {
-                coneIntakeNeededDown_ = true;
-                cubeIntakeNeededDown_ = false;
-            }
-            else
-            {
-                coneIntakeNeededDown_ = false;
-                cubeIntakeNeededDown_ = true;
-            }
-        }
-        else if (thetaVel == 0 && phiVel == 0 && thetaAcc == 0 && phiAcc == 0)
-        {
+        if (thetaVel == 0 && phiVel == 0 && thetaAcc == 0 && phiAcc == 0){
             homing_ = {false, false};
             posUnknown_ = false;
             position_ = TwoJointArmProfiles::STOWED;
@@ -931,8 +914,7 @@ void TwoJointArm::home()
                 elbowTraj_.generateTrajectory(phi, wantedPhi, 0);
                 state_ = FOLLOWING_JOINT_SPACE_PROFILE;
             }
-            else
-            {
+            else{
                 state_ = HOLDING_POS;
             }
         }
@@ -955,13 +937,11 @@ void TwoJointArm::homeNew()
     {
         xy.first *= -1;
     }
-    if (xy.first > 0)
-    {
+    if (xy.first > 0){
         cubeIntakeNeededDown_ = false;
         coneIntakeNeededDown_ = true;
     }
-    else
-    {
+    else{
         cubeIntakeNeededDown_ = true;
         coneIntakeNeededDown_ = false;
     }
@@ -974,13 +954,11 @@ void TwoJointArm::homeNew()
         // shoulderProfile = shoulderTraj_.getProfile();
         homingFirstStage_.first = true;
 
-        if (phi < 90)
-        {
+        if (phi < 90){
             homingFirstStage_.second = true;
             elbowTraj_.generateTrajectory(phi, 120, 0);
         }
-        else if (phi > 270)
-        {
+        else if (phi > 270){
             homingFirstStage_.second = true;
             elbowTraj_.generateTrajectory(phi, 240, 0);
         }
@@ -1100,14 +1078,12 @@ void TwoJointArm::homeNew()
                     posUnknown_ = true;
                     state_ = STOPPED;
                 }
-                else if (abs(theta - wantedTheta) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD || abs(phi - wantedPhi) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD)
-                {
+                else if (abs(theta - wantedTheta) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD || abs(phi - wantedPhi) > TwoJointArmConstants::ANGLE_ERROR_THRESHOLD){
                     shoulderTraj_.generateTrajectory(theta, wantedTheta, 0);
                     elbowTraj_.generateTrajectory(phi, wantedPhi, 0);
                     state_ = FOLLOWING_JOINT_SPACE_PROFILE;
                 }
-                else
-                {
+                else{
                     state_ = HOLDING_POS;
                 }
             }
@@ -1396,32 +1372,6 @@ double TwoJointArm::calcElbowVolts(double wantedVel, double wantedAcc, double wa
     // prevElbowVolts_ = torqueVolts + velVolts;
     // return velVolts;
     return gravityTorqueVolts + accTorqueVolts + velVolts + phiPID;
-
-    // // HERE
-    // //double velVolts = (wantedVel) / (-100);
-    // double velVolts = (abs(wantedVel) + 67.2685) / 183.796;
-    // velVolts *= -abs(wantedVel) / wantedVel;
-    // //y=183.796x-67.2685
-    // // double accVolts = (abs(acc) / acc) * -0.5;
-    // // double accVolts = (1.0 / 4.0) * 0.762 * 0.762 * 0.114 * (1.0 / 12.0) * -acc;
-
-    // double gravityTorque = calcElbowGravityTorque(theta, phi, false);
-    // //velVolts += gravityTorque * 3.24; // 1.0 / 2.6
-
-    // //phiVolts += (wantedPhi - phi) * ekP_ + (phiVel - elbowVel) * ekV_; HERE
-    // double phiPID;
-    // double elbowVel = getPhiVel();
-    // if(wantedVel == 0 && wantedAcc == 0)
-    // {
-    //     phiPID = (wantedPos - phi) * -ekP_ * 0.4 + (wantedVel - elbowVel) * -ekV_ * 0.4;
-    // }
-    // else
-    // {
-    //     phiPID = (wantedPos - phi) * -ekP_ + (wantedVel - elbowVel) * -ekV_;
-    // }
-    // //velVolts += phiPID;
-
-    // return velVolts;
 }
 
 double TwoJointArm::calcShoulderRotInertia(double phi, bool hasCone)
@@ -1481,12 +1431,10 @@ double TwoJointArm::calcElbowGravityTorque(double theta, double phi, bool hasCon
 {
     double forearmTorque = TwoJointArmConstants::FOREARM_COM_DIST * TwoJointArmConstants::FOREARM_M * GeneralConstants::g * sin((theta + phi) * (M_PI / 180.0));
 
-    if (hasCone)
-    {
+    if (hasCone){
         return forearmTorque + (TwoJointArmConstants::FOREARM_LENGTH + TwoJointArmConstants::EE_LENGTH) * GeneralConstants::CONE_M * GeneralConstants::g * sin((theta + phi) * (M_PI / 180.0));
     }
-    else
-    {
+    else{
         return forearmTorque;
     }
 }
@@ -1507,8 +1455,7 @@ bool TwoJointArm::setShoulderVolts(double volts)
     double theta = getTheta();
     double phi = getPhi();
     std::pair<double, double> xy = ArmKinematics::angToXY(theta, phi);
-    if (shoulderMaster_.GetSupplyCurrent() > TwoJointArmConstants::STALL_SAFETY)
-    {
+    if (shoulderMaster_.GetSupplyCurrent() > TwoJointArmConstants::STALL_SAFETY){
         frc::SmartDashboard::PutNumber("SSC", shoulderMaster_.GetSupplyCurrent());
         shoulderMaster_.SetVoltage(units::volt_t(0));
         elbowMaster_.SetVoltage(units::volt_t(0));
@@ -1572,8 +1519,7 @@ bool TwoJointArm::setShoulderVolts(double volts)
     return false;
 }
 
-bool TwoJointArm::setElbowVolts(double volts)
-{
+bool TwoJointArm::setElbowVolts(double volts){
     // frc::SmartDashboard::PutNumber("EC", elbowMaster_.GetSupplyCurrent());
     double theta = getTheta();
     double phi = getPhi();
@@ -1627,13 +1573,11 @@ bool TwoJointArm::setElbowVolts(double volts)
     } 
     else
     {
-        if (forward_)
-        {
+        if (forward_){
             elbowMaster_.SetVoltage(units::volt_t{volts});
             return true;
         }
-        else
-        {
+        else{
             elbowMaster_.SetVoltage(units::volt_t{-volts});
             return true;
         }
@@ -1661,42 +1605,37 @@ double TwoJointArm::getTheta()
 double TwoJointArm::getPhi()
 {
     // return elbowMaster_.GetSelectedSensorPosition(); //HERE
-    if (forward_)
-    {
-        return elbowMaster_.GetSelectedSensorPosition() / GeneralConstants::TICKS_PER_ROTATION * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO - (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
+    if (forward_){
+        return (elbowMaster_.GetSelectedSensorPosition() + elbowOffset_)/ GeneralConstants::TICKS_PER_ROTATION * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO - (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
     }
-    else
-    {
+    else{ //Cube intake
         return (360 - elbowMaster_.GetSelectedSensorPosition() / GeneralConstants::TICKS_PER_ROTATION * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO) - (getTheta() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
     }
 }
 
-double TwoJointArm::getThetaVel()
-{
+double TwoJointArm::getThetaVel(){
     double vel = shoulderMaster_.GetSelectedSensorVelocity() / GeneralConstants::TICKS_PER_ROTATION * 10 * 360 * TwoJointArmConstants::MOTOR_TO_SHOULDER_RATIO;
     return (forward_) ? vel : -vel;
 }
 
-double TwoJointArm::getPhiVel()
-{
+double TwoJointArm::getPhiVel(){
     double vel = elbowMaster_.GetSelectedSensorVelocity() / GeneralConstants::TICKS_PER_ROTATION * 10 * 360 * TwoJointArmConstants::MOTOR_TO_ELBOW_RATIO * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO - (getThetaVel() * TwoJointArmConstants::SHOULDER_TO_ELBOW_RATIO);
     return (forward_) ? vel : -vel;
 }
 
-bool TwoJointArm::posUnknown()
-{
+bool TwoJointArm::posUnknown(){
     return posUnknown_;
 }
-bool TwoJointArm::shoulderBrakeEngaged()
-{
+
+bool TwoJointArm::shoulderBrakeEngaged(){
     return shoulderBrakeEngaged_;
 }
-bool TwoJointArm::elbowBrakeEngaged()
-{
+
+bool TwoJointArm::elbowBrakeEngaged(){
     return elbowBrakeEngaged_;
 }
-bool TwoJointArm::isForward()
-{
+
+bool TwoJointArm::isForward(){
     return forward_;
 }
 
@@ -1717,32 +1656,22 @@ void TwoJointArm::checkPos()
     double theta = getTheta();
     double phi = getPhi();
 
-    if (abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-    {
+    if (abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::STOWED_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD){
         posUnknown_ = false;
         position_ = TwoJointArmProfiles::STOWED;
         state_ = HOLDING_POS;
     }
-    else if (!forward_ && abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CUBE_INTAKE_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CUBE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-    {
+    else if (!forward_ && abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CUBE_INTAKE_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CUBE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD){
         posUnknown_ = false;
         position_ = TwoJointArmProfiles::CUBE_INTAKE;
         state_ = HOLDING_POS;
     }
-    else if (abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-    {
+    else if (abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::MID_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD){
         posUnknown_ = false;
         position_ = TwoJointArmProfiles::MID;
         state_ = HOLDING_POS;
     }
-    // else if (abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::SPECIAL_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::SPECIAL_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-    // {
-    //     posUnknown_ = false;
-    //     position_ = TwoJointArmProfiles::MID;
-    //     state_ = HOLDING_POS;
-    // } MID THING
-    else if (abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::HIGH_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::HIGH_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-    {
+    else if (abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::HIGH_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::HIGH_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD){
         posUnknown_ = false;
         position_ = TwoJointArmProfiles::HIGH;
         state_ = HOLDING_POS;
@@ -1777,14 +1706,7 @@ void TwoJointArm::checkPos()
         position_ = TwoJointArmProfiles::AUTO_STOW;
         state_ = HOLDING_POS;
     }
-    // else if (forward_ && abs(theta - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][2]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD && abs(phi - TwoJointArmConstants::ARM_POSITIONS[TwoJointArmConstants::CONE_INTAKE_NUM][3]) < TwoJointArmConstants::ANGLE_POS_KNOWN_THRESHOLD)
-    // {
-    //     posUnknown_ = false;
-    //     position_ = TwoJointArmProfiles::CONE_INTAKE;
-    //     state_ = HOLDING_POS;
-    // }
-    else
-    {
+    else{
         posUnknown_ = true;
         state_ = STOPPED;
     }
@@ -1792,8 +1714,7 @@ void TwoJointArm::checkPos()
 
 std::string TwoJointArm::getStateString()
 {
-    switch (state_)
-    {
+    switch (state_){
     case HOLDING_POS:
     {
         return "Holding Pos";
@@ -1899,54 +1820,6 @@ std::string TwoJointArm::getSetPosString() {
 std::string TwoJointArm::getPosString() {
     return getGenericPosString(position_);
 }
-
-// void TwoJointArm::goToPos(double thetaPos, double phiPos)
-// {
-//     state_ = MANUAL;
-
-//     setBrakes(false, false);
-
-//     if (setThetaPos_ != thetaPos)
-//     {
-//         shoulderTraj_.generateTrajectory(getTheta(), thetaPos, 0);
-//         setThetaPos_ = thetaPos;
-//     }
-
-//     if (setPhiPos_ != phiPos)
-//     {
-//         elbowTraj_.generateTrajectory(getPhi(), phiPos, 0);
-//         setPhiPos_ = phiPos;
-//     }
-
-//     double theta = getTheta();
-//     double phi = getPhi();
-
-//     Pose1D shoulderProfile = shoulderTraj_.getProfile();
-//     double wantedTheta = (shoulderProfile);
-//     double wantedThetaVel = (shoulderProfile);
-//     double shoulderVolts = calcShoulderVolts(wantedThetaVel, (shoulderProfile), wantedTheta, theta, phi, false);
-//     // shoulderMaster_.SetVoltage(units::volt_t{shoulderVolts});
-//     // frc::SmartDashboard::PutNumber("ShVolts", shoulderVolts);
-//     setShoulderVolts(shoulderVolts);
-
-//     Pose1D elbowProfile = elbowTraj_.getProfile();
-//     double wantedPhi = (elbowProfile);
-//     double wantedPhiVel = (elbowProfile) + wantedThetaVel;
-//     double elbowVolts = calcElbowVolts(wantedPhiVel, (elbowProfile) + (shoulderProfile), wantedPhi, theta, phi, false);
-//     // elbowMaster_.SetVoltage(units::volt_t{elbowVolts});
-//     // frc::SmartDashboard::PutNumber("ElVolts", elbowVolts);
-//     setElbowVolts(elbowVolts);
-// }
-
-// double TwoJointArm::getThetaVolts()
-// {
-//     return shoulderMaster_.getVolts();
-// }
-
-// double TwoJointArm::getPhiVolts()
-// {
-//     return elbowMaster_.getVolts();
-// }
 
 bool TwoJointArm::getClawOpen()
 {
